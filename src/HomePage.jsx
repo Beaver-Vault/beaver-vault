@@ -1,36 +1,23 @@
-import { Box, Button, ButtonGroup, TextField } from "@mui/material";
+import { Box, Button, ButtonGroup, Tabs, Tab } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-
-const columns = [
-  { field: "website", headerName: "Website", flex: 1 },
-  { field: "username", headerName: "Username", flex: 1 },
-  {
-    field: "password",
-    headerName: "Password",
-    flex: 1,
-    renderCell: () => {
-      let showPassword = false;
-      return (
-        <TextField
-          type={showPassword ? "text" : "password"}
-          fullWidth
-          variant="standard"
-          InputProps={{
-            readOnly: true,
-          }}
-          value="test"
-        />
-      );
-    },
-  },
-];
-
-const fakeData = [
-  { id: 1, website: "google.com", username: "test", password: "test" },
-  { id: 2, website: "facebook.com", username: "test", password: "test" },
-];
+import PasswordCell from "./PasswordCell";
+import { fakePasswords } from "./fakedata";
+import { useState } from "react";
 
 export default function HomePage() {
+  const [currentTab, setCurrentTab] = useState(0);
+
+  const columns = [
+    { field: "website", headerName: "Website", flex: 1 },
+    { field: "username", headerName: "Username", flex: 1 },
+    {
+      field: "password",
+      headerName: "Password",
+      flex: 1,
+      renderCell: (e) => <PasswordCell password={e.value} />,
+    },
+  ];
+
   return (
     <>
       <Box
@@ -43,25 +30,24 @@ export default function HomePage() {
           padding: "1rem",
         }}
       >
-        <Box>
-          <ButtonGroup>
-            <Button variant="contained" color="primary">
-              Passwords
-            </Button>
-            <Button variant="contained" color="primary">
-              Credit Card
-            </Button>
-            <Button variant="contained" color="primary">
-              Notes
-            </Button>
-          </ButtonGroup>
-        </Box>
+        <Tabs value={currentTab}>
+          <Tab label="Passwords" />
+          <Tab label="Credit Cards" />
+          <Tab label="Notes" />
+        </Tabs>
         <Box
           sx={{
             width: "70%",
+            height: "70vh",
           }}
         >
-          <DataGrid columns={columns} rows={fakeData} />
+          <DataGrid
+            columns={columns}
+            rows={fakePasswords}
+            autoPageSize
+            density="compact"
+            disableRowSelectionOnClick
+          />
         </Box>
       </Box>
     </>
