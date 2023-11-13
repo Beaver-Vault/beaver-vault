@@ -300,3 +300,41 @@ export const fakePasswords = [
     password: "vZ5.IJJqar6?o<",
   },
 ];
+
+export const fakeCreditCards = [
+  {
+    id: 1,
+    name: "diners-club-us-ca",
+    number: "5460630617406679",
+    expiry: "3/21/2023",
+    cvv: 325,
+  },
+  {
+    id: 2,
+    name: "switch",
+    number: "491131316890655817",
+    expiry: "11/12/2022",
+    cvv: 216,
+  },
+  {
+    id: 3,
+    name: "jcb",
+    number: "3584525659252260",
+    expiry: "3/21/2023",
+    cvv: 299,
+  },
+  {
+    id: 4,
+    name: "jcb",
+    number: "3559287312007414",
+    expiry: "4/29/2023",
+    cvv: 234,
+  },
+  {
+    id: 5,
+    name: "jcb",
+    number: "3546256324662256",
+    expiry: "9/3/2023",
+    cvv: 919,
+  },
+];
