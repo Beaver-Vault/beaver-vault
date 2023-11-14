@@ -1,4 +1,4 @@
-import { Box, Tab } from "@mui/material";
+import { Box, Tab, Button } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
 import PasswordCell from "./PasswordCell";
@@ -36,6 +36,14 @@ export default function HomePage() {
     },
   ];
 
+  const importData = () => {
+    console.log("importing data");
+  };
+
+  const exportData = () => {
+    console.log("exporting data");
+  };
+
   return (
     <>
       <Box
@@ -48,6 +56,23 @@ export default function HomePage() {
           padding: "1rem",
         }}
       >
+
+        <Box
+          sx={{
+            width: "70%",
+            display: "flex",
+            justifyContent: "flex-start",
+            marginBottom: "1rem",
+          }}
+        >
+          <Button variant="contained" onClick={importData}>
+            Import
+          </Button>
+          <Button variant="contained" onClick={exportData}>
+            Export
+          </Button>
+        </Box>
+
         <TabContext value={currentTab}>
           <Box
             sx={{
@@ -58,6 +83,7 @@ export default function HomePage() {
               gap: "1rem",
             }}
           >
+
             <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
               <Tab label="Passwords" value={0} />
               <Tab label="Credit Cards" value={1} />
