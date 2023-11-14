@@ -4,6 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState } from "react";
+import { passwordGen } from "./passwordGen";
 
 export default function HomePage() {
   const [currentTab, setCurrentTab] = useState(0);
@@ -56,7 +57,6 @@ export default function HomePage() {
           padding: "1rem",
         }}
       >
-
         <Box
           sx={{
             width: "70%",
@@ -65,7 +65,7 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-          <Button variant="contained" onClick={importData}>
+          <Button variant="contained" onClick={passwordGen}>
             Import
           </Button>
           <Button variant="contained" onClick={exportData}>
@@ -83,7 +83,6 @@ export default function HomePage() {
               gap: "1rem",
             }}
           >
-
             <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
               <Tab label="Passwords" value={0} />
               <Tab label="Credit Cards" value={1} />
