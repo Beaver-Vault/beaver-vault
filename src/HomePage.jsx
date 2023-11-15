@@ -65,11 +65,18 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-          <Button variant="contained" onClick={passwordGen}>
+          <Button variant="contained" onClick={importData}>
             Import
           </Button>
           <Button variant="contained" onClick={exportData}>
             Export
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => console.log(passwordGen(12, true, true, true, true))}
+          >
+            Generate Password
           </Button>
         </Box>
 
