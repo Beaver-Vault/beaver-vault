@@ -8,6 +8,7 @@ import { passwordGen } from "./passwordGen";
 
 export default function HomePage() {
   const [currentTab, setCurrentTab] = useState(0);
+  const [importedData, setImportedData] = useState([]);
 
   const passwordColumns = [
     { field: "website", headerName: "Website", flex: 1 },
@@ -37,10 +38,31 @@ export default function HomePage() {
     },
   ];
 
-  const importData = () => {
-    console.log("importing data");
-  };
+  const importData = (event) => {
+    const file = event.target.files[0];
 
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+
+          if (Array.isArray(importedData) && importedData.every(row => row.website && row.username && row.password)) {
+            setImportedData(importedData);
+            console.log('Import success! Data:', importedData);
+          } else {
+            console.error('Import failed. Invalid JSON format or missing required fields.');
+          }
+        } catch (error) {
+          console.error('Error parsing JSON file:', error);
+        }
+      };
+
+      reader.readAsText(file);
+    }
+  };
+  
   const exportData = () => {
     console.log("exporting data");
   };
@@ -65,9 +87,19 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-          <Button variant="contained" onClick={importData}>
-            Import
-          </Button>
+          <label htmlFor="upload" style={{ marginRight: '1rem' }}>
+            <Button component="span" variant="contained">
+              Import
+            </Button>
+            <input
+              type="file"
+              id="upload"
+              accept=".json"
+              style={{ display: 'none' }}
+              onChange={importData}
+            />
+          </label>
+
           <Button variant="contained" onClick={exportData}>
             Export
           </Button>
