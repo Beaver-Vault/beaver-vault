@@ -5,6 +5,7 @@ import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState } from "react";
 import { passwordGen } from "./passwordGen";
+import { encryptText } from "./encryptText";
 
 export default function HomePage() {
   const [currentTab, setCurrentTab] = useState(0);
@@ -102,6 +103,10 @@ export default function HomePage() {
 
           <Button variant="contained" onClick={exportData}>
             Export
+          </Button>
+          <Button variant="contained" onClick={() => encryptText("beaver", passwordGen(12, true, true, true, true))}>
+
+          Encrypt "beaver"
           </Button>
           <Button
             variant="contained"
