@@ -49,21 +49,28 @@ export default function HomePage() {
         try {
           const importedData = JSON.parse(e.target.result);
 
-          if (Array.isArray(importedData) && importedData.every(row => row.website && row.username && row.password)) {
+          if (
+            Array.isArray(importedData) &&
+            importedData.every(
+              (row) => row.website && row.username && row.password
+            )
+          ) {
             setImportedData(importedData);
-            console.log('Import success! Data:', importedData);
+            console.log("Import success! Data:", importedData);
           } else {
-            console.error('Import failed. Invalid JSON format or missing required fields.');
+            console.error(
+              "Import failed. Invalid JSON format or missing required fields."
+            );
           }
         } catch (error) {
-          console.error('Error parsing JSON file:', error);
+          console.error("Error parsing JSON file:", error);
         }
       };
 
       reader.readAsText(file);
     }
   };
-  
+
   const exportData = () => {
     console.log("exporting data");
   };
@@ -88,7 +95,7 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-          <label htmlFor="upload" style={{ marginRight: '1rem' }}>
+          <label htmlFor="upload" style={{ marginRight: "1rem" }}>
             <Button component="span" variant="contained">
               Import
             </Button>
@@ -96,7 +103,7 @@ export default function HomePage() {
               type="file"
               id="upload"
               accept=".json"
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={importData}
             />
           </label>
@@ -104,14 +111,20 @@ export default function HomePage() {
           <Button variant="contained" onClick={exportData}>
             Export
           </Button>
-          <Button variant="contained" onClick={() => encryptText("beaver", passwordGen(12, true, true, true, true))}>
-
-          Encrypt "beaver"
+          <Button
+            variant="contained"
+            onClick={() =>
+              encryptText("beaver", passwordGen(12, true, true, true, true))
+            }
+          >
+            Encrypt "beaver"
           </Button>
           <Button
             variant="contained"
             color="error"
-            onClick={() => console.log(passwordGen(12, true, true, true, true))}
+            onClick={() =>
+              console.log(passwordGen(12, true, false, false, false))
+            }
           >
             Generate Password
           </Button>
