@@ -5,6 +5,7 @@ import LandingPage from "./LandingPage";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import HomePage from "./HomePage";
+import PasswordGenPage from "./PasswordGenPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,6 +24,7 @@ function App() {
             element={<LoginPage setIsLoggedIn={setIsLoggedIn} />}
           />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/passwordgen" element={<PasswordGenPage />} />
         </Routes>
       </Router>
     </div>

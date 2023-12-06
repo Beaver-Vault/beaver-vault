@@ -25,5 +25,3 @@ export const passwordGen = (
 
   return password;
 };
-
-console.log(passwordGen(12, true, true, true, true)); // Generate a 12-character password with all character types
