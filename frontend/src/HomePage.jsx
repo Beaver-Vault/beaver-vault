@@ -7,6 +7,7 @@ import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState } from "react";
 import { passwordGen } from "./passwordGen";
 import { encryptText } from "./encryptText";
+import { dbPasswordTransaction } from "./submitPasswordToAPI";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -149,6 +150,9 @@ export default function HomePage() {
           <Button variant="contained" onClick={exportData}>
             Export
           </Button>
+
+          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
+
           <Button
             variant="contained"
             onClick={() =>
@@ -157,6 +161,18 @@ export default function HomePage() {
           >
             Encrypt "beaver"
           </Button>
+          
+          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
+
+          <Button
+            variant="contained"
+            onClick={dbPasswordTransaction}
+          >
+            Send To API
+          </Button>
+
+          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
+
           <Button
             variant="contained"
             color="error"
