@@ -1,6 +1,7 @@
 import { Box, Tab, Button } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
+import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState } from "react";
@@ -8,7 +9,9 @@ import { passwordGen } from "./passwordGen";
 import { encryptText } from "./encryptText";
 
 export default function HomePage() {
-  const [currentTab, setCurrentTab] = useState(0);
+  const nav = useNavigate();
+
+  const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
 
   const passwordColumns = [
@@ -72,7 +75,42 @@ export default function HomePage() {
   };
 
   const exportData = () => {
-    console.log("exporting data");
+    const chosenData = window.prompt(
+      'Enter "passwords", "credit", or "all" to export data:'
+    );
+
+    let dataToExport;
+
+    if (chosenData === "passwords") {
+      dataToExport = fakePasswords;
+    } else if (chosenData === "credit") {
+      dataToExport = fakeCreditCards;
+    } else if (chosenData === "all") {
+      dataToExport = {
+        passwords: fakePasswords,
+        creditCards: fakeCreditCards,
+      };
+    } else {
+      console.log("Invalid selection. No data exported.");
+      return;
+    }
+
+    const jsonData = JSON.stringify(dataToExport, null, 2);
+
+    const blob = new Blob([jsonData], { type: "application/json" });
+
+    const exportingData = document.createElement("a");
+    exportingData.href = URL.createObjectURL(blob);
+
+    exportingData.download = `exported_data_${chosenData}.json`;
+
+    document.body.appendChild(exportingData);
+
+    exportingData.click();
+
+    document.body.removeChild(exportingData);
+
+    console.log(`Data (${chosenData}) exported successfully`);
   };
 
   return (
@@ -123,7 +161,8 @@ export default function HomePage() {
             variant="contained"
             color="error"
             onClick={() =>
-              console.log(passwordGen(12, true, false, false, false))
+              // console.log(passwordGen(12, true, false, false, false))
+              nav("/passwordgen")
             }
           >
             Generate Password
@@ -141,13 +180,13 @@ export default function HomePage() {
             }}
           >
             <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
-              <Tab label="Passwords" value={0} />
-              <Tab label="Credit Cards" value={1} />
-              <Tab label="Notes" value={2} />
+              <Tab label="Passwords" value={"0"} />
+              <Tab label="Credit Cards" value={"1"} />
+              <Tab label="Notes" value={"2"} />
             </TabList>
           </Box>
           <TabPanel
-            value={0}
+            value={"0"}
             sx={{
               width: "100%",
             }}
@@ -169,7 +208,7 @@ export default function HomePage() {
             </Box>
           </TabPanel>
           <TabPanel
-            value={1}
+            value={"1"}
             sx={{
               width: "100%",
             }}
