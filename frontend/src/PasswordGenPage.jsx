@@ -20,10 +20,11 @@ export default function PasswordGenPage() {
   const [lowerCase, setLowerCase] = useState(true);
   const [numbers, setNumbers] = useState(true);
   const [symbols, setSymbols] = useState(false);
+  const [passphrase, setPassphrase] = useState(true);
 
   useEffect(() => {
     generatePassword();
-  }, [passwordLength, upperCase, lowerCase, numbers, symbols]);
+  }, [passwordLength, upperCase, lowerCase, numbers, symbols, passphrase]);
 
   const generatePassword = () => {
     const newPassword = passwordGen(
@@ -31,7 +32,8 @@ export default function PasswordGenPage() {
       upperCase,
       lowerCase,
       numbers,
-      symbols
+      symbols,
+      passphrase
     );
     setPassword(newPassword);
   };
@@ -123,12 +125,22 @@ export default function PasswordGenPage() {
           <FormControlLabel
             control={
               <Switch
+                onChange={(e) => setBool(e, setPassphrase)}
+                checked={passphrase}
+              />
+            }
+            label="Passphrase"
+          />
+          <FormControlLabel
+            control={
+              <Switch
                 onChange={(e) => setBool(e, setSymbols)}
                 checked={symbols}
               />
             }
             label="Symbols"
           />
+          
         </FormGroup>
         <Button variant="contained" onClick={generatePassword}>
           Generate
