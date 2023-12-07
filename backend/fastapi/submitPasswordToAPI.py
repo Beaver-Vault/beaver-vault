@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Need temporary middleware to allow local IP addres access, otherwise we get an immediate crash on the frontend
+# Need temporary middleware to allow local IP address access, otherwise we
+# get an immediate crash on the frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,7 +13,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# This will return an actual password object later, but returning just a string now
+
+# This will return an actual password object later, but returning just a
+# string now
 @app.get("/password")
 def index():
     return {"Entry": "To Save/Get to/from Database"}
