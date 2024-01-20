@@ -20,7 +20,7 @@ export default function PasswordGenPage() {
   const [lowerCase, setLowerCase] = useState(true);
   const [numbers, setNumbers] = useState(true);
   const [symbols, setSymbols] = useState(false);
-  const [passphrase, setPassphrase] = useState(true);
+  const [passphrase, setPassphrase] = useState(false);
 
   const generatePassword = () => {
     const newPassword = passwordGen(
@@ -36,15 +36,7 @@ export default function PasswordGenPage() {
 
   useEffect(() => {
     generatePassword();
-  }, [
-    passwordLength,
-    upperCase,
-    lowerCase,
-    numbers,
-    symbols,
-    passphrase,
-    generatePassword,
-  ]);
+  }, [passwordLength, upperCase, lowerCase, numbers, symbols, passphrase]);
 
   const setBool = (e, setFunction) => {
     setFunction(e.target.checked);

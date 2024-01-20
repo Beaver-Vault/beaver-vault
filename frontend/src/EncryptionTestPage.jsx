@@ -37,6 +37,7 @@ export default function EncryptionTestPage() {
           variant="contained"
           fullWidth
           onClick={() => {
+            if (password === "" || email === "") return;
             setKey(deriveKey(password, email));
           }}
         >
