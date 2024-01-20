@@ -6,6 +6,7 @@ import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import HomePage from "./HomePage";
 import PasswordGenPage from "./PasswordGenPage";
+import EncryptionTestPage from "./EncryptionTestPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -25,6 +26,7 @@ function App() {
           />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/passwordgen" element={<PasswordGenPage />} />
+          <Route path="/encryptiontest" element={<EncryptionTestPage />} />
         </Routes>
       </Router>
     </div>

@@ -5,9 +5,6 @@ import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState } from "react";
-import { passwordGen } from "./passwordGen";
-import { encryptText } from "./encryptText";
-import { dbPasswordTransaction } from "./submitPasswordToAPI";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -155,22 +152,14 @@ export default function HomePage() {
 
           <Button
             variant="contained"
-            onClick={() =>
-              encryptText("beaver", passwordGen(12, true, true, true, true))
-            }
+            onClick={() => {
+              nav("/encryptiontest");
+            }}
           >
-            Encrypt "beaver"
+            Encryption Tester
           </Button>
-          
+
           <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            onClick={dbPasswordTransaction}
-          >
-            Send To API
-          </Button>
-
           <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
 
           <Button
