@@ -1,71 +1,86 @@
 import CryptoJS from "crypto-js";
 import aesjs from "aes-js";
-import sha256 from "js-sha256";
 
 /**
- * Derives a 256-bit key from a password and salt using PBKDF2
+ * Generates a random salt of a specified length
+ *
+ * @param {number} length - The length of the salt in bytes
+ * @returns {string} - The generated salt as a hexadecimal string
+ */
+export const generateSalt = (length = 16) => {
+  return CryptoJS.lib.WordArray.random(length).toString(CryptoJS.enc.Hex);
+};
+
+/**
+ * Derives a 512-bit key from a password and salt using PBKDF2
  *
  * @param {string} password - User's password
- * @param {string} salt - User's email address
- * @returns {string} - 256-bit key as a hexadecimal string
+ * @param {string} salt - Randomly generated salt
+ * @returns {string} - 512-bit key as a hexadecimal string
  */
 export const deriveKey = (password, salt) => {
-  // Derive a 256-bit key from the password and salt using PBKDF2
-  const wordArray = CryptoJS.PBKDF2(password, salt, {
-    keySize: 256,
-    iterations: 1000,
+  // Derive a 512-bit key from the password and salt using PBKDF2 with 10,000 iterations
+  const wordArray = CryptoJS.PBKDF2(password, CryptoJS.enc.Hex.parse(salt), {
+    keySize: 512 / 32, // 512 bits / 32 bits per word = 16 words
+    iterations: 10000,
   });
 
   return wordArray.toString(CryptoJS.enc.Hex);
 };
 
 /**
- * This function takes in a string and a password and returns an encrypted string using the password as a cipher
+ * This function takes in a string and a key, encrypts the string using the first half of the key,
+ * and returns an encrypted string prepended with the IV as a hexadecimal string.
  *
- * @param {string} text - plaintext that needs to be encrypted
- * @param {string} password - cipher to encrypt the plaintext
- * @returns {string} - The encrypted text as a hexadecimal string
+ * @param {string} text - Plaintext to be encrypted
+ * @param {string} key - 512-bit Key for encryption
+ * @returns {string} - IV + encrypted text as a hexadecimal string
  */
 export const encryptText = (text, key) => {
-  // Convert the text to byte array
+  // Use the first 256 bits of the 512-bit key
+  const keyBytes = aesjs.utils.hex.toBytes(key.substring(0, 64));
+
+  // Convert the text to a byte array
   const textBytes = aesjs.utils.utf8.toBytes(text);
 
-  // hash the password to get a 32-byte key
-  // key needs to be generated in 16-byte increments
-  const keyHash = sha256(key);
-  const keyBytes = aesjs.utils.hex.toBytes(keyHash);
+  // Generate a random 16-byte IV/counter
+  const iv = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
+  const ivBytes = aesjs.utils.hex.toBytes(iv);
 
-  // create a new AES CTR mode of operation with the password bytes and a new counter starting at 5
-  const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(5));
+  // Create a new AES CTR mode of operation with the key bytes and the IV/counter
+  const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(ivBytes));
 
-  // encrypt the text
+  // Encrypt the text
   const encryptedBytes = aesCtr.encrypt(textBytes);
 
-  // convert the encrypted bytes to a hexadecimal string
-  const encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+  // Convert the encrypted bytes to a hexadecimal string and prepend the IV
+  const encryptedHex = iv + aesjs.utils.hex.fromBytes(encryptedBytes);
 
   return encryptedHex;
 };
 
 /**
- * This function takes in an encrypted string and a password and returns a decrypted string using the password as a cipher
+ * This function takes in an encrypted string and a key, and returns the decrypted string.
  *
- * @param {string} ciphertext - encrypted text that needs to be decrypted
- * @param {string} key - cipher to decrypt the ciphertext
- * @returns {string} - The decrypted text as a string
+ * @param {string} ciphertext - Encrypted text (including IV) that needs to be decrypted
+ * @param {string} key - 512-bit Key for decryption
+ * @returns {string} - The decrypted text
  */
 export const decryptText = (ciphertext, key) => {
-  // convert the ciphertext to a byte array
-  const encryptedBytes = aesjs.utils.hex.toBytes(ciphertext);
+  // Use the first 256 bits of the 512-bit key
+  const keyBytes = aesjs.utils.hex.toBytes(key.substring(0, 64));
 
-  // hash the password to get a 32-byte key
-  const keyHash = sha256(key);
-  const keyBytes = aesjs.utils.hex.toBytes(keyHash);
+  // Extract the IV (first 32 hex characters / 16 bytes)
+  const iv = ciphertext.slice(0, 32);
+  const ivBytes = aesjs.utils.hex.toBytes(iv);
 
-  // create a new AES CTR mode of operation with the password bytes and a new counter starting at 5
-  const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(5));
+  // Extract the encrypted text
+  const encryptedBytes = aesjs.utils.hex.toBytes(ciphertext.slice(32));
 
-  // decrypt the text
+  // Create a new AES CTR mode of operation with the key bytes and the IV/counter
+  const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(ivBytes));
+
+  // Decrypt the text
   const decryptedBytes = aesCtr.decrypt(encryptedBytes);
   const decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
 
