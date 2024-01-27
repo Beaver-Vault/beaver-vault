@@ -48,7 +48,10 @@ export const encryptText = (text, key) => {
   const ivBytes = aesjs.utils.hex.toBytes(iv);
 
   // Create a new AES CTR mode of operation with the key bytes and the IV/counter
-  const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(ivBytes));
+  const aesCtr = new aesjs.ModeOfOperation.ctr(
+    keyBytes,
+    new aesjs.Counter(ivBytes)
+  );
 
   // Encrypt the text
   const encryptedBytes = aesCtr.encrypt(textBytes);
@@ -78,7 +81,10 @@ export const decryptText = (ciphertext, key) => {
   const encryptedBytes = aesjs.utils.hex.toBytes(ciphertext.slice(32));
 
   // Create a new AES CTR mode of operation with the key bytes and the IV/counter
-  const aesCtr = new aesjs.ModeOfOperation.ctr(keyBytes, new aesjs.Counter(ivBytes));
+  const aesCtr = new aesjs.ModeOfOperation.ctr(
+    keyBytes,
+    new aesjs.Counter(ivBytes)
+  );
 
   // Decrypt the text
   const decryptedBytes = aesCtr.decrypt(encryptedBytes);
