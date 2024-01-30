@@ -20,13 +20,18 @@ def get_db():
         db.close()
 
 
-@app.post("/users/", response_model=schemas.User)
+@app.post("/users")
 def create_user(user: schemas.User, db: Session = Depends(get_db)):
     # db_user = crud.get_user_by_username(db, username=user.username)
     # if db_user:
     #     raise HTTPException(status_code=400,
     #                         detail="Username already registered")
     return crud.create_user(db=db, user=user)
+
+
+@app.post("/folders")
+def create_folder(folder: schemas.Folder, db: Session = Depends(get_db)):
+    return crud.create_folder(db=db, folder=folder)
 
 
 # @app.get("/users/", response_model=list[schemas.User])

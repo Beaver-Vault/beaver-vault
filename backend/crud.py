@@ -17,9 +17,17 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_user(db: Session, user: schemas.User):
-    db_user = models.User(email=user.email, userID=user.userID)
+    db_user = models.User(email=user.email, hashedMasterKey=user.hashedMasterKey)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def create_folder(db: Session, folder: schemas.Folder):
+    db_folder = models.Folder(folderName=folder.folderName, userID=folder.userID)
+    db.add(db_folder)
+    db.commit()
+    db.refresh(db_folder)
+    return db_folder
 
