@@ -1,24 +1,17 @@
-from typing import Union
+from typing import Union, Optional
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class User(BaseModel):
-    userID: Union[str, None] = None
+    userID: Optional[int] = None
     email: str
-    accountCreationDate: Union[str, None] = None
-    lastLoginDate: Union[str, None] = None
+    hashedMasterKey: str
+    accountCreationDate: Optional[datetime] = None
+    lastLoginDate: Optional[datetime] = None
 
 
-# class UserBase(BaseModel):
-#     username: str
-#
-#
-# class UserCreate(UserBase):
-#     password: str
-#
-#
-# class User(UserBase):
-#     id: int
-#
-#     class Config:
-#         orm_mode = True
+class Folder(BaseModel):
+    folderID: Optional[int] = None
+    folderName: str
+    userID: int
