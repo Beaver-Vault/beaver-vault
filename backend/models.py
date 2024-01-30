@@ -25,24 +25,34 @@ class Folder(Base):
     folderName = Column(String)
     userID = Column(Integer, ForeignKey("Users.userID"))
 
-#
-# class User(Base):
-#     __tablename__ = "users"
 
-#     id = Column(Integer, primary_key=True)
-#     email = Column(String, unique=True, index=True)
-#     hashed_password = Column(String)
-#     is_active = Column(Boolean, default=True)
+class Passwords(Base):
+    __tablename__ = "Passwords"
 
-#     items = relationship("Item", back_populates="owner")
+    passwordID = Column(Integer, primary_key=True, autoincrement=True)
+    websiteName = Column(String(100))
+    username = Column(String(256))
+    encryptedPassword = Column(String(256))
+    folderID = Column(Integer, ForeignKey("Folders.folderID"))
 
 
-# class Item(Base):
-#     __tablename__ = "items"
+class CreditCard(Base):
+    __tablename__ = "CreditCards"
 
-#     id = Column(Integer, primary_key=True)
-#     title = Column(String, index=True)
-#     description = Column(String, index=True)
-#     owner_id = Column(Integer, ForeignKey("users.id"))
+    creditcardID = Column(Integer, primary_key=True, autoincrement=True)
+    cardName = Column(String(256))
+    cardholderName = Column(String(256))
+    number = Column(Integer)
+    expiration = Column(Integer)
+    csv = Column(Integer)
+    folderID = Column(Integer, ForeignKey("Folders.folderID"))
 
-#     owner = relationship("User", back_populates="items")
+
+class Note(Base):
+    __tablename__ = "Notes"
+
+    noteID = Column(Integer, primary_key=True, autoincrement=True)
+    noteName = Column(String(256))
+    content = Column(String(1024))
+    folderID = Column(Integer, ForeignKey("Folders.folderID"))
+
