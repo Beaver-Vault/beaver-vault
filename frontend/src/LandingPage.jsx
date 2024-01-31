@@ -28,6 +28,9 @@ export default function LandingPage() {
         <Button variant="contained" color="primary" onClick={handleLogin}>
           Login / Signup
         </Button>
+        <Button variant="contained" color="primary" onClick={handleGetStarted}>
+            Get Started
+        </Button>
       </Box>
     </>
   );
