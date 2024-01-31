@@ -5,10 +5,20 @@ import schemas
 import models
 from fastapi import Depends, FastAPI, HTTPException
 from database import SessionLocal
+from fastapi.middleware.cors import CORSMiddleware
 
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# CORS settings
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You might want to restrict this to a specific origin in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Dependency
 def get_db():
@@ -26,10 +36,10 @@ def get_db():
 
 @app.post("/users")
 def create_user(user: schemas.User, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db, username=user.username)
+    db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400,
-                            detail="Username already registered")
+                            detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
 

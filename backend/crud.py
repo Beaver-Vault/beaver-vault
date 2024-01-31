@@ -52,8 +52,8 @@ def get_user(db: Session, user_id: str):
 
 
 # Needs POSTMAN test and implementation (need to have meeting about API endpoints for GET vs. POST)
-def get_user_by_username(db: Session, username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
 
 
 # Needs POSTMAN test and implementation (need to have meeting about API endpoints for GET vs. POST)
