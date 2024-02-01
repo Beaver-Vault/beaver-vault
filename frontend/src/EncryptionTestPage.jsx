@@ -1,4 +1,4 @@
-import { deriveKey, encryptText, decryptText } from "./encryption";
+import { pdfk, encryptText, decryptText } from "./encryption";
 import { TextField, Button, Box } from "@mui/material";
 import { useState } from "react";
 
@@ -38,7 +38,7 @@ export default function EncryptionTestPage() {
           fullWidth
           onClick={() => {
             if (password === "" || email === "") return;
-            setKey(deriveKey(password, email));
+            setKey(pdfk(password, email));
           }}
         >
           Derive Key

@@ -4,41 +4,54 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
-export default function HomePage() {
+export default function HomePage({ loggedInUser }) {
   const nav = useNavigate();
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
+  const [userFolders, setUserFolders] = useState([]);
 
-  const passwordColumns = [
-    { field: "website", headerName: "Website", flex: 1 },
-    { field: "username", headerName: "Username", flex: 1 },
-    {
-      field: "password",
-      headerName: "Password",
-      flex: 1,
-      renderCell: (e) => <PasswordCell password={e.value} />,
-    },
-  ];
+  // const passwordColumns = [
+  //   { field: "website", headerName: "Website", flex: 1 },
+  //   { field: "username", headerName: "Username", flex: 1 },
+  //   {
+  //     field: "password",
+  //     headerName: "Password",
+  //     flex: 1,
+  //     renderCell: (e) => <PasswordCell password={e.value} />,
+  //   },
+  // ];
 
-  const creditCardColumns = [
-    { field: "name", headerName: "Name", flex: 1 },
-    {
-      field: "number",
-      headerName: "Number",
-      flex: 1,
-      renderCell: (e) => <PasswordCell password={e.value} />,
-    },
-    { field: "expiry", headerName: "Expiry", flex: 1 },
-    {
-      field: "cvv",
-      headerName: "CVV",
-      flex: 1,
-      renderCell: (e) => <PasswordCell password={e.value} />,
-    },
-  ];
+  // const creditCardColumns = [
+  //   { field: "name", headerName: "Name", flex: 1 },
+  //   {
+  //     field: "number",
+  //     headerName: "Number",
+  //     flex: 1,
+  //     renderCell: (e) => <PasswordCell password={e.value} />,
+  //   },
+  //   { field: "expiry", headerName: "Expiry", flex: 1 },
+  //   {
+  //     field: "cvv",
+  //     headerName: "CVV",
+  //     flex: 1,
+  //     renderCell: (e) => <PasswordCell password={e.value} />,
+  //   },
+  // ];
+
+  useEffect(() => {
+    const getFolders = async () => {
+      const response = await axios.get(
+        `http://localhost:8000/folders/${loggedInUser["userID"]}`
+      );
+      setUserFolders(response.data);
+    };
+
+    getFolders();
+  }, [loggedInUser, setUserFolders]);
 
   const importData = (event) => {
     const file = event.target.files[0];
@@ -172,6 +185,15 @@ export default function HomePage() {
           >
             Generate Password
           </Button>
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newpassword");
+            }}
+          >
+            Add Password
+          </Button>
         </Box>
 
         <TabContext value={currentTab}>
@@ -203,13 +225,13 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              <DataGrid
+              {/* <DataGrid
                 columns={passwordColumns}
                 rows={fakePasswords}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
-              />
+              /> */}
             </Box>
           </TabPanel>
           <TabPanel
@@ -225,13 +247,13 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              <DataGrid
+              {/* <DataGrid
                 columns={creditCardColumns}
                 rows={fakeCreditCards}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
-              />
+              /> */}
             </Box>
           </TabPanel>
         </TabContext>

@@ -12,17 +12,16 @@ export const generateSalt = (length = 16) => {
 };
 
 /**
- * Derives a 512-bit key from a password and salt using PBKDF2
+ * Derives a 256-bit key from a password and salt using PBKDF2
  *
- * @param {string} password - User's password
- * @param {string} salt - Randomly generated salt
- * @returns {string} - 512-bit key as a hexadecimal string
+ * @param {string} plaintext - Plaintext to be hashed
+ * @param {string} salt - Salt for the pdfk function
+ * @returns {string} - 256-bit key as a hexadecimal string
  */
-export const deriveKey = (password, salt) => {
-  // Derive a 512-bit key from the password and salt using PBKDF2 with 10,000 iterations
-  const wordArray = CryptoJS.PBKDF2(password, CryptoJS.enc.Hex.parse(salt), {
-    keySize: 512 / 32, // 512 bits / 32 bits per word = 16 words
-    iterations: 10000,
+export const pdfk = (plaintext, salt, iterations = 10000) => {
+  const wordArray = CryptoJS.PBKDF2(plaintext, CryptoJS.enc.Hex.parse(salt), {
+    keySize: 256 / 32, // 512 bits / 32 bits per word = 16 words
+    iterations: iterations,
   });
 
   return wordArray.toString(CryptoJS.enc.Hex);

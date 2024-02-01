@@ -14,11 +14,13 @@ app = FastAPI()
 # CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You might want to restrict this to a specific origin in production
+    allow_origins=["*"],
+    # You might want to restrict this to a specific origin in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Dependency
 def get_db():
@@ -40,7 +42,10 @@ def create_user(user: schemas.User, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400,
                             detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+    new_user = crud.create_user(db=db, user=user)
+    crud.create_folder(db=db, folder=schemas.Folder(
+        folderName="Default", userID=new_user.userID))
+    return new_user
 
 
 @app.post("/folders")
@@ -66,13 +71,14 @@ def create_note(note: schemas.Note, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Note not found")
     return notes
 
+
 @app.post("/creditcards")
-def create_creditcard(creditcard: schemas.CreditCard, db: Session = Depends(get_db)):
+def create_creditcard(creditcard: schemas.CreditCard,
+                      db: Session = Depends(get_db)):
     creditcard = crud.create_creditcard(db=db, creditcard=creditcard)
     if creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
     return creditcard
-
 
 
 # Read rows (get single row)
@@ -81,6 +87,12 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     user = crud.get_user(db, user_id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.get("/users/{email}")
+def get_user_by_email(email: str, db: Session = Depends(get_db)):
+    user = crud.get_user_by_email(db, email=email)
     return user
 
 
@@ -116,6 +128,11 @@ def get_folder(folder_id: int, db: Session = Depends(get_db)):
     return folder
 
 
+@app.get("/folders/{user_id}")
+def get_folders_by_user(user_id: int, db: Session = Depends(get_db)):
+    folders = crud.get_folders_by_user_id(db, user_id=user_id)
+    return folders
+
 # Update rows
 
 
@@ -123,7 +140,8 @@ def get_folder(folder_id: int, db: Session = Depends(get_db)):
 
 
 # @app.get("/users/", response_model=list[schemas.User])
-# def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+# def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(
+# get_db)):
 #     users = crud.get_users(db, skip=skip, limit=limit)
 #     return users
 #
