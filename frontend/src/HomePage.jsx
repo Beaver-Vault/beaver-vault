@@ -6,13 +6,17 @@ import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { setFolders } from "./slices/userInfoSlice";
 
-export default function HomePage({ loggedInUser }) {
+export default function HomePage() {
   const nav = useNavigate();
+  const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
-  const [userFolders, setUserFolders] = useState([]);
+
+  const loggedInUser = useSelector((state) => state.auth.user);
 
   // const passwordColumns = [
   //   { field: "website", headerName: "Website", flex: 1 },
@@ -47,11 +51,11 @@ export default function HomePage({ loggedInUser }) {
       const response = await axios.get(
         `http://localhost:8000/folders/${loggedInUser["userID"]}`
       );
-      setUserFolders(response.data);
+      dispatch(setFolders(response.data));
     };
 
     getFolders();
-  }, [loggedInUser, setUserFolders]);
+  }, [loggedInUser]);
 
   const importData = (event) => {
     const file = event.target.files[0];

@@ -1,12 +1,17 @@
 import { Box, Typography, ButtonBase, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "./slices/authSlice";
 import BeaverLogo from "./imgs/beaver_logo.png";
 
-export default function NavBar({ isLoggedIn, setIsLoggedIn, loggedInUser }) {
+export default function NavBar() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const loggedInUser = useSelector((state) => state.auth.user);
 
   const handleSignOut = () => {
-    setIsLoggedIn(false);
+    dispatch(logout());
     navigate("/");
   };
 
@@ -25,7 +30,7 @@ export default function NavBar({ isLoggedIn, setIsLoggedIn, loggedInUser }) {
           <img src={BeaverLogo} alt="Beaver Logo" width={100} />
           <Typography variant="h6">Beaver Vault</Typography>
         </ButtonBase>
-        {isLoggedIn ? (
+        {loggedInUser ? (
           <Box
             sx={{
               display: "flex",

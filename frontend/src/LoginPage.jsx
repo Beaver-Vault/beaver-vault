@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useState } from "react";
 import { pdfk } from "./encryption";
+import { useDispatch } from "react-redux";
+import { login } from "./slices/authSlice";
 
-export default function LoginPage({ setIsLoggedIn, setLoggedInUser }) {
+export default function LoginPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -29,8 +32,7 @@ export default function LoginPage({ setIsLoggedIn, setLoggedInUser }) {
         masterKey: masterKey,
         ...response.data,
       };
-      setLoggedInUser(newUserData);
-      setIsLoggedIn(true);
+      dispatch(login(newUserData));
       navigate("/");
     } else {
       alert("Invalid email or password");
