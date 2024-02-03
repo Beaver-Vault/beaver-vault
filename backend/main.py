@@ -104,6 +104,12 @@ def get_password(password_id: int, db: Session = Depends(get_db)):
     return password
 
 
+@app.get("/passwords/{folder_id}")
+def get_passwords_by_user(folder_id: int, db: Session = Depends(get_db)):
+    passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
+    return passwords
+
+
 @app.get("/notes")
 def get_note(note_id: int, db: Session = Depends(get_db)):
     note = crud.get_note(db, note_id=note_id)

@@ -2,6 +2,7 @@ import { Box, Typography, ButtonBase, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "./slices/authSlice";
+import { clearInfo } from "./slices/userInfoSlice";
 import BeaverLogo from "./imgs/beaver_logo.png";
 
 export default function NavBar() {
@@ -12,6 +13,7 @@ export default function NavBar() {
 
   const handleSignOut = () => {
     dispatch(logout());
+    dispatch(clearInfo());
     navigate("/");
   };
 

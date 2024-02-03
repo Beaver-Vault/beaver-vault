@@ -7,7 +7,8 @@ import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { setFolders } from "./slices/userInfoSlice";
+import { setFolders, setPasswords } from "./slices/userInfoSlice";
+import { decryptText } from "./encryption";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -17,17 +18,19 @@ export default function HomePage() {
   const [importedData, setImportedData] = useState([]);
 
   const loggedInUser = useSelector((state) => state.auth.user);
+  const allFolders = useSelector((state) => state.userInfo.folders);
+  const allPasswords = useSelector((state) => state.userInfo.passwords);
 
-  // const passwordColumns = [
-  //   { field: "website", headerName: "Website", flex: 1 },
-  //   { field: "username", headerName: "Username", flex: 1 },
-  //   {
-  //     field: "password",
-  //     headerName: "Password",
-  //     flex: 1,
-  //     renderCell: (e) => <PasswordCell password={e.value} />,
-  //   },
-  // ];
+  const passwordColumns = [
+    { field: "websiteName", headerName: "Website", flex: 1 },
+    { field: "username", headerName: "Username", flex: 1 },
+    {
+      field: "encryptedPassword",
+      headerName: "Password",
+      flex: 1,
+      renderCell: (e) => <PasswordCell password={e.value} />,
+    },
+  ];
 
   // const creditCardColumns = [
   //   { field: "name", headerName: "Name", flex: 1 },
@@ -47,14 +50,38 @@ export default function HomePage() {
   // ];
 
   useEffect(() => {
-    const getFolders = async () => {
+    const getData = async () => {
       const response = await axios.get(
         `http://localhost:8000/folders/${loggedInUser["userID"]}`
       );
-      dispatch(setFolders(response.data));
+      const folderData = response.data;
+
+      let totalPasswords = [];
+      for (let folder of folderData) {
+        const response = await axios.get(
+          `http://localhost:8000/passwords/${folder["folderID"]}`
+        );
+        let decryptedPasswords = response.data.map((password) => {
+          return {
+            ...password,
+            websiteName: decryptText(
+              password.websiteName,
+              loggedInUser.masterKey
+            ),
+            username: decryptText(password.username, loggedInUser.masterKey),
+            encryptedPassword: decryptText(
+              password.encryptedPassword,
+              loggedInUser.masterKey
+            ),
+          };
+        });
+        totalPasswords = totalPasswords.concat(decryptedPasswords);
+      }
+      dispatch(setFolders(folderData));
+      dispatch(setPasswords(totalPasswords));
     };
 
-    getFolders();
+    getData();
   }, [loggedInUser]);
 
   const importData = (event) => {
@@ -229,13 +256,14 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              {/* <DataGrid
+              <DataGrid
                 columns={passwordColumns}
-                rows={fakePasswords}
+                rows={allPasswords}
+                getRowId={(row) => row.passwordID}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
-              /> */}
+              />
             </Box>
           </TabPanel>
           <TabPanel

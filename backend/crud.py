@@ -80,6 +80,11 @@ def get_password(db: Session, password_id: str):
         models.Passwords.passwordID == password_id).first()
 
 
+def get_passwords_by_folder_id(db: Session, folder_id: int):
+    return db.query(models.Passwords).filter(
+        models.Passwords.folderID == folder_id).all()
+
+
 def get_note(db: Session, note_id: str):
     return db.query(models.Note).filter(models.Note.noteID == note_id).first()
 
