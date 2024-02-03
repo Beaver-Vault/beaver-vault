@@ -4,41 +4,85 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { fakePasswords, fakeCreditCards } from "./fakedata";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { setFolders, setPasswords } from "./slices/userInfoSlice";
+import { decryptText } from "./encryption";
 
 export default function HomePage() {
   const nav = useNavigate();
+  const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
 
+  const loggedInUser = useSelector((state) => state.auth.user);
+  const allFolders = useSelector((state) => state.userInfo.folders);
+  const allPasswords = useSelector((state) => state.userInfo.passwords);
+
   const passwordColumns = [
-    { field: "website", headerName: "Website", flex: 1 },
+    { field: "websiteName", headerName: "Website", flex: 1 },
     { field: "username", headerName: "Username", flex: 1 },
     {
-      field: "password",
+      field: "encryptedPassword",
       headerName: "Password",
       flex: 1,
       renderCell: (e) => <PasswordCell password={e.value} />,
     },
   ];
 
-  const creditCardColumns = [
-    { field: "name", headerName: "Name", flex: 1 },
-    {
-      field: "number",
-      headerName: "Number",
-      flex: 1,
-      renderCell: (e) => <PasswordCell password={e.value} />,
-    },
-    { field: "expiry", headerName: "Expiry", flex: 1 },
-    {
-      field: "cvv",
-      headerName: "CVV",
-      flex: 1,
-      renderCell: (e) => <PasswordCell password={e.value} />,
-    },
-  ];
+  // const creditCardColumns = [
+  //   { field: "name", headerName: "Name", flex: 1 },
+  //   {
+  //     field: "number",
+  //     headerName: "Number",
+  //     flex: 1,
+  //     renderCell: (e) => <PasswordCell password={e.value} />,
+  //   },
+  //   { field: "expiry", headerName: "Expiry", flex: 1 },
+  //   {
+  //     field: "cvv",
+  //     headerName: "CVV",
+  //     flex: 1,
+  //     renderCell: (e) => <PasswordCell password={e.value} />,
+  //   },
+  // ];
+
+  useEffect(() => {
+    const getData = async () => {
+      const response = await axios.get(
+        `http://localhost:8000/folders/${loggedInUser["userID"]}`
+      );
+      const folderData = response.data;
+
+      let totalPasswords = [];
+      for (let folder of folderData) {
+        const response = await axios.get(
+          `http://localhost:8000/passwords/${folder["folderID"]}`
+        );
+        let decryptedPasswords = response.data.map((password) => {
+          return {
+            ...password,
+            websiteName: decryptText(
+              password.websiteName,
+              loggedInUser.masterKey
+            ),
+            username: decryptText(password.username, loggedInUser.masterKey),
+            encryptedPassword: decryptText(
+              password.encryptedPassword,
+              loggedInUser.masterKey
+            ),
+          };
+        });
+        totalPasswords = totalPasswords.concat(decryptedPasswords);
+      }
+      dispatch(setFolders(folderData));
+      dispatch(setPasswords(totalPasswords));
+    };
+
+    getData();
+  }, [loggedInUser]);
 
   const importData = (event) => {
     const file = event.target.files[0];
@@ -172,6 +216,15 @@ export default function HomePage() {
           >
             Generate Password
           </Button>
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newpassword");
+            }}
+          >
+            Add Password
+          </Button>
         </Box>
 
         <TabContext value={currentTab}>
@@ -205,7 +258,8 @@ export default function HomePage() {
             >
               <DataGrid
                 columns={passwordColumns}
-                rows={fakePasswords}
+                rows={allPasswords}
+                getRowId={(row) => row.passwordID}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
@@ -225,13 +279,13 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              <DataGrid
+              {/* <DataGrid
                 columns={creditCardColumns}
                 rows={fakeCreditCards}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
-              />
+              /> */}
             </Box>
           </TabPanel>
         </TabContext>

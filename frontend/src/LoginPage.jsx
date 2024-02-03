@@ -1,20 +1,42 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useState } from "react";
+import { pdfk } from "./encryption";
+import { useDispatch } from "react-redux";
+import { login } from "./slices/authSlice";
 
-export default function LoginPage({ setIsLoggedIn }) {
+export default function LoginPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    if (emailAddress !== "test" || password !== "test") {
-      alert("Email address or password is incorrect");
+  const handleLogin = async () => {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/users/${emailAddress}`
+    );
+
+    const data = response.data;
+    if (data === null) {
+      alert("Invalid email or password");
       return;
     }
-    setIsLoggedIn(true);
-    navigate("/");
+
+    const masterKey = pdfk(password, emailAddress);
+    const hashedMasterKey = pdfk(masterKey, password);
+
+    if (hashedMasterKey === response.data.hashedMasterKey) {
+      const newUserData = {
+        masterKey: masterKey,
+        ...response.data,
+      };
+      dispatch(login(newUserData));
+      navigate("/");
+    } else {
+      alert("Invalid email or password");
+    }
   };
 
   return (

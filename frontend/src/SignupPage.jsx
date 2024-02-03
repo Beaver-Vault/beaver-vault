@@ -1,8 +1,12 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { pdfk } from "./encryption";
 
 export default function SignupPage() {
+  const navigate = useNavigate();
+
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -13,30 +17,37 @@ export default function SignupPage() {
       return;
     }
 
+    const masterKey = pdfk(password, emailAddress);
+    const hashedMasterKey = pdfk(masterKey, password);
+
     const userData = {
       email: emailAddress,
-      hashedMasterKey: password,
+      hashedMasterKey: hashedMasterKey,
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/users", userData);
+      const response = await axios.post(
+        "http://127.0.0.1:8000/users",
+        userData
+      );
 
       if (response.status !== 200) {
         console.error("Error registering user:", response.data);
         alert(`Error: ${response.data.detail}`);
-        return;
       }
 
       if (response.status === 200) {
         console.log("User registered successfully:", response.data);
         alert("User signed up successfully!");
-        return;
       }
-
     } catch (error) {
       console.error("Error registering user:", error);
-      alert("An unexpected error occurred during registration. Please try again.");
+      alert(
+        "An unexpected error occurred during registration. Please try again."
+      );
     }
+
+    navigate("/");
   };
 
   return (

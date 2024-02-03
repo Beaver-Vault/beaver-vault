@@ -1,13 +1,22 @@
-import { Box, Typography, ButtonBase, Button, Avatar } from "@mui/material";
+import { Box, Typography, ButtonBase, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "./slices/authSlice";
+import { clearInfo } from "./slices/userInfoSlice";
 import BeaverLogo from "./imgs/beaver_logo.png";
 
 export default function NavBar() {
-  const { logout, user, isAuthenticated } = useAuth0();
-  console.log(user);
-
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const loggedInUser = useSelector((state) => state.auth.user);
+
+  const handleSignOut = () => {
+    dispatch(logout());
+    dispatch(clearInfo());
+    navigate("/");
+  };
+
   return (
     <>
       <Box
@@ -23,7 +32,7 @@ export default function NavBar() {
           <img src={BeaverLogo} alt="Beaver Logo" width={100} />
           <Typography variant="h6">Beaver Vault</Typography>
         </ButtonBase>
-        {isAuthenticated ? (
+        {loggedInUser ? (
           <Box
             sx={{
               display: "flex",
@@ -33,9 +42,8 @@ export default function NavBar() {
               padding: "1rem",
             }}
           >
-            <Typography variant="h6">{user.name}</Typography>
-            <Avatar alt={user.name} src={user.picture} />
-            <Button variant="contained" onClick={() => logout()}>
+            <Typography variant="h6">{loggedInUser["email"]}</Typography>
+            <Button variant="contained" onClick={handleSignOut}>
               Sign Out
             </Button>
           </Box>

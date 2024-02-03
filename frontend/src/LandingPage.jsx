@@ -1,16 +1,13 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
 
 export default function LandingPage() {
-  const { loginWithRedirect, user } = useAuth0();
-
   const navigate = useNavigate();
   const handleGetStarted = () => {
     navigate("/signup");
   };
   const handleLogin = () => {
-    loginWithRedirect();
+    navigate("/login");
   };
 
   return (
@@ -26,10 +23,10 @@ export default function LandingPage() {
         }}
       >
         <Button variant="contained" color="primary" onClick={handleLogin}>
-          Login / Signup
+          Login
         </Button>
         <Button variant="contained" color="primary" onClick={handleGetStarted}>
-            Get Started
+          Get Started
         </Button>
       </Box>
     </>
