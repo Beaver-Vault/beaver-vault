@@ -139,22 +139,95 @@ def get_folders_by_user(user_id: int, db: Session = Depends(get_db)):
     folders = crud.get_folders_by_user_id(db, user_id=user_id)
     return folders
 
-# Update rows
+
+# UPDATE rows
+
+# update the name of the folder
+@app.put("/folders/{folder_id}")
+def update_folder(folder_id: int, folder: schemas.Folder, db: Session = Depends(get_db)):
+    folder = crud.update_folder(db, folder_id, folder)
+    if folder is None:
+        raise HTTPException(status_code=404, detail="Folder not found")
+    return folder
+
+# update user master password (expecting hashed password from UI)
+@app.put("/users/{user_id}")
+def update_user(user_id: int, user: schemas.User, db: Session = Depends(get_db)):
+    updated_user = crud.update_user(db, user_id=user_id, user=user)
+    if updated_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
+
+@app.put("/folders/{folder_id}")
+def update_folder(folder_id: int, folder: schemas.Folder, db: Session = Depends(get_db)):
+    updated_folder = crud.update_folder(db, folder_id==folder_id, folder=folder)
+    if updated_folder is None:
+        raise HTTPException(status_code=404, detail="Folder not found")
+    return updated_folder
 
 
-# Delete rows
+# update the password of the saved entry
+@app.put("/passwords/{password_id}")
+def update_password(password_id: int, password: schemas.Password, db: Session = Depends(get_db)):
+    updated_password = crud.update_password(db, password_id=password_id, password=password)
+    if updated_password is None:
+        raise HTTPException(status_code=404, detail="Password not found")
+    return updated_password
 
 
-# @app.get("/users/", response_model=list[schemas.User])
-# def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(
-# get_db)):
-#     users = crud.get_users(db, skip=skip, limit=limit)
-#     return users
-#
-#
-# @app.get("/users/{user_id}", response_model=schemas.User)
-# def read_user(user_id: int, db: Session = Depends(get_db)):
-#     db_user = crud.get_user(db, user_id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user
+
+@app.put("/notes/{note_id}")
+def update_note(note_id: int, note: schemas.Note, db: Session = Depends(get_db)):
+    updated_note = crud.update_note(db, note_id=note_id, note=note)
+    if updated_note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return updated_note
+
+@app.put("/creditcards/{creditcard_id}")
+def update_creditcard(creditcard_id: int, creditcard: schemas.CreditCard, db: Session = Depends(get_db)):
+    updated_creditcard = crud.update_creditcard(db, creditcard_id=creditcard_id, creditcard=creditcard)
+    if updated_creditcard is None:
+        raise HTTPException(status_code=404, detail="Credit card not found")
+    return updated_creditcard
+
+
+# DELETE rows
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = crud.delete_user(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.delete("/passwords")
+def delete_password(password_id: int, db: Session = Depends(get_db)):
+    password = crud.delete_password(db, password_id)
+    if password is None:
+        raise HTTPException(status_code=404, detail="Password not found")
+    return password
+
+
+@app.delete("/notes")
+def delete_note(note_id: int, db: Session = Depends(get_db)):
+    note = crud.delete_note(db, note_id)
+    if note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
+
+
+@app.delete("/creditcards")
+def delete_creditcard(creditcard_id: int, db: Session = Depends(get_db)):
+    creditcard = crud.delete_creditcard(db, creditcard_id)
+    if creditcard is None:
+        raise HTTPException(status_code=404, detail="Credit card not found")
+    return creditcard
+
+
+@app.delete("/folders")
+def delete_folder(folder_id: int, db: Session = Depends(get_db)):
+    folder = crud.delete_folder(db, folder_id)
+    if folder is None:
+        raise HTTPException(status_code=404, detail="Folder not found")
+    return folder
