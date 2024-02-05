@@ -201,7 +201,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-@app.delete("/passwords")
+@app.delete("/passwords/{password_id}")
 def delete_password(password_id: int, db: Session = Depends(get_db)):
     password = crud.delete_password(db, password_id)
     if password is None:
@@ -209,7 +209,7 @@ def delete_password(password_id: int, db: Session = Depends(get_db)):
     return password
 
 
-@app.delete("/notes")
+@app.delete("/notes/{note_id}")
 def delete_note(note_id: int, db: Session = Depends(get_db)):
     note = crud.delete_note(db, note_id)
     if note is None:
@@ -217,7 +217,7 @@ def delete_note(note_id: int, db: Session = Depends(get_db)):
     return note
 
 
-@app.delete("/creditcards")
+@app.delete("/creditcards/{creditcard_id}")
 def delete_creditcard(creditcard_id: int, db: Session = Depends(get_db)):
     creditcard = crud.delete_creditcard(db, creditcard_id)
     if creditcard is None:
@@ -225,7 +225,7 @@ def delete_creditcard(creditcard_id: int, db: Session = Depends(get_db)):
     return creditcard
 
 
-@app.delete("/folders")
+@app.delete("/folders/{folder_id}")
 def delete_folder(folder_id: int, db: Session = Depends(get_db)):
     folder = crud.delete_folder(db, folder_id)
     if folder is None:
