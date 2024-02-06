@@ -55,4 +55,3 @@ class Note(Base):
     noteName = Column(String(256))
     content = Column(String(1024))
     folderID = Column(Integer, ForeignKey("Folders.folderID"))
-
