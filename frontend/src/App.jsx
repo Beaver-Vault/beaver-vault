@@ -10,7 +10,7 @@ import EncryptionTestPage from "./EncryptionTestPage";
 import NewPasswordPage from "./NewPasswordPage";
 import NewCreditCardPage from "./NewCreditCardPage";
 import NewNotePage from "./NewNotePage";
-import CacheTestPage from './cacheTestPage';
+import CacheTestPage from "./cacheTestPage";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.user);

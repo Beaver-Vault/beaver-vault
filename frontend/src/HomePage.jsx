@@ -7,7 +7,12 @@ import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { setFolders, setPasswords, setCreditCards, setNotes } from "./slices/userInfoSlice";
+import {
+  setFolders,
+  setPasswords,
+  setCreditCards,
+  setNotes,
+} from "./slices/userInfoSlice";
 import { decryptText } from "./encryption";
 
 export default function HomePage() {
@@ -20,7 +25,7 @@ export default function HomePage() {
   const loggedInUser = useSelector((state) => state.auth.user);
   const allFolders = useSelector((state) => state.userInfo.folders);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
-  const allCreditcards = useSelector((state) => state.userInfo.creditcards);
+  const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
 
   const passwordColumns = [
@@ -34,23 +39,23 @@ export default function HomePage() {
     },
   ];
 
-   const creditCardColumns = [
-     { field: "cardName", headerName: "Card Name", flex: 1 },
-     { field: "cardholderName", headerName: "Cardholder Name", flex: 1 },
-     {
-       field: "number",
-       headerName: "Number",
-       flex: 1,
-       renderCell: (e) => <PasswordCell password={e.value} />,
-     },
-      { field: "expiration", headerName: "Expiry", flex: 1 },
-     {
-      field: "csv",
-       headerName: "CVV",
+  const creditCardColumns = [
+    { field: "cardName", headerName: "Card Name", flex: 1 },
+    { field: "cardholderName", headerName: "Cardholder Name", flex: 1 },
+    {
+      field: "number",
+      headerName: "Number",
       flex: 1,
-       renderCell: (e) => <PasswordCell password={e.value} />,
-     },
- ];
+      renderCell: (e) => <PasswordCell password={e.value} />,
+    },
+    { field: "expiration", headerName: "Expiry", flex: 1 },
+    {
+      field: "csv",
+      headerName: "CVV",
+      flex: 1,
+      renderCell: (e) => <PasswordCell password={e.value} />,
+    },
+  ];
 
   const notesColumns = [
     { field: "noteName", headerName: "Note Name", flex: 1 },
@@ -100,7 +105,10 @@ export default function HomePage() {
               loggedInUser.masterKey
             ),
             number: decryptText(creditcard.number, loggedInUser.masterKey),
-            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
+            expiration: decryptText(
+              creditcard.expiration,
+              loggedInUser.masterKey
+            ),
             csv: decryptText(creditcard.csv, loggedInUser.masterKey),
           };
         });
@@ -246,6 +254,14 @@ export default function HomePage() {
             Encryption Tester
           </Button>
 
+          <Button
+            variant="contained"
+            onClick={() => nav("/cache-test")}
+            sx={{ marginLeft: "1rem" }}
+          >
+            Cache Testing
+          </Button>
+
           <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
           <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
 
@@ -288,7 +304,6 @@ export default function HomePage() {
           >
             Add Note
           </Button>
-          
         </Box>
 
         <TabContext value={currentTab}>
@@ -344,14 +359,16 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              { <DataGrid
-                columns={creditCardColumns}
-                rows={allCreditcards}
-                getRowId={(row) => row.creditcardID}
-                autoPageSize
-                density="compact"
-                disableRowSelectionOnClick
-              /> }
+              {
+                <DataGrid
+                  columns={creditCardColumns}
+                  rows={allCreditcards}
+                  getRowId={(row) => row.creditcardID}
+                  autoPageSize
+                  density="compact"
+                  disableRowSelectionOnClick
+                />
+              }
             </Box>
           </TabPanel>
 
@@ -368,14 +385,16 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              {  <DataGrid
-                columns={notesColumns}
-                rows={allNotes}
-                getRowId={(row) => row.noteID}
-                autoPageSize
-                density="compact"
-                disableRowSelectionOnClick 
-              /> }
+              {
+                <DataGrid
+                  columns={notesColumns}
+                  rows={allNotes}
+                  getRowId={(row) => row.noteID}
+                  autoPageSize
+                  density="compact"
+                  disableRowSelectionOnClick
+                />
+              }
             </Box>
           </TabPanel>
         </TabContext>
