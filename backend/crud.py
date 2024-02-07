@@ -85,9 +85,18 @@ def get_note(db: Session, note_id: str):
     return db.query(models.Note).filter(models.Note.noteID == note_id).first()
 
 
+def get_notes_by_folder_id(db: Session, folder_id: int):
+    return db.query(models.Note).filter(models.Note.folderID == folder_id).all()
+
+
 def get_creditcard(db: Session, creditcard_id: str):
     return db.query(models.CreditCard).filter(
         models.CreditCard.creditcardID == creditcard_id).first()
+
+
+def get_creditcards_by_folder_id(db: Session, folder_id: int):
+    return db.query(models.CreditCard).filter(
+        models.CreditCard.folderID == folder_id).all()
 
 
 def get_folder(db: Session, folder_id: int):

@@ -5,6 +5,8 @@ export const userInfoSlice = createSlice({
   initialState: {
     folders: [],
     passwords: [],
+    creditCards: [],
+    notes: [],
   },
   reducers: {
     setFolders: (state, action) => {
@@ -14,13 +16,23 @@ export const userInfoSlice = createSlice({
       console.log(action.payload);
       state.passwords = action.payload;
     },
+    setCreditCards: (state, action) => {
+      console.log(action.payload);
+      state.creditCards = action.payload;
+    },
+    setNotes: (state, action) => {
+      console.log(action.payload);
+      state.notes = action.payload;
+    },
     clearInfo: (state) => {
       state.folders = [];
       state.passwords = [];
+      state.creditCards = [];
+      state.notes = [];
     },
   },
 });
 
-export const { setFolders, setPasswords, clearInfo } = userInfoSlice.actions;
+export const { setFolders, setPasswords, setCreditCards, setNotes, clearInfo } = userInfoSlice.actions;
 
 export default userInfoSlice.reducer;
