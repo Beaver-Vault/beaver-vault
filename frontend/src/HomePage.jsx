@@ -155,6 +155,11 @@ export default function HomePage() {
     console.log(`Data (${chosenData}) exported successfully`);
   };
 
+  // Function to navigate to cacheTestPage
+  const cacheTest = () => {
+    nav('/cache-test');
+  };
+
   return (
     <>
       <Box
@@ -225,6 +230,15 @@ export default function HomePage() {
           >
             Add Password
           </Button>
+
+          <Button
+            variant="contained"
+            onClick={cacheTest}
+            sx={{ marginLeft: "1rem" }}
+          >
+            Cache Testing
+          </Button>
+
         </Box>
 
         <TabContext value={currentTab}>
@@ -292,4 +306,6 @@ export default function HomePage() {
       </Box>
     </>
   );
+  
 }
+
