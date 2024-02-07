@@ -225,6 +225,27 @@ export default function HomePage() {
           >
             Add Password
           </Button>
+
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newcreditcard");
+            }}
+          >
+            Add Credit Card
+          </Button>
+
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newnote");
+            }}
+          >
+            Add Note
+          </Button>
+          
         </Box>
 
         <TabContext value={currentTab}>

@@ -8,6 +8,8 @@ import HomePage from "./HomePage";
 import PasswordGenPage from "./PasswordGenPage";
 import EncryptionTestPage from "./EncryptionTestPage";
 import NewPasswordPage from "./NewPasswordPage";
+import NewCreditCardPage from "./NewCreditCardPage";
+import NewNotePage from "./NewNotePage";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -26,6 +28,8 @@ function App() {
           <Route path="/passwordgen" element={<PasswordGenPage />} />
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
           <Route path="/newpassword" element={<NewPasswordPage />} />
+          <Route path="/newcreditcard" element={<NewCreditCardPage />} />
+          <Route path="/newnote" element={<NewNotePage />} />
         </Routes>
       </Router>
     </div>

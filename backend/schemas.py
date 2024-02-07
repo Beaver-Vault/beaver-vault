@@ -29,9 +29,9 @@ class CreditCard(BaseModel):
     creditcardID: Optional[int] = None
     cardName: str
     cardholderName: str
-    number: int
-    expiration: int
-    csv: int
+    number: str
+    expiration: str
+    csv: str
     folderID: int
 
 
