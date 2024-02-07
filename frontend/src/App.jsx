@@ -8,6 +8,8 @@ import HomePage from "./HomePage";
 import PasswordGenPage from "./PasswordGenPage";
 import EncryptionTestPage from "./EncryptionTestPage";
 import NewPasswordPage from "./NewPasswordPage";
+import NewCreditCardPage from "./NewCreditCardPage";
+import NewNotePage from "./NewNotePage";
 import CacheTestPage from './cacheTestPage';
 
 function App() {
@@ -27,6 +29,8 @@ function App() {
           <Route path="/passwordgen" element={<PasswordGenPage />} />
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
           <Route path="/newpassword" element={<NewPasswordPage />} />
+          <Route path="/newcreditcard" element={<NewCreditCardPage />} />
+          <Route path="/newnote" element={<NewNotePage />} />
           <Route path="/cache-test" element={<CacheTestPage />} />
         </Routes>
       </Router>

@@ -118,12 +118,24 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
     return note
 
 
+@app.get('/notes/{folder_id}')
+def get_notes_by_folder(folder_id: int, db: Session = Depends(get_db)):
+    notes = crud.get_notes_by_folder_id(db, folder_id=folder_id)
+    return notes
+
+
 @app.get("/creditcards")
 def get_creditcard(creditcard_id: int, db: Session = Depends(get_db)):
     creditcard = crud.get_creditcard(db, creditcard_id=creditcard_id)
     if creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
     return creditcard
+
+
+@app.get('/creditcards/{folder_id}')
+def get_creditcards_by_folder(folder_id: int, db: Session = Depends(get_db)):
+    creditcards = crud.get_creditcards_by_folder_id(db, folder_id=folder_id)
+    return creditcards
 
 
 @app.get("/folders")

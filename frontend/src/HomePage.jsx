@@ -7,7 +7,7 @@ import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { setFolders, setPasswords } from "./slices/userInfoSlice";
+import { setFolders, setPasswords, setCreditCards, setNotes } from "./slices/userInfoSlice";
 import { decryptText } from "./encryption";
 
 export default function HomePage() {
@@ -20,6 +20,8 @@ export default function HomePage() {
   const loggedInUser = useSelector((state) => state.auth.user);
   const allFolders = useSelector((state) => state.userInfo.folders);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
+  const allCreditcards = useSelector((state) => state.userInfo.creditcards);
+  const allNotes = useSelector((state) => state.userInfo.notes);
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -32,22 +34,28 @@ export default function HomePage() {
     },
   ];
 
-  // const creditCardColumns = [
-  //   { field: "name", headerName: "Name", flex: 1 },
-  //   {
-  //     field: "number",
-  //     headerName: "Number",
-  //     flex: 1,
-  //     renderCell: (e) => <PasswordCell password={e.value} />,
-  //   },
-  //   { field: "expiry", headerName: "Expiry", flex: 1 },
-  //   {
-  //     field: "cvv",
-  //     headerName: "CVV",
-  //     flex: 1,
-  //     renderCell: (e) => <PasswordCell password={e.value} />,
-  //   },
-  // ];
+   const creditCardColumns = [
+     { field: "cardName", headerName: "Card Name", flex: 1 },
+     { field: "cardholderName", headerName: "Cardholder Name", flex: 1 },
+     {
+       field: "number",
+       headerName: "Number",
+       flex: 1,
+       renderCell: (e) => <PasswordCell password={e.value} />,
+     },
+      { field: "expiration", headerName: "Expiry", flex: 1 },
+     {
+      field: "csv",
+       headerName: "CVV",
+      flex: 1,
+       renderCell: (e) => <PasswordCell password={e.value} />,
+     },
+ ];
+
+  const notesColumns = [
+    { field: "noteName", headerName: "Note Name", flex: 1 },
+    { field: "content", headerName: "Content", flex: 1 },
+  ];
 
   useEffect(() => {
     const getData = async () => {
@@ -57,6 +65,9 @@ export default function HomePage() {
       const folderData = response.data;
 
       let totalPasswords = [];
+      let totalCreditCards = [];
+      let totalNotes = [];
+
       for (let folder of folderData) {
         const response = await axios.get(
           `http://localhost:8000/passwords/${folder["folderID"]}`
@@ -76,9 +87,41 @@ export default function HomePage() {
           };
         });
         totalPasswords = totalPasswords.concat(decryptedPasswords);
+
+        const ccresponse = await axios.get(
+          `http://localhost:8000/creditcards/${folder["folderID"]}`
+        );
+        let decryptedCreditCards = ccresponse.data.map((creditcard) => {
+          return {
+            ...creditcard,
+            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+            cardholderName: decryptText(
+              creditcard.cardholderName,
+              loggedInUser.masterKey
+            ),
+            number: decryptText(creditcard.number, loggedInUser.masterKey),
+            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
+            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+          };
+        });
+        totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
+
+        const noteResponse = await axios.get(
+          `http://localhost:8000/notes/${folder["folderID"]}`
+        );
+        let decryptedNotes = noteResponse.data.map((note) => {
+          return {
+            ...note,
+            noteName: decryptText(note.noteName, loggedInUser.masterKey),
+            content: decryptText(note.content, loggedInUser.masterKey),
+          };
+        });
+        totalNotes = totalNotes.concat(decryptedNotes);
       }
       dispatch(setFolders(folderData));
       dispatch(setPasswords(totalPasswords));
+      dispatch(setCreditCards(totalCreditCards));
+      dispatch(setNotes(totalNotes));
     };
 
     getData();
@@ -155,11 +198,6 @@ export default function HomePage() {
     console.log(`Data (${chosenData}) exported successfully`);
   };
 
-  // Function to navigate to cacheTestPage
-  const cacheTest = () => {
-    nav('/cache-test');
-  };
-
   return (
     <>
       <Box
@@ -233,12 +271,24 @@ export default function HomePage() {
 
           <Button
             variant="contained"
-            onClick={cacheTest}
             sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newcreditcard");
+            }}
           >
-            Cache Testing
+            Add Credit Card
           </Button>
 
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newnote");
+            }}
+          >
+            Add Note
+          </Button>
+          
         </Box>
 
         <TabContext value={currentTab}>
@@ -280,6 +330,7 @@ export default function HomePage() {
               />
             </Box>
           </TabPanel>
+
           <TabPanel
             value={"1"}
             sx={{
@@ -293,19 +344,42 @@ export default function HomePage() {
                 margin: "auto",
               }}
             >
-              {/* <DataGrid
+              { <DataGrid
                 columns={creditCardColumns}
-                rows={fakeCreditCards}
+                rows={allCreditcards}
+                getRowId={(row) => row.creditcardID}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
-              /> */}
+              /> }
+            </Box>
+          </TabPanel>
+
+          <TabPanel
+            value={"2"}
+            sx={{
+              width: "100%",
+            }}
+          >
+            <Box
+              sx={{
+                width: "70%",
+                height: "50vh",
+                margin: "auto",
+              }}
+            >
+              {  <DataGrid
+                columns={notesColumns}
+                rows={allNotes}
+                getRowId={(row) => row.noteID}
+                autoPageSize
+                density="compact"
+                disableRowSelectionOnClick 
+              /> }
             </Box>
           </TabPanel>
         </TabContext>
       </Box>
     </>
   );
-  
 }
-
