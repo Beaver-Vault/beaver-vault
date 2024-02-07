@@ -10,6 +10,7 @@ import EncryptionTestPage from "./EncryptionTestPage";
 import NewPasswordPage from "./NewPasswordPage";
 import NewCreditCardPage from "./NewCreditCardPage";
 import NewNotePage from "./NewNotePage";
+import CacheTestPage from './cacheTestPage';
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -30,6 +31,7 @@ function App() {
           <Route path="/newpassword" element={<NewPasswordPage />} />
           <Route path="/newcreditcard" element={<NewCreditCardPage />} />
           <Route path="/newnote" element={<NewNotePage />} />
+          <Route path="/cache-test" element={<CacheTestPage />} />
         </Routes>
       </Router>
     </div>
