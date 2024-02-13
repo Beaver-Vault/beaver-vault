@@ -167,45 +167,6 @@ export default function HomePage() {
     }
   };
 
-  const exportData = () => {
-    const chosenData = window.prompt(
-      'Enter "passwords", "credit", or "all" to export data:'
-    );
-
-    let dataToExport;
-
-    if (chosenData === "passwords") {
-      dataToExport = fakePasswords;
-    } else if (chosenData === "credit") {
-      dataToExport = fakeCreditCards;
-    } else if (chosenData === "all") {
-      dataToExport = {
-        passwords: fakePasswords,
-        creditCards: fakeCreditCards,
-      };
-    } else {
-      console.log("Invalid selection. No data exported.");
-      return;
-    }
-
-    const jsonData = JSON.stringify(dataToExport, null, 2);
-
-    const blob = new Blob([jsonData], { type: "application/json" });
-
-    const exportingData = document.createElement("a");
-    exportingData.href = URL.createObjectURL(blob);
-
-    exportingData.download = `exported_data_${chosenData}.json`;
-
-    document.body.appendChild(exportingData);
-
-    exportingData.click();
-
-    document.body.removeChild(exportingData);
-
-    console.log(`Data (${chosenData}) exported successfully`);
-  };
-
   return (
     <>
       <Box
@@ -226,20 +187,20 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}>
-            <Button component="span" variant="contained">
-              Import
-            </Button>
-            <input
-              type="file"
-              id="upload"
-              accept=".json"
-              style={{ display: "none" }}
-              onChange={importData}
-            />
-          </label>
 
-          <Button variant="contained" onClick={exportData}>
+          <Button
+            variant="contained"
+            onClick={() => nav("/dataimport")}
+            sx={{ marginLeft: "1rem" }}
+          >
+            Import
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={() => nav("/dataexport")}
+            sx={{ marginLeft: "1rem" }}
+          >
             Export
           </Button>
 

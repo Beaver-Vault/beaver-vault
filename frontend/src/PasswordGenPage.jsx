@@ -56,7 +56,6 @@ export default function PasswordGenPage() {
           // backgroundColor: "red",
         }}
       >
-        <Typography variant="h4">Password Generator</Typography>
         <Box
           sx={{
             display: "flex",
