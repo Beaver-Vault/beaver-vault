@@ -11,6 +11,8 @@ import NewPasswordPage from "./NewPasswordPage";
 import NewCreditCardPage from "./NewCreditCardPage";
 import NewNotePage from "./NewNotePage";
 import CacheTestPage from "./cacheTestPage";
+import DataExport from "./DataExport";
+import DataImport from "./DataImport";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -32,6 +34,8 @@ function App() {
           <Route path="/newcreditcard" element={<NewCreditCardPage />} />
           <Route path="/newnote" element={<NewNotePage />} />
           <Route path="/cache-test" element={<CacheTestPage />} />
+          <Route path="/dataexport" element={<DataExport />} />
+          <Route path="/dataimport" element={<DataImport />} />
         </Routes>
       </Router>
     </div>
