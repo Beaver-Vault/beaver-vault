@@ -11,6 +11,11 @@ class User(BaseModel):
     lastLoginDate: Optional[datetime] = None
 
 
+class MFAVerify(BaseModel):
+    email: str
+    mfaCode: str
+
+
 class Folder(BaseModel):
     folderID: Optional[int] = None
     folderName: str

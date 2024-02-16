@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 from database import Base
+import pyotp
 
 
 class User(Base):
@@ -15,6 +16,10 @@ class User(Base):
     hashedMasterKey = Column(String)
     accountCreationDate = Column(DateTime, default=func.now())
     lastLoginDate = Column(DateTime, default=func.now())
+    totpKey = Column(String, default=pyotp.random_base32)
+
+    def get_totpKey(self):
+        return self.totpKey
 
 
 class Folder(Base):
