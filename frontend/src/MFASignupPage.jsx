@@ -1,9 +1,11 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function MFA_Signup({ newUser }) {
+export default function MFASignup({ newUser }) {
+  const navigate = useNavigate();
   const [mfaCode, setMfaCode] = useState("");
 
   const { qr_code_url, user } = newUser;
@@ -13,7 +15,12 @@ export default function MFA_Signup({ newUser }) {
       mfaCode,
       email: user.email,
     });
-    console.log(result);
+    const isvalid = result.data;
+    if (isvalid) {
+      navigate("/");
+    } else {
+      alert("Invalid MFA Code");
+    }
   };
 
   return (

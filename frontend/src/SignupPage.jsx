@@ -1,13 +1,10 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { pdfk } from "./encryption";
-import MFA_Signup from "./MFA_Signup";
+import MFASignup from "./MFASignupPage";
 
 export default function SignupPage() {
-  const navigate = useNavigate();
-
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,7 +55,7 @@ export default function SignupPage() {
   return (
     <>
       {userCreated ? (
-        <MFA_Signup newUser={newUser} />
+        <MFASignup newUser={newUser} />
       ) : (
         <Box
           sx={{
