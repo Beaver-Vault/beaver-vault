@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 
 import crud
+import mfa
 import schemas
 import models
 from fastapi import Depends, FastAPI, HTTPException
 from database import SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
+from mfa import create_qrcode_url, verify_mfa
 
 # models.Base.metadata.create_all(bind=engine)
 
@@ -45,7 +47,8 @@ def create_user(user: schemas.User, db: Session = Depends(get_db)):
     new_user = crud.create_user(db=db, user=user)
     crud.create_folder(db=db, folder=schemas.Folder(
         folderName="Default", userID=new_user.userID))
-    return new_user
+    qr_code_url = create_qrcode_url(new_user.totpKey, new_user.email)
+    return {"user": new_user, "qr_code_url": qr_code_url}
 
 
 @app.post("/folders")
@@ -79,6 +82,17 @@ def create_creditcard(creditcard: schemas.CreditCard,
     if creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
     return creditcard
+
+
+@app.post("/mfa")
+def verify_mfa(mfa_verify: schemas.MFAVerify, db: Session = Depends(get_db)):
+    user: models.User = crud.get_user_by_email(db, email=mfa_verify.email)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    secret_key = user.get_totpKey()
+    mfa_code = mfa_verify.mfaCode
+    verify_result = mfa.verify_mfa(secret_key, mfa_code)
+    return verify_result
 
 
 # Read rows (get single row)
@@ -156,23 +170,29 @@ def get_folders_by_user(user_id: int, db: Session = Depends(get_db)):
 
 # update the name of the folder
 @app.put("/folders/{folder_id}")
-def update_folder(folder_id: int, folder: schemas.Folder, db: Session = Depends(get_db)):
+def update_folder(folder_id: int, folder: schemas.Folder,
+                  db: Session = Depends(get_db)):
     folder = crud.update_folder(db, folder_id, folder)
     if folder is None:
         raise HTTPException(status_code=404, detail="Folder not found")
     return folder
 
+
 # update user master password (expecting hashed password from UI)
 @app.put("/users/{user_id}")
-def update_user(user_id: int, user: schemas.User, db: Session = Depends(get_db)):
+def update_user(user_id: int, user: schemas.User,
+                db: Session = Depends(get_db)):
     updated_user = crud.update_user(db, user_id=user_id, user=user)
     if updated_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return updated_user
 
+
 @app.put("/folders/{folder_id}")
-def update_folder(folder_id: int, folder: schemas.Folder, db: Session = Depends(get_db)):
-    updated_folder = crud.update_folder(db, folder_id==folder_id, folder=folder)
+def update_folder(folder_id: int, folder: schemas.Folder,
+                  db: Session = Depends(get_db)):
+    updated_folder = crud.update_folder(db, folder_id == folder_id,
+                                        folder=folder)
     if updated_folder is None:
         raise HTTPException(status_code=404, detail="Folder not found")
     return updated_folder
@@ -180,24 +200,29 @@ def update_folder(folder_id: int, folder: schemas.Folder, db: Session = Depends(
 
 # update the password of the saved entry
 @app.put("/passwords/{password_id}")
-def update_password(password_id: int, password: schemas.Password, db: Session = Depends(get_db)):
-    updated_password = crud.update_password(db, password_id=password_id, password=password)
+def update_password(password_id: int, password: schemas.Password,
+                    db: Session = Depends(get_db)):
+    updated_password = crud.update_password(db, password_id=password_id,
+                                            password=password)
     if updated_password is None:
         raise HTTPException(status_code=404, detail="Password not found")
     return updated_password
 
 
-
 @app.put("/notes/{note_id}")
-def update_note(note_id: int, note: schemas.Note, db: Session = Depends(get_db)):
+def update_note(note_id: int, note: schemas.Note,
+                db: Session = Depends(get_db)):
     updated_note = crud.update_note(db, note_id=note_id, note=note)
     if updated_note is None:
         raise HTTPException(status_code=404, detail="Note not found")
     return updated_note
 
+
 @app.put("/creditcards/{creditcard_id}")
-def update_creditcard(creditcard_id: int, creditcard: schemas.CreditCard, db: Session = Depends(get_db)):
-    updated_creditcard = crud.update_creditcard(db, creditcard_id=creditcard_id, creditcard=creditcard)
+def update_creditcard(creditcard_id: int, creditcard: schemas.CreditCard,
+                      db: Session = Depends(get_db)):
+    updated_creditcard = crud.update_creditcard(db, creditcard_id=creditcard_id,
+                                                creditcard=creditcard)
     if updated_creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
     return updated_creditcard
