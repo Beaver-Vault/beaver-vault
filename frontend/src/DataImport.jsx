@@ -1,14 +1,17 @@
-import { Box, Typography, Select, MenuItem, TextField, Button, Checkbox, FormControlLabel } from "@mui/material";
+import { Box, Typography, Select, MenuItem, Button, Checkbox, FormControlLabel } from "@mui/material";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { decryptText } from "./encryption";
+import { encryptText } from "./encryption";
+import { useNavigate } from "react-router-dom";
 
-export default function NewCreditCardPage() {
+export default function DataImportPage() {
     const loggedInUser = useSelector((state) => state.auth.user);
     const userFolders = useSelector((state) => state.userInfo.folders);
+    const Navigate = useNavigate();
 
     const [currentFolder, setCurrentFolder] = useState(userFolders[0].folderID);
+    const [selectedFile, setSelectedFile] = useState(null);
     const [selectedData, setSelectedData] = useState({
         creditCards: false,
         passwords: false,
@@ -19,71 +22,83 @@ export default function NewCreditCardPage() {
         setSelectedData({ ...selectedData, [event.target.name]: event.target.checked });
     };
 
-    const handleDownloadData = async () => {
-        try {
-            const dataToFetch = [];
-            const decryptedData = {};
-    
-            if (selectedData.passwords) {
-                const response = await axios.get(`http://localhost:8000/passwords/${currentFolder}`);
-                const decryptedPasswords = response.data.map(password => {
-                    const { passwordID, folderID, ...rest } = password;
-                    return {
-                        ...rest,
-                        websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
-                        username: decryptText(password.username, loggedInUser.masterKey),
-                        encryptedPassword: decryptText(password.encryptedPassword, loggedInUser.masterKey),
-                    };
-                });
-                decryptedData.passwords = decryptedPasswords;
-            }
-    
-            if (selectedData.creditCards) {
-                const response = await axios.get(`http://localhost:8000/creditcards/${currentFolder}`);
-                const decryptedCreditCards = response.data.map(creditcard => {
-                    const { creditcardID, folderID, ...rest } = creditcard;
-                    return {
-                        ...rest,
-                        cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-                        cardholderName: decryptText(creditcard.cardholderName, loggedInUser.masterKey),
-                        number: decryptText(creditcard.number, loggedInUser.masterKey),
-                        expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
-                        csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-                    };
-                });
-                decryptedData.creditCards = decryptedCreditCards;
-            }
-    
-            if (selectedData.notes) {
-                const response = await axios.get(`http://localhost:8000/notes/${currentFolder}`);
-                const decryptedNotes = response.data.map(note => {
-                    const { noteID, folderID, ...rest } = note;
-                    return {
-                        ...rest,
-                        noteName: decryptText(note.noteName, loggedInUser.masterKey),
-                        content: decryptText(note.content, loggedInUser.masterKey),
-                    };
-                });
-                decryptedData.notes = decryptedNotes;
-            }
-    
-            const jsonData = JSON.stringify(decryptedData, null, 2);
-    
-            const blob = new Blob([jsonData], { type: "application/json" });
+    const handleFileChange = (event) => {
+        setSelectedFile(event.target.files[0]);
+    };
 
-            const url = URL.createObjectURL(blob);
-    
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "exported_data.json";
-            link.click();
-            URL.revokeObjectURL(url);
+    const handleImportData = async () => {
+        if (!selectedFile) {
+            return;
+        }
+
+        try {
+            const fileData = await parseJSONFile(selectedFile);
+
+            if (selectedData.passwords) {
+                const { passwords } = fileData;
+                for (const password of passwords) {
+                    const encryptedPasswordData = {
+                        folderID: currentFolder,
+                        websiteName: encryptText(password.websiteName, loggedInUser.masterKey),
+                        username: encryptText(password.username, loggedInUser.masterKey),
+                        encryptedPassword: encryptText(password.encryptedPassword, loggedInUser.masterKey),
+                    };
+
+                    await axios.post("http://127.0.0.1:8000/passwords", encryptedPasswordData);
+                }
+            }
+            if (selectedData.creditCards) {
+                const { creditCards } = fileData;
+                for (const creditCard of creditCards) {
+                    const encryptedCreditCardData = {
+                        folderID: currentFolder,
+                        cardName: encryptText(creditCard.cardName, loggedInUser.masterKey),
+                        cardholderName: encryptText(creditCard.cardholderName, loggedInUser.masterKey),
+                        number: encryptText(creditCard.number, loggedInUser.masterKey),
+                        expiration: encryptText(creditCard.expiration, loggedInUser.masterKey),
+                        csv: encryptText(creditCard.csv, loggedInUser.masterKey),
+                    };
+
+                    await axios.post("http://127.0.0.1:8000/creditcards", encryptedCreditCardData);
+                }
+            }
+            if (selectedData.notes) {
+                const { notes } = fileData;
+                for (const note of notes) {
+                    const encryptedNoteData = {
+                        folderID: currentFolder,
+                        noteName: encryptText(note.noteName, loggedInUser.masterKey),
+                        content: encryptText(note.content, loggedInUser.masterKey),
+                    };
+
+                    await axios.post("http://127.0.0.1:8000/notes", encryptedNoteData);
+                }
+            }
+
+            alert('Data imported successfully');
+            Navigate('/')
         } catch (error) {
-            console.error("Error downloading data:", error);
+            console.error('Error importing data:', error);
         }
     };
-    
 
+    const parseJSONFile = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                try {
+                    const fileData = JSON.parse(event.target.result);
+                    resolve(fileData);
+                } catch (error) {
+                    reject('Error parsing JSON file');
+                }
+            };
+
+            reader.readAsText(file);
+        });
+    };
+    
     return (
         <Box
             sx={{
@@ -97,17 +112,7 @@ export default function NewCreditCardPage() {
             }}
         >
             <Typography variant="h4">Import Data</Typography>
-            <Select
-                fullWidth
-                value={currentFolder}
-                onChange={(e) => setCurrentFolder(e.target.value)}
-            >
-                {userFolders.map((folder) => (
-                    <MenuItem key={folder.folderID} value={folder.folderID}>
-                        {folder.folderName}
-                    </MenuItem>
-                ))}
-            </Select>
+            <input type="file" onChange={handleFileChange} />
             <FormControlLabel
                 control={<Checkbox checked={selectedData.creditCards} onChange={handleCheckboxChange} name="creditCards" />}
                 label="Credit Cards"
@@ -122,13 +127,13 @@ export default function NewCreditCardPage() {
             />
             <Button
                 variant="contained"
-                onClick={handleDownloadData}
+                onClick={handleImportData}
                 sx={{
                     width: "100%",
                     marginTop: "1rem"
                 }}
             >
-                Download Selected Data
+                Import Data from File
             </Button>
         </Box>
     );
