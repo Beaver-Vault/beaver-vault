@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { decryptText } from "./encryption";
 
-export default function NewCreditCardPage() {
+export default function DataExportPage() {
     const loggedInUser = useSelector((state) => state.auth.user);
     const userFolders = useSelector((state) => state.userInfo.folders);
 

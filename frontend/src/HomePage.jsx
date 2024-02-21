@@ -135,38 +135,6 @@ export default function HomePage() {
     getData();
   }, [loggedInUser]);
 
-  const importData = (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        try {
-          const importedData = JSON.parse(e.target.result);
-
-          if (
-            Array.isArray(importedData) &&
-            importedData.every(
-              (row) => row.website && row.username && row.password
-            )
-          ) {
-            setImportedData(importedData);
-            console.log("Import success! Data:", importedData);
-          } else {
-            console.error(
-              "Import failed. Invalid JSON format or missing required fields."
-            );
-          }
-        } catch (error) {
-          console.error("Error parsing JSON file:", error);
-        }
-      };
-
-      reader.readAsText(file);
-    }
-  };
-
   return (
     <>
       <Box
