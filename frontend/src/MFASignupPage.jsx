@@ -11,7 +11,7 @@ export default function MFASignup({ newUser }) {
   const { qr_code_url, user } = newUser;
 
   const handleSubmit = async () => {
-    const result = await axios.post("http://127.0.0.1:8000/mfa", {
+    const result = await axios.post("http://127.0.0.1:8000/mfa/signup", {
       mfaCode,
       email: user.email,
     });

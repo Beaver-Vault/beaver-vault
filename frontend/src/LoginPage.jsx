@@ -2,7 +2,7 @@ import { Box, Typography, TextField, Button } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
 import { pdfk } from "./encryption";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "./slices/authSlice";
 import MFALoginPage from "./MFALoginPage";
 
@@ -11,7 +11,8 @@ export default function LoginPage() {
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const user = useSelector((state) => state.auth.user);
 
   const handleLogin = async () => {
     const response = await axios.get(
@@ -34,7 +35,6 @@ export default function LoginPage() {
       };
       dispatch(login(newUserData));
       // navigate("/");
-      setIsLoggedIn(true);
     } else {
       alert("Invalid email or password");
     }
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <>
-      {isLoggedIn ? (
+      {user !== null ? (
         <MFALoginPage />
       ) : (
         <Box
