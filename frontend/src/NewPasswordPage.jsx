@@ -15,9 +15,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PasswordGenerator from "./PasswordGenPage";
 
-
 export default function NewPasswordPage() {
   const navigate = useNavigate();
+  const accessToken = useSelector((state) => state.auth.accessToken);
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 
@@ -37,7 +37,12 @@ export default function NewPasswordPage() {
 
     const response = await axios.post(
       "http://127.0.0.1:8000/passwords",
-      passwordData
+      passwordData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
 
     if (response.status === 200) {
