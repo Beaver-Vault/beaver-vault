@@ -37,6 +37,12 @@ def get_db():
 # CRUD: passwords, notes, credit cards
 # RUD: users, folders
 
+
+# FOR TESTING ONLY
+@app.get("/access-token/{userEmail}")
+def get_access_token(userEmail: str, db: Session = Depends(get_db)):
+    return create_access_token(crud.get_user_by_email(db, userEmail))
+
 # Create rows
 
 @app.post("/users")
