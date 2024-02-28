@@ -1,4 +1,4 @@
-import { Box, Tab, Button } from "@mui/material";
+import { Box, Tab, Button, IconButton } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +13,17 @@ import {
   setNotes,
 } from "./slices/userInfoSlice";
 import { decryptText } from "./encryption";
+import { Edit, Delete } from "@mui/icons-material";
+import ConfirmationDialog from "./DeleteConfirmation";
 
 export default function HomePage() {
   const nav = useNavigate();
   const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
+  const [importedData, setImportedData] = useState([]);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false); 
+  const [deletingData, setDeletingData] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
   const accessToken = useSelector((state) => state.auth.accessToken);
@@ -34,6 +39,21 @@ export default function HomePage() {
       headerName: "Password",
       flex: 1,
       renderCell: (e) => <PasswordCell password={e.value} />,
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params) => (
+        <>
+          <IconButton onClick={() => handleEdit("passwords", params.row.passwordID)}>
+            <Edit />
+          </IconButton>
+          <IconButton onClick={() => handleDelete("passwords", params.row.passwordID)}>
+            <Delete />
+          </IconButton>
+        </>
+      ),
     },
   ];
 
@@ -53,12 +73,88 @@ export default function HomePage() {
       flex: 1,
       renderCell: (e) => <PasswordCell password={e.value} />,
     },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params) => (
+        <>
+          <IconButton onClick={() => handleEdit("creditcards", params.row.creditcardID)}>
+            <Edit />
+          </IconButton>
+          <IconButton onClick={() => handleDelete("creditcards", params.row.creditcardID)}>
+            <Delete />
+          </IconButton>
+        </>
+      ),
+    },
   ];
 
   const notesColumns = [
     { field: "noteName", headerName: "Note Name", flex: 1 },
     { field: "content", headerName: "Content", flex: 1 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params) => (
+        <>
+          <IconButton onClick={() => handleEdit("notes", params.row.noteID)}>
+            <Edit />
+          </IconButton>
+          <IconButton onClick={() => handleDelete("notes", params.row.noteID)}>
+            <Delete />
+          </IconButton>
+        </>
+      ),
+    },
   ];
+
+  const handleEdit = (dataType, dataID) => {
+    // Navigate to the edit page based on the data type
+    switch (dataType) {
+      case "passwords":
+        nav(`/editpassword/${dataID}`);
+        break;
+      case "creditcards":
+        nav(`/editcreditcard/${dataID}`);
+        break;
+      case "notes":
+        nav(`/editnote/${dataID}`);
+        break;
+      default:
+        console.error("Invalid data type for edit:", dataType);
+    }
+  };
+
+  const handleDelete = (dataType, dataID) => {
+    setDeletingData({ dataType, dataID });
+    setConfirmationDialogOpen(true);
+  };
+
+  const confirmDeletion = async () => {
+    const { dataType, dataID } = deletingData;
+    try {
+      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`);
+      setConfirmationDialogOpen(false);
+      
+      switch (dataType) {
+        case "passwords":
+          dispatch(setPasswords(allPasswords.filter(password => password.passwordID !== dataID)));
+          break;
+        case "creditcards":
+          dispatch(setCreditCards(allCreditcards.filter(creditcard => creditcard.creditcardID !== dataID)));
+          break;
+        case "notes":
+          dispatch(setNotes(allNotes.filter(note => note.noteID !== dataID)));
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(`Error deleting ${dataType}:`, error);
+    }
+  };
 
   useEffect(() => {
     const getData = async () => {
@@ -155,6 +251,12 @@ export default function HomePage() {
 
   return (
     <>
+      <ConfirmationDialog
+        open={confirmationDialogOpen}
+        handleClose={() => setConfirmationDialogOpen(false)}
+        handleConfirm={confirmDeletion}
+      />
+
       <Box
         sx={{
           display: "flex",
