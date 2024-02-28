@@ -23,6 +23,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export default function NewPasswordPage() {
   const navigate = useNavigate();
+  const accessToken = useSelector((state) => state.auth.accessToken);
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 
@@ -108,8 +109,17 @@ export default function NewPasswordPage() {
       encryptedPassword: encryptText(password, loggedInUser.masterKey),
     };
 
+   
     try {
-      const response = await axios.post("http://127.0.0.1:8000/passwords", passwordData);
+      const response = await axios.post(
+      "http://127.0.0.1:8000/passwords",
+      passwordData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
       if (response.status === 200) {
         alert("Password added successfully");

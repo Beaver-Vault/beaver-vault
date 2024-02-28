@@ -18,16 +18,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import PasswordGenerator from "./PasswordGenPage";
 import zxcvbn from "zxcvbn";
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 export default function EditPasswordPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
+  const accessToken = useSelector((state) => state.auth.accessToken);
 
-  const [currentFolder, setCurrentFolder] = useState(userFolders.length > 0 ? userFolders[0].folderID : '');
+  const [currentFolder, setCurrentFolder] = useState(
+    userFolders.length > 0 ? userFolders[0].folderID : ""
+  );
   const [website, setWebsite] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -35,8 +38,8 @@ export default function EditPasswordPage() {
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
-  const [strengthColor, setStrengthColor] = useState('grey');
-  const [strengthLabel, setStrengthLabel] = useState('');
+  const [strengthColor, setStrengthColor] = useState("grey");
+  const [strengthLabel, setStrengthLabel] = useState("");
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
 
   // Fetch the password data using the ID
@@ -48,19 +51,36 @@ export default function EditPasswordPage() {
         return;
       }
 
-      const response = await axios.get(`http://localhost:8000/passwords/${currentFolder}`);
+      const response = await axios.get(
+        `http://localhost:8000/passwords/${currentFolder}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       const passwords = response.data;
-      const matchedPassword = passwords.find(password => password.passwordID === parseInt(id));
+      const matchedPassword = passwords.find(
+        (password) => password.passwordID === parseInt(id)
+      );
       if (!matchedPassword) {
         console.error("Password not found");
         navigate("/");
         return;
       }
       setCurrentFolder(matchedPassword.folderID);
-      setWebsite(decryptText(matchedPassword.websiteName, loggedInUser.masterKey));
-      setUsername(decryptText(matchedPassword.username, loggedInUser.masterKey));
-      setPassword(decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey)); 
-      setConfirmPassword(decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey));
+      setWebsite(
+        decryptText(matchedPassword.websiteName, loggedInUser.masterKey)
+      );
+      setUsername(
+        decryptText(matchedPassword.username, loggedInUser.masterKey)
+      );
+      setPassword(
+        decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey)
+      );
+      setConfirmPassword(
+        decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey)
+      );
     } catch (error) {
       console.error("Error fetching password data:", error);
     }
@@ -68,7 +88,7 @@ export default function EditPasswordPage() {
 
   useEffect(() => {
     fetchPasswordData();
-  }, [id, loggedInUser.folderID]); 
+  }, [id, loggedInUser.folderID]);
 
   const handleSubmit = async () => {
     if (password !== confirmPassword) {
@@ -84,7 +104,15 @@ export default function EditPasswordPage() {
     };
 
     try {
-      const response = await axios.put(`http://localhost:8000/passwords/${id}`, updatedPasswordData);
+      const response = await axios.put(
+        `http://localhost:8000/passwords/${id}`,
+        updatedPasswordData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (response.status === 200) {
         alert("Password updated successfully");
@@ -115,8 +143,7 @@ export default function EditPasswordPage() {
       <Select
         fullWidth
         value={currentFolder}
-        onChange={(e) => 
-          setCurrentFolder(e.target.value)}
+        onChange={(e) => setCurrentFolder(e.target.value)}
       >
         {userFolders.map((folder, i) => (
           <MenuItem key={i} value={folder.folderID}>
@@ -142,7 +169,7 @@ export default function EditPasswordPage() {
         fullWidth
         variant="outlined"
         label="Password"
-        type={showPassword ? 'text' : 'password'}
+        type={showPassword ? "text" : "password"}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         InputProps={{
@@ -162,7 +189,7 @@ export default function EditPasswordPage() {
         fullWidth
         variant="outlined"
         label="Confirm Password"
-        type={showPassword ? 'text' : 'password'}
+        type={showPassword ? "text" : "password"}
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         error={!passwordsMatch}

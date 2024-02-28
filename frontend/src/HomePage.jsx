@@ -3,7 +3,6 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
-import { fakePasswords, fakeCreditCards } from "./fakedata";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
@@ -23,11 +22,11 @@ export default function HomePage() {
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
-  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false); 
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [deletingData, setDeletingData] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
-  const allFolders = useSelector((state) => state.userInfo.folders);
+  const accessToken = useSelector((state) => state.auth.accessToken);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
@@ -47,10 +46,14 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("passwords", params.row.passwordID)}>
+          <IconButton
+            onClick={() => handleEdit("passwords", params.row.passwordID)}
+          >
             <Edit />
           </IconButton>
-          <IconButton onClick={() => handleDelete("passwords", params.row.passwordID)}>
+          <IconButton
+            onClick={() => handleDelete("passwords", params.row.passwordID)}
+          >
             <Delete />
           </IconButton>
         </>
@@ -80,10 +83,14 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("creditcards", params.row.creditcardID)}>
+          <IconButton
+            onClick={() => handleEdit("creditcards", params.row.creditcardID)}
+          >
             <Edit />
           </IconButton>
-          <IconButton onClick={() => handleDelete("creditcards", params.row.creditcardID)}>
+          <IconButton
+            onClick={() => handleDelete("creditcards", params.row.creditcardID)}
+          >
             <Delete />
           </IconButton>
         </>
@@ -136,18 +143,32 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`);
+      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       setConfirmationDialogOpen(false);
-      
+
       switch (dataType) {
         case "passwords":
-          dispatch(setPasswords(allPasswords.filter(password => password.passwordID !== dataID)));
+          dispatch(
+            setPasswords(
+              allPasswords.filter((password) => password.passwordID !== dataID)
+            )
+          );
           break;
         case "creditcards":
-          dispatch(setCreditCards(allCreditcards.filter(creditcard => creditcard.creditcardID !== dataID)));
+          dispatch(
+            setCreditCards(
+              allCreditcards.filter(
+                (creditcard) => creditcard.creditcardID !== dataID
+              )
+            )
+          );
           break;
         case "notes":
-          dispatch(setNotes(allNotes.filter(note => note.noteID !== dataID)));
+          dispatch(setNotes(allNotes.filter((note) => note.noteID !== dataID)));
           break;
         default:
           break;
@@ -160,7 +181,12 @@ export default function HomePage() {
   useEffect(() => {
     const getData = async () => {
       const response = await axios.get(
-        `http://localhost:8000/folders/${loggedInUser["userID"]}`
+        `http://localhost:8000/folders/${loggedInUser["userID"]}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
       const folderData = response.data;
 
@@ -170,7 +196,12 @@ export default function HomePage() {
 
       for (let folder of folderData) {
         const response = await axios.get(
-          `http://localhost:8000/passwords/${folder["folderID"]}`
+          `http://localhost:8000/passwords/${folder["folderID"]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
         let decryptedPasswords = response.data.map((password) => {
           return {
@@ -189,7 +220,12 @@ export default function HomePage() {
         totalPasswords = totalPasswords.concat(decryptedPasswords);
 
         const ccresponse = await axios.get(
-          `http://localhost:8000/creditcards/${folder["folderID"]}`
+          `http://localhost:8000/creditcards/${folder["folderID"]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
         let decryptedCreditCards = ccresponse.data.map((creditcard) => {
           return {
@@ -210,7 +246,12 @@ export default function HomePage() {
         totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
 
         const noteResponse = await axios.get(
-          `http://localhost:8000/notes/${folder["folderID"]}`
+          `http://localhost:8000/notes/${folder["folderID"]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
         let decryptedNotes = noteResponse.data.map((note) => {
           return {
@@ -256,7 +297,6 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-
           <Button
             variant="contained"
             onClick={() => nav("/dataimport")}
