@@ -14,11 +14,14 @@ import axios from "axios";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
-  const { id } = useParams(); 
+  const { id } = useParams();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
+  const accessToken = useSelector((state) => state.auth.accessToken);
 
-  const [currentFolder, setCurrentFolder] = useState(userFolders.length > 0 ? userFolders[0].folderID : '');
+  const [currentFolder, setCurrentFolder] = useState(
+    userFolders.length > 0 ? userFolders[0].folderID : ""
+  );
   const [notename, setNotename] = useState("");
   const [content, setContent] = useState("");
 
@@ -30,9 +33,16 @@ export default function EditNotePage() {
         return;
       }
 
-      const response = await axios.get(`http://localhost:8000/notes/${currentFolder}`);
+      const response = await axios.get(
+        `http://localhost:8000/notes/${currentFolder}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       const notes = response.data;
-      const matchedNote = notes.find(note => note.noteID === parseInt(id));
+      const matchedNote = notes.find((note) => note.noteID === parseInt(id));
       if (!matchedNote) {
         console.error("Note not found");
         navigate("/");
@@ -48,11 +58,9 @@ export default function EditNotePage() {
 
   useEffect(() => {
     fetchNoteData();
-  }, [id, loggedInUser.folderID]); 
+  }, [id, loggedInUser.folderID]);
 
   const handleSubmit = async () => {
-
-
     const updatedNoteData = {
       folderID: currentFolder,
       noteName: encryptText(notename, loggedInUser.masterKey),
@@ -60,7 +68,15 @@ export default function EditNotePage() {
     };
 
     try {
-      const response = await axios.put(`http://localhost:8000/notes/${id}`, updatedNoteData);
+      const response = await axios.put(
+        `http://localhost:8000/notes/${id}`,
+        updatedNoteData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (response.status === 200) {
         alert("Note updated successfully");
@@ -104,23 +120,23 @@ export default function EditNotePage() {
         })}
       </Select>
       <TextField
-  fullWidth
-  variant="outlined"
-  label="Note Name"
-  value={notename}
-  onChange={(e) => {
-    setNotename(e.target.value);
-  }}
-/>
-    <TextField
-  fullWidth
-  variant="outlined"
-  label="Content"
-  value={content}
-  onChange={(e) => {
-    setContent(e.target.value);
-  }}
-/>
+        fullWidth
+        variant="outlined"
+        label="Note Name"
+        value={notename}
+        onChange={(e) => {
+          setNotename(e.target.value);
+        }}
+      />
+      <TextField
+        fullWidth
+        variant="outlined"
+        label="Content"
+        value={content}
+        onChange={(e) => {
+          setContent(e.target.value);
+        }}
+      />
       <Button
         variant="contained"
         onClick={handleSubmit}
