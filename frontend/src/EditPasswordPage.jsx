@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -13,17 +13,17 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { encryptText } from "./encryption";
-import { useNavigate } from "react-router-dom";
+import { encryptText, decryptText } from "./encryption";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import PasswordGenerator from "./PasswordGenPage";
 import zxcvbn from "zxcvbn";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-export default function NewPasswordPage() {
+export default function EditPasswordPage() {
   const navigate = useNavigate();
-  const accessToken = useSelector((state) => state.auth.accessToken);
+  const { id } = useParams();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 
@@ -39,62 +39,36 @@ export default function NewPasswordPage() {
   const [strengthLabel, setStrengthLabel] = useState('');
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
 
-  const passwordCriteria = [
-    { label: 'Minimum 8 characters', test: (input) => input.length >= 8 },
-    { label: 'At least one uppercase letter', test: (input) => /[A-Z]/.test(input) },
-    { label: 'At least one lowercase letter', test: (input) => /[a-z]/.test(input) },
-    { label: 'At least one number', test: (input) => /[0-9]/.test(input) },
-    { label: 'At least one special character', test: (input) => /[^A-Za-z0-9]/.test(input) },
-  ];
-  const [passwordValidation, setPasswordValidation] = useState(passwordCriteria.map(criteria => ({ ...criteria, isMet: false })));
+  // Fetch the password data using the ID
+  const fetchPasswordData = async () => {
+    try {
+      if (!loggedInUser) {
+        console.error("User not logged in");
+        navigate("/");
+        return;
+      }
 
-  const handlePasswordChange = (e) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-
-    const evaluation = zxcvbn(newPassword);
-    setPasswordStrength(evaluation.score / 4);
-    switch (evaluation.score) {
-      case 0:
-      case 1:
-        setStrengthColor('red');
-        setStrengthLabel('Weak');
-        break;
-      case 2:
-        setStrengthColor('yellow');
-        setStrengthLabel('Fair');
-        break;
-      case 3:
-        setStrengthColor('orange');
-        setStrengthLabel('Good');
-        break;
-      case 4:
-        setStrengthColor('green');
-        setStrengthLabel('Strong');
-        break;
-      default:
-        setStrengthColor('grey');
-        setStrengthLabel('');
+      const response = await axios.get(`http://localhost:8000/passwords/${currentFolder}`);
+      const passwords = response.data;
+      const matchedPassword = passwords.find(password => password.passwordID === parseInt(id));
+      if (!matchedPassword) {
+        console.error("Password not found");
+        navigate("/");
+        return;
+      }
+      setCurrentFolder(matchedPassword.folderID);
+      setWebsite(decryptText(matchedPassword.websiteName, loggedInUser.masterKey));
+      setUsername(decryptText(matchedPassword.username, loggedInUser.masterKey));
+      setPassword(decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey)); 
+      setConfirmPassword(decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey));
+    } catch (error) {
+      console.error("Error fetching password data:", error);
     }
-
-    setPasswordsMatch(newPassword === confirmPassword);
-
-    const validationResults = passwordCriteria.map(criteria => ({
-      ...criteria,
-      isMet: criteria.test(newPassword),
-    }));
-    setPasswordValidation(validationResults);
   };
 
-  const handleConfirmPasswordChange = (e) => {
-    const newConfirmPassword = e.target.value;
-    setConfirmPassword(newConfirmPassword);
-    setPasswordsMatch(password === newConfirmPassword);
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  useEffect(() => {
+    fetchPasswordData();
+  }, [id, loggedInUser.folderID]); 
 
   const handleSubmit = async () => {
     if (password !== confirmPassword) {
@@ -102,34 +76,25 @@ export default function NewPasswordPage() {
       return;
     }
 
-    const passwordData = {
+    const updatedPasswordData = {
       folderID: currentFolder,
       websiteName: encryptText(website, loggedInUser.masterKey),
       username: encryptText(username, loggedInUser.masterKey),
       encryptedPassword: encryptText(password, loggedInUser.masterKey),
     };
 
-   
     try {
-      const response = await axios.post(
-      "http://127.0.0.1:8000/passwords",
-      passwordData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+      const response = await axios.put(`http://localhost:8000/passwords/${id}`, updatedPasswordData);
 
       if (response.status === 200) {
-        alert("Password added successfully");
+        alert("Password updated successfully");
         navigate("/");
       } else {
-        alert("Failed to add password");
-        console.error("Error adding password:", response.data);
+        alert("Failed to update password");
+        console.error("Error updating password:", response.data);
       }
     } catch (error) {
-      console.error("Error adding password:", error);
+      console.error("Error updating password:", error);
       alert("An unexpected error occurred. Please try again.");
     }
   };
@@ -146,11 +111,12 @@ export default function NewPasswordPage() {
         margin: "auto",
       }}
     >
-      <Typography variant="h4">Add New Password</Typography>
+      <Typography variant="h4">Edit Password</Typography>
       <Select
         fullWidth
         value={currentFolder}
-        onChange={(e) => setCurrentFolder(e.target.value)}
+        onChange={(e) => 
+          setCurrentFolder(e.target.value)}
       >
         {userFolders.map((folder, i) => (
           <MenuItem key={i} value={folder.folderID}>
@@ -178,13 +144,13 @@ export default function NewPasswordPage() {
         label="Password"
         type={showPassword ? 'text' : 'password'}
         value={password}
-        onChange={handlePasswordChange}
+        onChange={(e) => setPassword(e.target.value)}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
                 aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
+                onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -192,22 +158,13 @@ export default function NewPasswordPage() {
           ),
         }}
       />
-      <LinearProgress variant="determinate" value={passwordStrength * 100} sx={{ width: '100%', marginTop: '8px', marginBottom: '8px', backgroundColor: 'lightgrey', '& .MuiLinearProgress-bar': { backgroundColor: strengthColor } }} />
-      <Typography variant="caption" display="block" gutterBottom>
-        Password Strength: {strengthLabel}
-      </Typography>
-      {passwordValidation.map((criteria, index) => (
-        <Typography key={index} variant="caption" sx={{ color: criteria.isMet ? 'green' : 'red' }}>
-          {criteria.isMet ? '✓' : '✗'} {criteria.label}
-        </Typography>
-      ))}
       <TextField
         fullWidth
         variant="outlined"
         label="Confirm Password"
         type={showPassword ? 'text' : 'password'}
         value={confirmPassword}
-        onChange={handleConfirmPasswordChange}
+        onChange={(e) => setConfirmPassword(e.target.value)}
         error={!passwordsMatch}
         helperText={!passwordsMatch ? "Passwords do not match" : ""}
       />
