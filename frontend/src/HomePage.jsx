@@ -22,7 +22,7 @@ export default function HomePage() {
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
-  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false); 
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [deletingData, setDeletingData] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -46,10 +46,14 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("passwords", params.row.passwordID)}>
+          <IconButton
+            onClick={() => handleEdit("passwords", params.row.passwordID)}
+          >
             <Edit />
           </IconButton>
-          <IconButton onClick={() => handleDelete("passwords", params.row.passwordID)}>
+          <IconButton
+            onClick={() => handleDelete("passwords", params.row.passwordID)}
+          >
             <Delete />
           </IconButton>
         </>
@@ -79,10 +83,14 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("creditcards", params.row.creditcardID)}>
+          <IconButton
+            onClick={() => handleEdit("creditcards", params.row.creditcardID)}
+          >
             <Edit />
           </IconButton>
-          <IconButton onClick={() => handleDelete("creditcards", params.row.creditcardID)}>
+          <IconButton
+            onClick={() => handleDelete("creditcards", params.row.creditcardID)}
+          >
             <Delete />
           </IconButton>
         </>
@@ -135,18 +143,32 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`);
+      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       setConfirmationDialogOpen(false);
-      
+
       switch (dataType) {
         case "passwords":
-          dispatch(setPasswords(allPasswords.filter(password => password.passwordID !== dataID)));
+          dispatch(
+            setPasswords(
+              allPasswords.filter((password) => password.passwordID !== dataID)
+            )
+          );
           break;
         case "creditcards":
-          dispatch(setCreditCards(allCreditcards.filter(creditcard => creditcard.creditcardID !== dataID)));
+          dispatch(
+            setCreditCards(
+              allCreditcards.filter(
+                (creditcard) => creditcard.creditcardID !== dataID
+              )
+            )
+          );
           break;
         case "notes":
-          dispatch(setNotes(allNotes.filter(note => note.noteID !== dataID)));
+          dispatch(setNotes(allNotes.filter((note) => note.noteID !== dataID)));
           break;
         default:
           break;
