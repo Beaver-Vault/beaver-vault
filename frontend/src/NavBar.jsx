@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "./slices/authSlice";
 import { clearInfo } from "./slices/userInfoSlice";
-import { deleteUser } from "./deleteAccount";
 import BeaverLogo from "./imgs/beaver_logo.png";
 
 export default function NavBar() {
@@ -27,11 +26,6 @@ export default function NavBar() {
     dispatch(logout());
     dispatch(clearInfo());
     navigate("/");
-  };
-
-  const handleDeleteAccount = () => {
-    dispatch(deleteUser(loggedInUser.id));
-    handleClose();
   };
 
   return (
@@ -63,28 +57,6 @@ export default function NavBar() {
             <Button variant="contained" onClick={handleSignOut}>
               Sign Out
             </Button>
-            <Button variant="contained" onClick={handleClickOpen}>
-              Delete Account
-            </Button>
-            <Dialog
-              open={open}
-              onClose={handleClose}
-              aria-labelledby="alert-dialog-title"
-              aria-describedby="alert-dialog-description"
-            >
-              <DialogTitle id="alert-dialog-title">{"Delete Account"}</DialogTitle>
-              <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                  Are you sure you want to delete your account? This action cannot be undone.
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleClose}>Cancel</Button>
-                <Button onClick={handleDeleteAccount} autoFocus>
-                  Delete
-                </Button>
-              </DialogActions>
-            </Dialog>
           </Box>
         ) : (
           <> </>
