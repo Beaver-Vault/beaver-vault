@@ -341,7 +341,6 @@ export default function HomePage() {
             variant="contained"
             color="error"
             onClick={() =>
-              // console.log(passwordGen(12, true, false, false, false))
               nav("/passwordgen")
             }
           >
@@ -387,6 +386,7 @@ export default function HomePage() {
       <DeleteAccountConfirmationDialog
         open={accountDeletionDialogOpen}
         handleClose={() => setAccountDeletionDialogOpen(false)}
+        email={loggedInUser["email"]}
         userID={loggedInUser["userID"]}
         accessToken={accessToken}
       />

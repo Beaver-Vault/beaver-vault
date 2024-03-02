@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField } from "@mui/material";
 import axios from 'axios';
 
-const DeleteAccountConfirmationDialog = ({ open, handleClose, userID, accessToken }) => {
+const DeleteAccountConfirmationDialog = ({ open, handleClose, email, userID, accessToken }) => {
   const [input, setInput] = useState("");
 
   const handleDelete = async () => {
-    if (input === "BeaverVaultDeleteAccount") {
+    if (input === `Yes, delete ${email}`) {
       try {
         await axios.delete(`http://localhost:8000/users/${userID}`, {
           headers: {
@@ -19,7 +19,7 @@ const DeleteAccountConfirmationDialog = ({ open, handleClose, userID, accessToke
         console.error("Error deleting user:", error);
       }
     } else {
-      alert("Please type 'BeaverVaultDeleteAccount' to confirm deletion.");
+      alert(`Please type: "Yes, delete ${email}" without the quotes.`);
     }
   };
 
@@ -32,7 +32,7 @@ const DeleteAccountConfirmationDialog = ({ open, handleClose, userID, accessToke
     <Dialog open={open} onClose={handleCancel}>
       <DialogTitle>Confirm Account Deletion</DialogTitle>
       <DialogContent>
-        Are you sure you want to delete your account? This action cannot be undone. <br /> <br /> Please confirm below by typing "BeaverVaultDeleteAccount" in the box below.
+        Are you sure you want to delete your account? This action cannot be undone. <br /> <br /> Confirm by typing: <strong>Yes, delete {email}</strong>
         <TextField
           autoFocus
           margin="normal"
@@ -48,7 +48,7 @@ const DeleteAccountConfirmationDialog = ({ open, handleClose, userID, accessToke
         <Button onClick={handleCancel} color="primary">
           Cancel
         </Button>
-        <Button onClick={handleDelete} color="error" disabled={input !== "BeaverVaultDeleteAccount"}>
+        <Button onClick={handleDelete} color="error" disabled={input !== `Yes, delete ${email}`}>
           Delete
         </Button>
       </DialogActions>
