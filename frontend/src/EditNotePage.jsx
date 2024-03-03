@@ -34,7 +34,7 @@ export default function EditNotePage() {
       }
 
       const response = await axios.get(
-        `http://localhost:8000/notes/${currentFolder}`,
+        `${process.env.REACT_APP_API_URL}/notes/${currentFolder}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -69,7 +69,7 @@ export default function EditNotePage() {
 
     try {
       const response = await axios.put(
-        `http://localhost:8000/notes/${id}`,
+        `${process.env.REACT_APP_API_URL}/notes/${id}`,
         updatedNoteData,
         {
           headers: {

@@ -39,7 +39,7 @@ export default function DataExportPage() {
 
       if (selectedData.passwords) {
         const response = await axios.get(
-          `http://localhost:8000/passwords/${currentFolder}`,
+          `${process.env.REACT_APP_API_URL}/passwords/${currentFolder}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -66,7 +66,7 @@ export default function DataExportPage() {
 
       if (selectedData.creditCards) {
         const response = await axios.get(
-          `http://localhost:8000/creditcards/${currentFolder}`,
+          `${process.env.REACT_APP_API_URL}/creditcards/${currentFolder}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -95,7 +95,7 @@ export default function DataExportPage() {
 
       if (selectedData.notes) {
         const response = await axios.get(
-          `http://localhost:8000/notes/${currentFolder}`
+          `${process.env.REACT_APP_API_URL}/notes/${currentFolder}`
         );
         const decryptedNotes = response.data.map((note) => {
           const { noteID, folderID, ...rest } = note;

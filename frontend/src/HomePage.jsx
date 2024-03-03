@@ -143,7 +143,7 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -181,7 +181,7 @@ export default function HomePage() {
   useEffect(() => {
     const getData = async () => {
       const response = await axios.get(
-        `http://localhost:8000/folders/${loggedInUser["userID"]}`,
+        `${process.env.REACT_APP_API_URL}/folders/${loggedInUser["userID"]}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -196,7 +196,7 @@ export default function HomePage() {
 
       for (let folder of folderData) {
         const response = await axios.get(
-          `http://localhost:8000/passwords/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/passwords/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -220,7 +220,7 @@ export default function HomePage() {
         totalPasswords = totalPasswords.concat(decryptedPasswords);
 
         const ccresponse = await axios.get(
-          `http://localhost:8000/creditcards/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/creditcards/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -246,7 +246,7 @@ export default function HomePage() {
         totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
 
         const noteResponse = await axios.get(
-          `http://localhost:8000/notes/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/notes/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
