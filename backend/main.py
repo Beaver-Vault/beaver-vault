@@ -9,13 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from mfa import create_qrcode_url
 from access_token import verify_token, create_access_token
-from flask_cors import CORS
-
-# models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-CORS(app, resources={r"/*": {"origins": "*"}})
-
 origins = ["*"]
 
 app.add_middleware(
@@ -24,6 +19,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Dependency
@@ -33,10 +29,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# CRUD: passwords, notes, credit cards
-# RUD: users, folders
 
 
 # FOR TESTING ONLY
