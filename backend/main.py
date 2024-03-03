@@ -9,21 +9,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from mfa import create_qrcode_url
 from access_token import verify_token, create_access_token
+from flask_cors import CORS
 
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# CORS settings
+origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    # You might want to restrict this to a specific origin in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # Dependency
 def get_db():
