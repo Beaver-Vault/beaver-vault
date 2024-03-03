@@ -15,6 +15,7 @@ import {
 import { decryptText } from "./encryption";
 import { Edit, Delete } from "@mui/icons-material";
 import ConfirmationDialog from "./DeleteConfirmation";
+import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -23,6 +24,7 @@ export default function HomePage() {
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] = useState(false);
   const [deletingData, setDeletingData] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -339,7 +341,6 @@ export default function HomePage() {
             variant="contained"
             color="error"
             onClick={() =>
-              // console.log(passwordGen(12, true, false, false, false))
               nav("/passwordgen")
             }
           >
@@ -375,6 +376,20 @@ export default function HomePage() {
             Add Note
           </Button>
         </Box>
+
+        <Button
+        variant="contained"
+        sx={{ marginLeft: "1rem" }}
+        onClick={() => setAccountDeletionDialogOpen(true)}
+      > Delete Account
+      </Button>
+      <DeleteAccountConfirmationDialog
+        open={accountDeletionDialogOpen}
+        handleClose={() => setAccountDeletionDialogOpen(false)}
+        email={loggedInUser["email"]}
+        userID={loggedInUser["userID"]}
+        accessToken={accessToken}
+      />
 
         <TabContext value={currentTab}>
           <Box
