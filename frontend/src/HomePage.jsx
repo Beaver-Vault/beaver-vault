@@ -4,7 +4,8 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { useState, useEffect } from "react";
-import axios from "axios";
+// import axios from "axios";
+import createAxiosInstance from "./axiosInstance";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setFolders,
@@ -15,6 +16,7 @@ import {
 import { decryptText } from "./encryption";
 import { Edit, Delete } from "@mui/icons-material";
 import ConfirmationDialog from "./DeleteConfirmation";
+import { useGetUserQuery } from "./slices/apiSlice";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -27,9 +29,18 @@ export default function HomePage() {
 
   const loggedInUser = useSelector((state) => state.auth.user);
   const accessToken = useSelector((state) => state.auth.accessToken);
+  const refreshToken = useSelector((state) => state.auth.refreshToken);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
+
+  const { data, error, isLoading } = useGetUserQuery(loggedInUser["email"]);
+
+  const axiosInstance = createAxiosInstance(
+    accessToken,
+    refreshToken,
+    loggedInUser["email"]
+  );
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -143,11 +154,11 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      // await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
+      //   headers: {
+      //     Authorization: `Bearer ${accessToken}`,
+      //   },
+      // });
       setConfirmationDialogOpen(false);
 
       switch (dataType) {
@@ -179,96 +190,93 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    const getData = async () => {
-      const response = await axios.get(
-        `http://localhost:8000/folders/${loggedInUser["userID"]}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const folderData = response.data;
-
-      let totalPasswords = [];
-      let totalCreditCards = [];
-      let totalNotes = [];
-
-      for (let folder of folderData) {
-        const response = await axios.get(
-          `http://localhost:8000/passwords/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedPasswords = response.data.map((password) => {
-          return {
-            ...password,
-            websiteName: decryptText(
-              password.websiteName,
-              loggedInUser.masterKey
-            ),
-            username: decryptText(password.username, loggedInUser.masterKey),
-            encryptedPassword: decryptText(
-              password.encryptedPassword,
-              loggedInUser.masterKey
-            ),
-          };
-        });
-        totalPasswords = totalPasswords.concat(decryptedPasswords);
-
-        const ccresponse = await axios.get(
-          `http://localhost:8000/creditcards/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedCreditCards = ccresponse.data.map((creditcard) => {
-          return {
-            ...creditcard,
-            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-            cardholderName: decryptText(
-              creditcard.cardholderName,
-              loggedInUser.masterKey
-            ),
-            number: decryptText(creditcard.number, loggedInUser.masterKey),
-            expiration: decryptText(
-              creditcard.expiration,
-              loggedInUser.masterKey
-            ),
-            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-          };
-        });
-        totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
-
-        const noteResponse = await axios.get(
-          `http://localhost:8000/notes/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedNotes = noteResponse.data.map((note) => {
-          return {
-            ...note,
-            noteName: decryptText(note.noteName, loggedInUser.masterKey),
-            content: decryptText(note.content, loggedInUser.masterKey),
-          };
-        });
-        totalNotes = totalNotes.concat(decryptedNotes);
-      }
-      dispatch(setFolders(folderData));
-      dispatch(setPasswords(totalPasswords));
-      dispatch(setCreditCards(totalCreditCards));
-      dispatch(setNotes(totalNotes));
-    };
-
-    getData();
+    // const getData = async () => {
+    //   try {
+    //     const response = await axiosInstance.get(
+    //       `/folders/${loggedInUser["userID"]}`
+    //     );
+    //     const folderData = response.data;
+    //   } catch (error) {
+    //     const errorStatus = error.response.status;
+    //     if (errorStatus === 401) {
+    //       console.log("Need to Refresh token!");
+    //     }
+    //   }
+    //   //   let totalPasswords = [];
+    //   //   let totalCreditCards = [];
+    //   //   let totalNotes = [];
+    //   //   for (let folder of folderData) {
+    //   //     const response = await axios.get(
+    //   //       `http://localhost:8000/passwords/${folder["folderID"]}`,
+    //   //       {
+    //   //         headers: {
+    //   //           Authorization: `Bearer ${accessToken}`,
+    //   //         },
+    //   //       }
+    //   //     );
+    //   //     let decryptedPasswords = response.data.map((password) => {
+    //   //       return {
+    //   //         ...password,
+    //   //         websiteName: decryptText(
+    //   //           password.websiteName,
+    //   //           loggedInUser.masterKey
+    //   //         ),
+    //   //         username: decryptText(password.username, loggedInUser.masterKey),
+    //   //         encryptedPassword: decryptText(
+    //   //           password.encryptedPassword,
+    //   //           loggedInUser.masterKey
+    //   //         ),
+    //   //       };
+    //   //     });
+    //   //     totalPasswords = totalPasswords.concat(decryptedPasswords);
+    //   //     const ccresponse = await axios.get(
+    //   //       `http://localhost:8000/creditcards/${folder["folderID"]}`,
+    //   //       {
+    //   //         headers: {
+    //   //           Authorization: `Bearer ${accessToken}`,
+    //   //         },
+    //   //       }
+    //   //     );
+    //   //     let decryptedCreditCards = ccresponse.data.map((creditcard) => {
+    //   //       return {
+    //   //         ...creditcard,
+    //   //         cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+    //   //         cardholderName: decryptText(
+    //   //           creditcard.cardholderName,
+    //   //           loggedInUser.masterKey
+    //   //         ),
+    //   //         number: decryptText(creditcard.number, loggedInUser.masterKey),
+    //   //         expiration: decryptText(
+    //   //           creditcard.expiration,
+    //   //           loggedInUser.masterKey
+    //   //         ),
+    //   //         csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+    //   //       };
+    //   //     });
+    //   //     totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
+    //   //     const noteResponse = await axios.get(
+    //   //       `http://localhost:8000/notes/${folder["folderID"]}`,
+    //   //       {
+    //   //         headers: {
+    //   //           Authorization: `Bearer ${accessToken}`,
+    //   //         },
+    //   //       }
+    //   //     );
+    //   //     let decryptedNotes = noteResponse.data.map((note) => {
+    //   //       return {
+    //   //         ...note,
+    //   //         noteName: decryptText(note.noteName, loggedInUser.masterKey),
+    //   //         content: decryptText(note.content, loggedInUser.masterKey),
+    //   //       };
+    //   //     });
+    //   //     totalNotes = totalNotes.concat(decryptedNotes);
+    //   //   }
+    //   //   dispatch(setFolders(folderData));
+    //   //   dispatch(setPasswords(totalPasswords));
+    //   //   dispatch(setCreditCards(totalCreditCards));
+    //   //   dispatch(setNotes(totalNotes));
+    // };
+    // getData();
   }, [loggedInUser]);
 
   return (

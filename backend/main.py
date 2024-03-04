@@ -8,7 +8,9 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from mfa import create_qrcode_url
-from access_token import verify_token, create_access_token
+from access_token import (verify_token, verify_refresh_token,
+                          create_access_token,
+                          create_refresh_token)
 
 # models.Base.metadata.create_all(bind=engine)
 
@@ -43,7 +45,11 @@ def get_db():
 def get_access_token(userEmail: str, db: Session = Depends(get_db)):
     return create_access_token(crud.get_user_by_email(db, userEmail))
 
-# Create rows
+
+@app.post("/refresh-token/")
+def get_refresh_token(refreshRequest: schemas.RefreshRequest):
+    print(refreshRequest.email, refreshRequest.refreshToken)
+
 
 @app.post("/users")
 def create_user(
@@ -132,8 +138,12 @@ def verify_mfa(
     mfa_code = mfa_verify.mfaCode
     verify_result = mfa.verify_mfa(secret_key, mfa_code)
     access_token = create_access_token(user_data=user)
+    refresh_token = create_refresh_token(user_data=user)
     if mfa_type == "login":
-        return access_token if verify_result else None
+        if verify_result:
+            return {"access_token": access_token, "refresh_token": refresh_token}
+        else:
+            return None
     else:
         return verify_result
 

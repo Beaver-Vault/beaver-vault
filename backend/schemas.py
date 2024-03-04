@@ -45,3 +45,8 @@ class Note(BaseModel):
     noteName: str
     content: str
     folderID: int
+
+
+class RefreshRequest(BaseModel):
+    email: str
+    refreshToken: str
