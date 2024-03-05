@@ -17,15 +17,15 @@ export default function MFALoginPage() {
       mfaCode,
       email: user.email,
     });
+    if (result.data === null) {
+      alert("Invalid MFA Code");
+      return;
+    }
     const { access_token: accessToken, refresh_token: refreshToken } =
       result.data;
-    if (accessToken !== null) {
-      dispatch(setAccessToken(accessToken));
-      dispatch(setRefreshToken(refreshToken));
-      navigate("/");
-    } else {
-      alert("Invalid MFA Code");
-    }
+    dispatch(setAccessToken(accessToken));
+    dispatch(setRefreshToken(refreshToken));
+    navigate("/");
   };
 
   return (

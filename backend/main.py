@@ -4,7 +4,6 @@ import crud
 import mfa
 import schemas
 import models
-from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
@@ -48,8 +47,12 @@ def get_access_token(userEmail: str, db: Session = Depends(get_db)):
 
 
 @app.post("/refresh-token/")
-def get_refresh_token(refreshRequest: schemas.RefreshRequest):
-    print(refreshRequest.email, refreshRequest.refreshToken)
+def get_refresh_token(refreshRequest: schemas.RefreshRequest, db: Session = Depends(get_db)):
+    if verify_refresh_token(refreshRequest):
+        return create_access_token(crud.get_user_by_email(
+            db, refreshRequest.email))
+    else:
+        return HTTPException(status_code=401, detail="Refresh Token not valid")
 
 
 @app.post("/users")
@@ -138,6 +141,7 @@ def verify_mfa(
     secret_key = user.get_totpKey()
     mfa_code = mfa_verify.mfaCode
     verify_result = mfa.verify_mfa(secret_key, mfa_code)
+    print(verify_result)
     access_token = create_access_token(user_data=user)
     refresh_token = create_refresh_token(user_data=user)
     if mfa_type == "login":
@@ -197,7 +201,6 @@ def get_passwords_by_folder_ids(
     for folder_id in all_folder_ids:
         passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
         output.extend(passwords)
-    print(output)
     return output
 
 
