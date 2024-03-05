@@ -10,20 +10,17 @@ from database import SessionLocal
 from mfa import create_qrcode_url
 from access_token import verify_token, create_access_token
 
-# models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
+origins = ["*"]
 
-# CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    # You might want to restrict this to a specific origin in production
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Access-Control-Allow-Origin"],
 )
-
 
 # Dependency
 def get_db():
@@ -32,10 +29,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# CRUD: passwords, notes, credit cards
-# RUD: users, folders
 
 
 # FOR TESTING ONLY

@@ -13,7 +13,7 @@ export default function MFALoginPage() {
   const [mfaCode, setMfaCode] = useState("");
 
   const handleSubmit = async () => {
-    const result = await axios.post("http://127.0.0.1:8000/mfa/login", {
+    const result = await axios.post(`${process.env.REACT_APP_API_URL}/mfa/login`, {
       mfaCode,
       email: user.email,
     });

@@ -1,7 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 
@@ -12,6 +10,7 @@
 /build
 
 # misc
+.env
 .DS_Store
 .env.local
 .env.development.local
@@ -21,3 +20,15 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Python modules
+env/
+backend/__pycache__
+backend/env
+backend/venv
+backend/venv/
+backend/env/
+
+__pycache__/
+.idea
+.vscode/launch.json

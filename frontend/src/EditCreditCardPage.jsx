@@ -37,7 +37,7 @@ export default function EditNotePage() {
       }
 
       const response = await axios.get(
-        `http://localhost:8000/creditcards/${currentFolder}`,
+        `${process.env.REACT_APP_API_URL}/creditcards/${currentFolder}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -84,7 +84,7 @@ export default function EditNotePage() {
 
     try {
       const response = await axios.put(
-        `http://localhost:8000/creditcards/${id}`,
+        `${process.env.REACT_APP_API_URL}/creditcards/${id}`,
         updatedCardData,
         {
           headers: {
