@@ -47,5 +47,6 @@ jobs:
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
-          build-args: REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
-
+          build-args: |
+            REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
+            REACT_APP_DELETE_REDIRECT=${{ secrets.REACT_APP_DELETE_REDIRECT }}
