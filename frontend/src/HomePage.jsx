@@ -4,7 +4,6 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setFolders,
@@ -20,6 +19,7 @@ import {
   useGetPasswordsQuery,
   useGetCreditCardsQuery,
   useGetNotesQuery,
+  useDeleteUserMutation,
 } from "./slices/apiSlice";
 
 export default function HomePage() {
@@ -33,7 +33,6 @@ export default function HomePage() {
 
   const loggedInUser = useSelector((state) => state.auth.user);
   const accessToken = useSelector((state) => state.auth.accessToken);
-  const refreshToken = useSelector((state) => state.auth.refreshToken);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
@@ -54,6 +53,8 @@ export default function HomePage() {
   const { data: noteData, refetch: noteRefetch } = useGetNotesQuery(
     folderData ? folderData.map((folder) => folder.folderID) : [-1]
   );
+
+  const [deleteUser, deleteUserResult] = useDeleteUserMutation();
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -167,11 +168,7 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await deleteUser({ dataType, dataID });
       setConfirmationDialogOpen(false);
 
       switch (dataType) {

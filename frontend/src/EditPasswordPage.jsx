@@ -15,6 +15,7 @@ import {
 import { useSelector } from "react-redux";
 import { encryptText, decryptText } from "./encryption";
 import { useNavigate, useParams } from "react-router-dom";
+import { useGetPasswordsQuery } from "./slices/apiSlice";
 import axios from "axios";
 import PasswordGenerator from "./PasswordGenPage";
 import zxcvbn from "zxcvbn";
@@ -42,6 +43,8 @@ export default function EditPasswordPage() {
   const [strengthLabel, setStrengthLabel] = useState("");
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
 
+  const { data: passwordData } = useGetPasswordsQuery(currentFolder);
+
   // Fetch the password data using the ID
   const fetchPasswordData = async () => {
     try {
@@ -59,6 +62,7 @@ export default function EditPasswordPage() {
           },
         }
       );
+
       const passwords = response.data;
       const matchedPassword = passwords.find(
         (password) => password.passwordID === parseInt(id)
@@ -88,6 +92,7 @@ export default function EditPasswordPage() {
 
   useEffect(() => {
     fetchPasswordData();
+    console.log(passwordData);
   }, [id, loggedInUser.folderID]);
 
   const handleSubmit = async () => {

@@ -23,7 +23,6 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 export default function NewPasswordPage() {
   const navigate = useNavigate();
-  const accessToken = useSelector((state) => state.auth.accessToken);
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 

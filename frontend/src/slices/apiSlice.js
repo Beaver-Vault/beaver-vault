@@ -24,7 +24,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
         refreshToken: api.getState().auth.refreshToken,
       }
     );
-    console.log("REFRESH RESULT:", refreshResult);
+    console.log("refreshResult", refreshResult.data);
     api.dispatch(setAccessToken(refreshResult.data));
     if (refreshResult.data) {
       result = await baseQuery(args, api, extraOptions);
@@ -39,30 +39,23 @@ export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    // Define the `getUser` endpoint as a query endpoint
+    // ----- GET REQUESTS -----
     getUser: builder.query({
-      query: (email) => {
-        console.log("Email:", email);
-        return `users/${email}`;
-      },
+      query: (email) => `users/${email}`,
     }),
-    // Define the `getFolders` endpoint as a query endpoint
     getFolders: builder.query({
       query: (userID) => `folders/${userID}`,
     }),
-    // Define the `getPasswords` endpoint as a query endpoint
     getPasswords: builder.query({
       query: (folderIDs) => `passwords/${folderIDs}`,
     }),
-    // Define the `getCreditCards` endpoint as a query endpoint
     getCreditCards: builder.query({
       query: (folderIDs) => `creditcards/${folderIDs}`,
     }),
-    // Define the `getNotes` endpoint as a query endpoint
     getNotes: builder.query({
       query: (folderIDs) => `notes/${folderIDs}`,
     }),
-    // Define add new password endpoint
+    // ----- POST REQUESTS -----
     addPassword: builder.mutation({
       query: (newPassword) => ({
         url: `passwords/`,
@@ -84,6 +77,13 @@ export const apiSlice = createApi({
         body: newNote,
       }),
     }),
+    // ----- DELETE REQUESTS -----
+    deleteUser: builder.mutation({
+      query: ({ dataType, dataID }) => ({
+        url: `${dataType}/${dataID}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -96,6 +96,17 @@ export const {
   useAddPasswordMutation,
   useAddCreditCardMutation,
   useAddNoteMutation,
+  useDeleteUserMutation,
 } = apiSlice;
 
 export default apiSlice.reducer;
+
+// GET
+// `http://localhost:8000/creditcards/${currentFolder}`,
+// `http://localhost:8000/passwords/${currentFolder}`,
+// `http://localhost:8000/notes/${currentFolder}`,
+
+// PUT
+// http://localhost:8000/passwords/${id}`,
+// `http://localhost:8000/notes/${id}`,
+//  `http://localhost:8000/creditcards/${id}`,
