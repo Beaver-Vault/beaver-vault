@@ -2,7 +2,7 @@ name: Publish BeaverVault Docker Services
 
 on:
   push:
-    branches: ["ks/remote_deployment"]
+    branches: ["master"]
 
 jobs:
   push_to_registry:
