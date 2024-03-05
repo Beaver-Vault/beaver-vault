@@ -2,7 +2,7 @@ version: "3"
 services:
   frontend:
     container_name: frontend_vault
-    image: beavervaultadmin/beaver-vault-pm-frontend:ks-remote_deployment
+    image: beavervaultadmin/beaver-vault-pm-frontend:master
     ports:
       - "3000:3000"
     env_file:
@@ -10,7 +10,7 @@ services:
 
   backend:
     container_name: backend_vault
-    image: beavervaultadmin/beaver-vault-pm-backend:ks-remote_deployment
+    image: beavervaultadmin/beaver-vault-pm-backend:master
     ports:
       - "8000:8000"
     env_file:
