@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { loggedOut, setAccessToken } from "./authSlice";
+import { logout, setAccessToken } from "./authSlice";
 import axios from "axios";
 
 const baseQuery = fetchBaseQuery({
@@ -29,8 +29,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     if (refreshResult.data) {
       result = await baseQuery(args, api, extraOptions);
     } else {
-      // If no new token is received, log the user out
-      //   api.dispatch(loggedOut());
+      api.dispatch(logout());
     }
   }
   return result;
