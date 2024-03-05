@@ -15,7 +15,7 @@ https://docs.docker.com/desktop/install/windows-install/
 
 3. Run `docker compose` in a terminal to verify Docker is installed correctly. If in Windows, Docker Desktop must be open.
 
-4. Navigate to the root of the directory in VS Code Terminal, Git Bash, WSL, or Powershell (`/frontend` and `/backend` must be subdirectories). In the terminal, run `./autobuild.sh`. This script will:
+4. Navigate to the root of the directory in VS Code Terminal, Git Bash, WSL, or Powershell (`/frontend` and `/backend` must be subdirectories). In the terminal, run `./autobuild-dev.sh`. This script will:
     1. Pull changes from the currently checked out branch.
 
     2. Navigate to `/frontend` and build a local Docker image: `frontend_local`.
