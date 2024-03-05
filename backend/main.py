@@ -4,6 +4,7 @@ import crud
 import mfa
 import schemas
 import models
+from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
@@ -182,17 +183,22 @@ def get_password(
     return password
 
 
-@app.get("/passwords/{folder_id}")
-def get_passwords_by_user(
-        folder_id: int,
+@app.get("/passwords/{folder_ids}")
+def get_passwords_by_folder_ids(
+        folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
+    all_folder_ids = folder_ids.split(',')
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid")
-    passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
-    return passwords
+    output = []
+    for folder_id in all_folder_ids:
+        passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
+        output.extend(passwords)
+    print(output)
+    return output
 
 
 @app.get("/notes")

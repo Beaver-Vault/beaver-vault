@@ -16,7 +16,12 @@ import {
 import { decryptText } from "./encryption";
 import { Edit, Delete } from "@mui/icons-material";
 import ConfirmationDialog from "./DeleteConfirmation";
-import { useGetUserQuery } from "./slices/apiSlice";
+import {
+  useGetFoldersQuery,
+  useGetPasswordsQuery,
+  useGetCreditCardsQuery,
+  useGetNotesQuery,
+} from "./slices/apiSlice";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -34,13 +39,18 @@ export default function HomePage() {
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
 
-  const { data, error, isLoading } = useGetUserQuery(loggedInUser["email"]);
-
-  const axiosInstance = createAxiosInstance(
-    accessToken,
-    refreshToken,
-    loggedInUser["email"]
+  const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
+    loggedInUser["userID"]
   );
+
+  const { data: passwordData, refetch: passwordRefetch } = useGetPasswordsQuery(
+    folderData ? folderData.map((folder) => folder.folderID) : []
+  );
+
+  const { data: creditcardData, refetch: creditcardRefetch } =
+    useGetCreditCardsQuery(
+      folderData ? folderData.map((folder) => folder.folderID) : []
+    );
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -190,6 +200,33 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    folderRefetch();
+    passwordRefetch();
+    creditcardRefetch();
+
+    // Decrypt Passwords
+    if (passwordData) {
+      for (let password of passwordData) {
+        let passwords = [];
+        passwords.push({
+          passwordID: password.passwordID,
+          websiteName: decryptText(
+            password.websiteName,
+            loggedInUser.masterKey
+          ),
+          username: decryptText(password.username, loggedInUser.masterKey),
+          encryptedPassword: decryptText(
+            password.encryptedPassword,
+            loggedInUser.masterKey
+          ),
+        });
+        dispatch(setPasswords(passwords));
+      }
+    }
+
+    // Decrypt Credit Cards
+    if (creditcardData) {
+    }
     // const getData = async () => {
     //   try {
     //     const response = await axiosInstance.get(
@@ -277,7 +314,7 @@ export default function HomePage() {
     //   //   dispatch(setNotes(totalNotes));
     // };
     // getData();
-  }, [loggedInUser]);
+  }, [loggedInUser, creditcardData, folderData, passwordData]);
 
   return (
     <>
