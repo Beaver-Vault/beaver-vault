@@ -8,13 +8,13 @@ const DeleteAccountConfirmationDialog = ({ open, handleClose, email, userID, acc
   const handleDelete = async () => {
     if (input === `Yes, delete ${email}`) {
       try {
-        await axios.delete(`${REACT_APP_API_URL}/users/${userID}`, {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/users/${userID}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
         handleClose();
-        window.location.href = `${REACT_APP_DELETE_REDIRECT}`;
+        window.location.href = `${process.env.REACT_APP_DELETE_REDIRECT}`;
       } catch (error) {
         console.error("Error deleting user:", error);
       }
