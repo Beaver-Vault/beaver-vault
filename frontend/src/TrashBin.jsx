@@ -13,17 +13,20 @@ import {
   setNotes,
 } from "./slices/userInfoSlice";
 import { decryptText } from "./encryption";
-import { Edit, Delete } from "@mui/icons-material";
-import ConfirmationDialog from "./DeleteConfirmation";
+import { Cached, Delete } from "@mui/icons-material";
+import ConfirmationDialogTrash from "./DeleteConfirmationTrash";
+import RestoreConfirmationDialog from "./RestoreConfirmations";
 
-export default function HomePage() {
+export default function TrashBinPage() {
   const nav = useNavigate();
   const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [RestoreconfirmationDialogOpen, setRestoreConfirmationDialogOpen] = useState(false);  
   const [deletingData, setDeletingData] = useState(null);
+  const [restoringData, setRestoringData] = useState(null);
   const [currentFolderId, setCurrentFolderId] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -49,9 +52,9 @@ export default function HomePage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleEdit("passwords", params.row.passwordID)}
+            onClick={() => handleRestore("passwords", params.row.passwordID)}
           >
-            <Edit />
+            <Cached />
           </IconButton>
           <IconButton
             onClick={() => handleDelete("passwords", params.row.passwordID)}
@@ -86,9 +89,9 @@ export default function HomePage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleEdit("creditcards", params.row.creditcardID)}
+            onClick={() => handleRestore("creditcards", params.row.creditcardID)}
           >
-            <Edit />
+            <Cached />
           </IconButton>
           <IconButton
             onClick={() => handleDelete("creditcards", params.row.creditcardID)}
@@ -109,8 +112,8 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("notes", params.row.noteID)}>
-            <Edit />
+          <IconButton onClick={() => handleRestore("notes", params.row.noteID)}>
+            <Cached />
           </IconButton>
           <IconButton onClick={() => handleDelete("notes", params.row.noteID)}>
             <Delete />
@@ -120,17 +123,23 @@ export default function HomePage() {
     },
   ];
 
-  const confirmTrashBin = async () => {
-    const { dataType, dataID } = deletingData;
+
+  const handleRestore = (dataType, dataID) => {
+    setRestoringData({ dataType, dataID });
+    setRestoreConfirmationDialogOpen(true);
+  };
+
+  const confirmRestore = async () => {
+    const { dataType, dataID } = restoringData;
     try {
-        const requestBody = { restore: false };
+        const requestBody = { restore: true };
         await axios.patch(`http://localhost:8000/${dataType}/${dataID}`, requestBody, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
         });
 
-        setConfirmationDialogOpen(false);
+        setRestoreConfirmationDialogOpen(false);
 
         switch (dataType) {
             case "passwords":
@@ -150,24 +159,6 @@ export default function HomePage() {
     }
 };
 
-
-
-  const handleEdit = (dataType, dataID) => {
-    // Navigate to the edit page based on the data type
-    switch (dataType) {
-      case "passwords":
-        nav(`/editpassword/${dataID}`);
-        break;
-      case "creditcards":
-        nav(`/editcreditcard/${dataID}`);
-        break;
-      case "notes":
-        nav(`/editnote/${dataID}`);
-        break;
-      default:
-        console.error("Invalid data type for edit:", dataType);
-    }
-  };
 
   const handleDelete = (dataType, dataID) => {
     setDeletingData({ dataType, dataID });
@@ -239,7 +230,7 @@ export default function HomePage() {
           }
         );
         let decryptedPasswords = passwordResponse.data
-          .filter(password => password.trashBin === false)  
+          .filter(password => password.trashBin === true)
           .map(password => ({
             ...password,
             websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
@@ -257,7 +248,7 @@ export default function HomePage() {
           }
         );
         let decryptedCreditCards = ccResponse.data
-          .filter(creditcard => creditcard.trashBin === false)  
+          .filter(creditcard => creditcard.trashBin === true)  
           .map(creditcard => ({
             ...creditcard,
             cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
@@ -267,7 +258,7 @@ export default function HomePage() {
             csv: decryptText(creditcard.csv, loggedInUser.masterKey),
           }));
         totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
-  
+
         const noteResponse = await axios.get(
           `http://localhost:8000/notes/${folder["folderID"]}`,
           {
@@ -277,7 +268,7 @@ export default function HomePage() {
           }
         );
         let decryptedNotes = noteResponse.data
-          .filter(note => note.trashBin === false)  
+          .filter(note => note.trashBin === true) 
           .map(note => ({
             ...note,
             noteName: decryptText(note.noteName, loggedInUser.masterKey),
@@ -296,119 +287,17 @@ export default function HomePage() {
 
   return (
     <>
-      <ConfirmationDialog
+      <ConfirmationDialogTrash
         open={confirmationDialogOpen}
         handleClose={() => setConfirmationDialogOpen(false)}
         handleConfirm={confirmDeletion}
-        handle30DayTrashBin={confirmTrashBin}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1rem",
-          padding: "1rem",
-        }}
-      >
-        <Box
-          sx={{
-            width: "70%",
-            display: "flex",
-            justifyContent: "flex-start",
-            marginBottom: "1rem",
-          }}
-        >
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataimport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Import
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataexport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Export
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            onClick={() => {
-              nav("/encryptiontest");
-            }}
-          >
-            Encryption Tester
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/cache-test")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Cache Testing
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() =>
-              // console.log(passwordGen(12, true, false, false, false))
-              nav("/passwordgen")
-            }
-          >
-            Generate Password
-          </Button>
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newpassword");
-            }}
-          >
-            Add Password
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newcreditcard");
-            }}
-          >
-            Add Credit Card
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newnote");
-            }}
-          >
-            Add Note
-          </Button>
-        </Box>
-
-        <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/trashbin");
-            }}
-          >
-            Trash Bin
-          </Button>
+        <RestoreConfirmationDialog
+            open={RestoreconfirmationDialogOpen}
+            handleClose={() => setRestoreConfirmationDialogOpen(false)}
+            handleConfirm={confirmRestore}
+        />
 
         <TabContext value={currentTab}>
           <Box
@@ -502,7 +391,6 @@ export default function HomePage() {
             </Box>
           </TabPanel>
         </TabContext>
-      </Box>
     </>
   );
 }

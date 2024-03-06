@@ -29,6 +29,8 @@ backend/__pycache__
 backend/env
 backend/venv
 backend/venv/
+backend/beaver_venv
+backend/beaver_venv/
 
 __pycache__/
 .idea

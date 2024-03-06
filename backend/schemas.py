@@ -28,6 +28,8 @@ class Password(BaseModel):
     username: str
     encryptedPassword: str
     folderID: int
+    trashBin: Optional[bool] = False
+    deletionDateTime: Optional[datetime] = None
 
 
 class CreditCard(BaseModel):
@@ -38,6 +40,8 @@ class CreditCard(BaseModel):
     expiration: str
     csv: str
     folderID: int
+    trashBin: Optional[bool] = False
+    deletionDateTime: Optional[datetime] = None
 
 
 class Note(BaseModel):
@@ -45,3 +49,5 @@ class Note(BaseModel):
     noteName: str
     content: str
     folderID: int
+    trashBin: Optional[bool] = False
+    deletionDateTime: Optional[datetime] = None
