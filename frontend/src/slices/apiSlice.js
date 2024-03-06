@@ -24,7 +24,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
         refreshToken: api.getState().auth.refreshToken,
       }
     );
-    console.log("refreshResult", refreshResult.data);
+    console.log("New Refresh Token: ", refreshResult.data);
     api.dispatch(setAccessToken(refreshResult.data));
     if (refreshResult.data) {
       result = await baseQuery(args, api, extraOptions);
@@ -77,6 +77,28 @@ export const apiSlice = createApi({
         body: newNote,
       }),
     }),
+    // ----- PUT REQUESTS -----
+    updatePassword: builder.mutation({
+      query: ({ id: passwordID, updatedPasswordData: updatedData }) => ({
+        url: `passwords/${passwordID}`,
+        method: "PUT",
+        body: updatedData,
+      }),
+    }),
+    updateCreditCard: builder.mutation({
+      query: ({ creditCardID, updatedData }) => ({
+        url: `creditcards/${creditCardID}`,
+        method: "PUT",
+        body: updatedData,
+      }),
+    }),
+    updateNote: builder.mutation({
+      query: ({ notesID, updatedData }) => ({
+        url: `notes/${notesID}`,
+        method: "PUT",
+        body: updatedData,
+      }),
+    }),
     // ----- DELETE REQUESTS -----
     deleteUser: builder.mutation({
       query: ({ dataType, dataID }) => ({
@@ -96,6 +118,9 @@ export const {
   useAddPasswordMutation,
   useAddCreditCardMutation,
   useAddNoteMutation,
+  useUpdatePasswordMutation,
+  useUpdateCreditCardMutation,
+  useUpdateNoteMutation,
   useDeleteUserMutation,
 } = apiSlice;
 

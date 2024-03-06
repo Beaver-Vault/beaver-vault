@@ -10,7 +10,10 @@ import {
 import { useSelector } from "react-redux";
 import { encryptText, decryptText } from "./encryption";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import {
+  useGetCreditCardsQuery,
+  useUpdateCreditCardMutation,
+} from "./slices/apiSlice";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
@@ -28,7 +31,14 @@ export default function EditNotePage() {
   const [expiration, setExpiration] = useState("");
   const [csv, setCsv] = useState("");
 
+  const { data: creditCardData, refetch: creditcardRefetch } =
+    useGetCreditCardsQuery(currentFolder);
+  const [updateCreditCard, updateCreditCardResult] =
+    useUpdateCreditCardMutation();
+
   const fetchCreditCardData = async () => {
+    creditcardRefetch();
+
     try {
       if (!loggedInUser) {
         console.error("User not logged in");
@@ -36,16 +46,11 @@ export default function EditNotePage() {
         return;
       }
 
-      const response = await axios.get(
-        `http://localhost:8000/creditcards/${currentFolder}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const creditcards = response.data;
-      const matchedCard = creditcards.find(
+      if (!creditCardData) {
+        return;
+      }
+
+      const matchedCard = creditCardData.find(
         (card) => card.creditcardID === parseInt(id)
       );
       if (!matchedCard) {
@@ -70,7 +75,7 @@ export default function EditNotePage() {
 
   useEffect(() => {
     fetchCreditCardData();
-  }, [id, loggedInUser.folderID]);
+  }, [id, loggedInUser.folderID, creditCardData]);
 
   const handleSubmit = async () => {
     const updatedCardData = {
@@ -83,23 +88,12 @@ export default function EditNotePage() {
     };
 
     try {
-      const response = await axios.put(
-        `http://localhost:8000/creditcards/${id}`,
-        updatedCardData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        alert("Credit Card updated successfully");
-        navigate("/");
-      } else {
-        alert("Failed to update card");
-        console.error("Error updating card:", response.data);
-      }
+      await updateCreditCard({
+        creditCardID: id,
+        updatedData: updatedCardData,
+      });
+      alert("Credit Card updated successfully");
+      navigate("/");
     } catch (error) {
       console.error("Error updating card:", error);
       alert("An unexpected error occurred. Please try again.");
