@@ -116,7 +116,7 @@ export default function NavBar() {
               }} 
               sx={{ minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0 }}
             >
-              Delete User Account
+              Delete Account
             </MenuItem>
 
             <MenuItem 
