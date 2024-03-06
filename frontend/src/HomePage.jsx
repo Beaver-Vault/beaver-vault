@@ -15,7 +15,6 @@ import {
 import { decryptText } from "./encryption";
 import { Edit, Delete } from "@mui/icons-material";
 import ConfirmationDialog from "./DeleteConfirmation";
-import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -24,7 +23,6 @@ export default function HomePage() {
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] = useState(false);
   const [deletingData, setDeletingData] = useState(null);
   const [currentFolderId, setCurrentFolderId] = useState(null);
 
@@ -322,32 +320,6 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataimport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Import
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataexport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Export
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            onClick={() => {
-              nav("/encryptiontest");
-            }}
-          >
-            Encryption Tester
-          </Button>
 
           <Button
             variant="contained"
@@ -357,18 +329,6 @@ export default function HomePage() {
             Cache Testing
           </Button>
 
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() =>
-              nav("/passwordgen")
-            }
-          >
-            Generate Password
-          </Button>
           <Button
             variant="contained"
             sx={{ marginLeft: "1rem" }}
@@ -399,32 +359,6 @@ export default function HomePage() {
             Add Note
           </Button>
         </Box>
-
-        <Button
-          variant="contained"
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => setAccountDeletionDialogOpen(true)}
-        >
-          Delete Account
-        </Button>
-
-        <Button
-          variant="contained"
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => {
-            nav("/trashbin");
-          }}
-        >
-          Trash Bin
-        </Button>
-
-      <DeleteAccountConfirmationDialog
-        open={accountDeletionDialogOpen}
-        handleClose={() => setAccountDeletionDialogOpen(false)}
-        email={loggedInUser["email"]}
-        userID={loggedInUser["userID"]}
-        accessToken={accessToken}
-      />
 
         <TabContext value={currentTab}>
           <Box
