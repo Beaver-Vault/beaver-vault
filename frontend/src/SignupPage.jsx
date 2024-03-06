@@ -116,7 +116,7 @@ export default function SignupPage() {
     };
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/users', userData);
+      const response = await axios.post('${process.env.REACT_APP_API_URL}/users', userData);
 
       if (response.status === 200) {
         console.log('User registered successfully:', response.data);
