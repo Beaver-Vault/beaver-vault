@@ -4,6 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setFolders,
@@ -12,27 +13,20 @@ import {
   setNotes,
 } from "./slices/userInfoSlice";
 import { decryptText } from "./encryption";
-import { Edit, Delete } from "@mui/icons-material";
-import ConfirmationDialog from "./DeleteConfirmation";
-import {
-  useGetFoldersQuery,
-  useGetPasswordsQuery,
-  useGetCreditCardsQuery,
-  useGetNotesQuery,
-  useDeleteUserMutation,
-} from "./slices/apiSlice";
-import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
+import { Cached, Delete } from "@mui/icons-material";
+import ConfirmationDialogTrash from "./DeleteConfirmationTrash";
+import RestoreConfirmationDialog from "./RestoreConfirmations";
 
-export default function HomePage() {
+export default function TrashBinPage() {
   const nav = useNavigate();
   const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] =
-    useState(false);
+  const [RestoreconfirmationDialogOpen, setRestoreConfirmationDialogOpen] = useState(false);  
   const [deletingData, setDeletingData] = useState(null);
+  const [restoringData, setRestoringData] = useState(null);
   const [currentFolderId, setCurrentFolderId] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -41,25 +35,6 @@ export default function HomePage() {
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
-
-  const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
-    loggedInUser["userID"]
-  );
-
-  const { data: passwordData, refetch: passwordRefetch } = useGetPasswordsQuery(
-    folderData ? folderData.map((folder) => folder.folderID) : [-1]
-  );
-
-  const { data: creditcardData, refetch: creditcardRefetch } =
-    useGetCreditCardsQuery(
-      folderData ? folderData.map((folder) => folder.folderID) : [-1]
-    );
-
-  const { data: noteData, refetch: noteRefetch } = useGetNotesQuery(
-    folderData ? folderData.map((folder) => folder.folderID) : [-1]
-  );
-
-  const [deleteUser, deleteUserResult] = useDeleteUserMutation();
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -77,9 +52,9 @@ export default function HomePage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleEdit("passwords", params.row.passwordID)}
+            onClick={() => handleRestore("passwords", params.row.passwordID)}
           >
-            <Edit />
+            <Cached />
           </IconButton>
           <IconButton
             onClick={() => handleDelete("passwords", params.row.passwordID)}
@@ -114,9 +89,9 @@ export default function HomePage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleEdit("creditcards", params.row.creditcardID)}
+            onClick={() => handleRestore("creditcards", params.row.creditcardID)}
           >
-            <Edit />
+            <Cached />
           </IconButton>
           <IconButton
             onClick={() => handleDelete("creditcards", params.row.creditcardID)}
@@ -137,8 +112,8 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("notes", params.row.noteID)}>
-            <Edit />
+          <IconButton onClick={() => handleRestore("notes", params.row.noteID)}>
+            <Cached />
           </IconButton>
           <IconButton onClick={() => handleDelete("notes", params.row.noteID)}>
             <Delete />
@@ -148,17 +123,23 @@ export default function HomePage() {
     },
   ];
 
-  const confirmTrashBin = async () => {
-    const { dataType, dataID } = deletingData;
+
+  const handleRestore = (dataType, dataID) => {
+    setRestoringData({ dataType, dataID });
+    setRestoreConfirmationDialogOpen(true);
+  };
+
+  const confirmRestore = async () => {
+    const { dataType, dataID } = restoringData;
     try {
-        const requestBody = { restore: false };
+        const requestBody = { restore: true };
         await axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, requestBody, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
         });
 
-        setConfirmationDialogOpen(false);
+        setRestoreConfirmationDialogOpen(false);
 
         switch (dataType) {
             case "passwords":
@@ -179,24 +160,6 @@ export default function HomePage() {
 };
 
 
-
-  const handleEdit = (dataType, dataID) => {
-    // Navigate to the edit page based on the data type
-    switch (dataType) {
-      case "passwords":
-        nav(`/editpassword/${dataID}`);
-        break;
-      case "creditcards":
-        nav(`/editcreditcard/${dataID}`);
-        break;
-      case "notes":
-        nav(`/editnote/${dataID}`);
-        break;
-      default:
-        console.error("Invalid data type for edit:", dataType);
-    }
-  };
-
   const handleDelete = (dataType, dataID) => {
     setDeletingData({ dataType, dataID });
     setConfirmationDialogOpen(true);
@@ -205,7 +168,11 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await deleteUser({ dataType, dataID });
+      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       setConfirmationDialogOpen(false);
 
       switch (dataType) {
@@ -237,196 +204,100 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    folderRefetch();
-    passwordRefetch();
-    creditcardRefetch();
-    noteRefetch();
+    const getData = async () => {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/folders/${loggedInUser["userID"]}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const folderData = response.data;
+  
+      let totalPasswords = [];
+      let totalCreditCards = [];
+      let totalNotes = [];
+  
+      for (let folder of folderData) {
+        setCurrentFolderId(folder["folderID"]);
+        const passwordResponse = await axios.get(
+          `${process.env.REACT_APP_API_URL}/passwords/${folder["folderID"]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        let decryptedPasswords = passwordResponse.data
+          .filter(password => password.trashBin === true)
+          .map(password => ({
+            ...password,
+            websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
+            username: decryptText(password.username, loggedInUser.masterKey),
+            encryptedPassword: decryptText(password.encryptedPassword, loggedInUser.masterKey),
+          }));
+        totalPasswords = totalPasswords.concat(decryptedPasswords);
 
-    dispatch(setFolders(folderData));
+        const ccResponse = await axios.get(
+          `${process.env.REACT_APP_API_URL}/creditcards/${folder["folderID"]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        let decryptedCreditCards = ccResponse.data
+          .filter(creditcard => creditcard.trashBin === true)  
+          .map(creditcard => ({
+            ...creditcard,
+            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+            cardholderName: decryptText(creditcard.cardholderName, loggedInUser.masterKey),
+            number: decryptText(creditcard.number, loggedInUser.masterKey),
+            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
+            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+          }));
+        totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
 
-    // Decrypt Passwords
-    if (passwordData) {
-      let passwords = [];
-      for (let password of passwordData) {
-        passwords.push({
-          passwordID: password.passwordID,
-          websiteName: decryptText(
-            password.websiteName,
-            loggedInUser.masterKey
-          ),
-          username: decryptText(password.username, loggedInUser.masterKey),
-          encryptedPassword: decryptText(
-            password.encryptedPassword,
-            loggedInUser.masterKey
-          ),
-        });
+        const noteResponse = await axios.get(
+          `${process.env.REACT_APP_API_URL}/notes/${folder["folderID"]}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        let decryptedNotes = noteResponse.data
+          .filter(note => note.trashBin === true) 
+          .map(note => ({
+            ...note,
+            noteName: decryptText(note.noteName, loggedInUser.masterKey),
+            content: decryptText(note.content, loggedInUser.masterKey),
+          }));
+        totalNotes = totalNotes.concat(decryptedNotes);
       }
-      dispatch(setPasswords(passwords));
-    }
-
-    // Decrypt Credit Cards
-    if (creditcardData) {
-      let creditcards = [];
-      for (let creditcard of creditcardData) {
-        creditcards.push({
-          creditcardID: creditcard.creditcardID,
-          cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-          cardholderName: decryptText(
-            creditcard.cardholderName,
-            loggedInUser.masterKey
-          ),
-          number: decryptText(creditcard.number, loggedInUser.masterKey),
-          expiration: decryptText(
-            creditcard.expiration,
-            loggedInUser.masterKey
-          ),
-          csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-        });
-      }
-      dispatch(setCreditCards(creditcards));
-    }
-
-    // Decrypt Notes
-    if (noteData) {
-      let notes = [];
-      for (let note of noteData) {
-        notes.push({
-          noteID: note.noteID,
-          noteName: decryptText(note.noteName, loggedInUser.masterKey),
-        });
-      }
-      dispatch(setNotes(notes));
-    }
-  }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
+      dispatch(setFolders(folderData));
+      dispatch(setPasswords(totalPasswords));
+      dispatch(setCreditCards(totalCreditCards));
+      dispatch(setNotes(totalNotes));
+    };
+  
+    getData();
+  }, [loggedInUser]);
 
   return (
     <>
-      <ConfirmationDialog
+      <ConfirmationDialogTrash
         open={confirmationDialogOpen}
         handleClose={() => setConfirmationDialogOpen(false)}
         handleConfirm={confirmDeletion}
-        handle30DayTrashBin={confirmTrashBin}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1rem",
-          padding: "1rem",
-        }}
-      >
-        <Box
-          sx={{
-            width: "70%",
-            display: "flex",
-            justifyContent: "flex-start",
-            marginBottom: "1rem",
-          }}
-        >
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataimport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Import
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataexport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Export
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            onClick={() => {
-              nav("/encryptiontest");
-            }}
-          >
-            Encryption Tester
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/cache-test")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Cache Testing
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => nav("/passwordgen")}
-          >
-            Generate Password
-          </Button>
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newpassword");
-            }}
-          >
-            Add Password
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newcreditcard");
-            }}
-          >
-            Add Credit Card
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newnote");
-            }}
-          >
-            Add Note
-          </Button>
-        </Box>
-
-        <Button
-          variant="contained"
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => setAccountDeletionDialogOpen(true)}
-        >
-          Delete Account
-        </Button>
-
-        <Button
-          variant="contained"
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => {
-            nav("/trashbin");
-          }}
-        >
-          Trash Bin
-        </Button>
-
-      <DeleteAccountConfirmationDialog
-        open={accountDeletionDialogOpen}
-        handleClose={() => setAccountDeletionDialogOpen(false)}
-        email={loggedInUser["email"]}
-        userID={loggedInUser["userID"]}
-        accessToken={accessToken}
-      />
+        <RestoreConfirmationDialog
+            open={RestoreconfirmationDialogOpen}
+            handleClose={() => setRestoreConfirmationDialogOpen(false)}
+            handleConfirm={confirmRestore}
+        />
 
         <TabContext value={currentTab}>
           <Box
@@ -520,7 +391,6 @@ export default function HomePage() {
             </Box>
           </TabPanel>
         </TabContext>
-      </Box>
     </>
   );
 }

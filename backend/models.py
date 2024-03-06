@@ -39,6 +39,8 @@ class Passwords(Base):
     username = Column(String(256))
     encryptedPassword = Column(String(256))
     folderID = Column(Integer, ForeignKey("Folders.folderID"))
+    trashBin = Column(Boolean, default=False)
+    deletionDateTime = Column(DateTime, nullable=True)
 
 
 class CreditCard(Base):
@@ -51,6 +53,8 @@ class CreditCard(Base):
     expiration = Column(Integer)
     csv = Column(Integer)
     folderID = Column(Integer, ForeignKey("Folders.folderID"))
+    trashBin = Column(Boolean, default=False)
+    deletionDateTime = Column(DateTime, nullable=True)
 
 
 class Note(Base):
@@ -60,3 +64,5 @@ class Note(Base):
     noteName = Column(String(256))
     content = Column(String(1024))
     folderID = Column(Integer, ForeignKey("Folders.folderID"))
+    trashBin = Column(Boolean, default=False)
+    deletionDateTime = Column(DateTime, nullable=True)

@@ -388,6 +388,63 @@ def update_creditcard(
     return updated_creditcard
 
 
+# PATCH
+
+@app.patch("/passwords/{password_id}")
+def patch_trashbin_password(
+    password_id: int,
+    restore: schemas.TrashBin,  
+    db: Session = Depends(get_db),
+    verified_token=Depends(verify_token)
+):
+    print(restore)
+    if not verified_token:
+        return HTTPException(
+            status_code=401,
+            detail="Token not valid"
+        )
+    updated_password = crud.patch_trashbin_password(db, password_id=password_id, restore=restore.restore)
+    if updated_password is None:
+        raise HTTPException(status_code=404, detail="Password not found")
+    return updated_password
+
+@app.patch("/notes/{note_id}")
+def patch_trashbin_note(
+    note_id: int,
+    restore: schemas.TrashBin,   
+    db: Session = Depends(get_db),
+    verified_token=Depends(verify_token)
+):
+    print(restore)
+    if not verified_token:
+        return HTTPException(
+            status_code=401,
+            detail="Token not valid"
+        )
+    updated_note = crud.patch_trashbin_note(db, note_id=note_id, restore=restore.restore)
+    if updated_note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return updated_note
+
+@app.patch("/creditcards/{creditcard_id}")
+def patch_trashbin_creditcard(
+    creditcard_id: int,
+    restore: schemas.TrashBin,  
+    db: Session = Depends(get_db),
+    verified_token=Depends(verify_token)
+):
+    print(restore)
+    if not verified_token:
+        return HTTPException(
+            status_code=401,
+            detail="Token not valid"
+        )
+    updated_creditcard = crud.patch_trashbin_creditcard(db, creditcard_id=creditcard_id, restore=restore.restore)
+    if updated_creditcard is None:
+        raise HTTPException(status_code=404, detail="Credit card not found")
+    return updated_creditcard
+
+
 # DELETE rows
 
 @app.delete("/users/{user_id}")

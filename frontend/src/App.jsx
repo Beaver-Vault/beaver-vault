@@ -16,6 +16,7 @@ import DataImport from "./DataImport";
 import EditPasswordPage from "./EditPasswordPage";
 import EditNotePage from "./EditNotePage";
 import EditCreditCardPage from "./EditCreditCardPage";
+import TrashBin from "./TrashBin";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -42,6 +43,7 @@ function App() {
           <Route path="/editpassword/:id" element={<EditPasswordPage />} />
           <Route path="/editnote/:id" element={<EditNotePage />} />
           <Route path="/editcreditcard/:id" element={<EditCreditCardPage />} />
+          <Route path="/trashbin" element={<TrashBin />} />
         </Routes>
       </Router>
     </div>
