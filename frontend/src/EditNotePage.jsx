@@ -67,7 +67,6 @@ export default function EditNotePage() {
 
     try {
       await updateNote({ noteID: id, updatedData: updatedNoteData });
-
       alert("Note updated successfully");
       navigate("/");
     } catch (error) {
