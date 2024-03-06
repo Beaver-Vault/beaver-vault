@@ -177,12 +177,12 @@ def patch_trashbin_password(db: Session, password_id: int, restore: bool):
     if db_password is None:
         return None
 
-    if restore == True:
+    if restore:
         db_password.trashBin = False
         db_password.deletionDateTime = None
-    if restore == False:
+    if not restore:
         db_password.trashBin = True
-        db_password.deletionDateTime = datetime.utcnow()  
+        db_password.deletionDateTime = datetime.utcnow()
 
     db.commit()
     db.refresh(db_password)
@@ -195,7 +195,7 @@ def patch_trashbin_note(db: Session, note_id: int, restore: bool):
 
     if restore == True:
         db_note.trashBin = False
-        db_note.deletionDateTime = None  
+        db_note.deletionDateTime = None
     if restore == False:
         db_note.trashBin = True
         db_note.deletionDateTime = datetime.utcnow()
@@ -211,7 +211,7 @@ def patch_trashbin_creditcard(db: Session, creditcard_id: int, restore: bool):
 
     if restore == True:
         db_creditcard.trashBin = False
-        db_creditcard.deletionDateTime = None  
+        db_creditcard.deletionDateTime = None
     if restore == False:
         db_creditcard.trashBin = True
         db_creditcard.deletionDateTime = datetime.utcnow()

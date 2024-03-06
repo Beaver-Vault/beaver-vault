@@ -19,6 +19,7 @@ import {
   useGetPasswordsQuery,
   useGetCreditCardsQuery,
   useGetNotesQuery,
+  useUpdateTrashMutation,
   useDeleteUserMutation,
 } from "./slices/apiSlice";
 import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
@@ -59,7 +60,8 @@ export default function HomePage() {
     folderData ? folderData.map((folder) => folder.folderID) : [-1]
   );
 
-  const [deleteUser, deleteUserResult] = useDeleteUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
+  const [updateTrash] = useUpdateTrashMutation();
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -151,34 +153,36 @@ export default function HomePage() {
   const confirmTrashBin = async () => {
     const { dataType, dataID } = deletingData;
     try {
-        const requestBody = { restore: false };
-        await axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, requestBody, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+      await updateTrash({ dataType, dataID, restore: false });
+      setConfirmationDialogOpen(false);
 
-        setConfirmationDialogOpen(false);
-
-        switch (dataType) {
-            case "passwords":
-                dispatch(setPasswords(allPasswords.filter(password => password.passwordID !== dataID)));
-                break;
-            case "creditcards":
-                dispatch(setCreditCards(allCreditcards.filter(creditcard => creditcard.creditcardID !== dataID)));
-                break;
-            case "notes":
-                dispatch(setNotes(allNotes.filter(note => note.noteID !== dataID)));
-                break;
-            default:
-                break;
-        }
+      switch (dataType) {
+        case "passwords":
+          dispatch(
+            setPasswords(
+              allPasswords.filter((password) => password.passwordID !== dataID)
+            )
+          );
+          break;
+        case "creditcards":
+          dispatch(
+            setCreditCards(
+              allCreditcards.filter(
+                (creditcard) => creditcard.creditcardID !== dataID
+              )
+            )
+          );
+          break;
+        case "notes":
+          dispatch(setNotes(allNotes.filter((note) => note.noteID !== dataID)));
+          break;
+        default:
+          break;
+      }
     } catch (error) {
-        console.error(`Error updating ${dataType}:`, error);
+      console.error(`Error updating ${dataType}:`, error);
     }
-};
-
-
+  };
 
   const handleEdit = (dataType, dataID) => {
     // Navigate to the edit page based on the data type
@@ -248,6 +252,7 @@ export default function HomePage() {
     if (passwordData) {
       let passwords = [];
       for (let password of passwordData) {
+        if (password.trashBin) continue;
         passwords.push({
           passwordID: password.passwordID,
           websiteName: decryptText(
@@ -268,6 +273,7 @@ export default function HomePage() {
     if (creditcardData) {
       let creditcards = [];
       for (let creditcard of creditcardData) {
+        if (creditcard.trashBin) continue;
         creditcards.push({
           creditcardID: creditcard.creditcardID,
           cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
@@ -290,9 +296,11 @@ export default function HomePage() {
     if (noteData) {
       let notes = [];
       for (let note of noteData) {
+        if (note.trashBin) continue;
         notes.push({
           noteID: note.noteID,
           noteName: decryptText(note.noteName, loggedInUser.masterKey),
+          content: decryptText(note.content, loggedInUser.masterKey),
         });
       }
       dispatch(setNotes(notes));
@@ -420,13 +428,13 @@ export default function HomePage() {
           Trash Bin
         </Button>
 
-      <DeleteAccountConfirmationDialog
-        open={accountDeletionDialogOpen}
-        handleClose={() => setAccountDeletionDialogOpen(false)}
-        email={loggedInUser["email"]}
-        userID={loggedInUser["userID"]}
-        accessToken={accessToken}
-      />
+        <DeleteAccountConfirmationDialog
+          open={accountDeletionDialogOpen}
+          handleClose={() => setAccountDeletionDialogOpen(false)}
+          email={loggedInUser["email"]}
+          userID={loggedInUser["userID"]}
+          accessToken={accessToken}
+        />
 
         <TabContext value={currentTab}>
           <Box

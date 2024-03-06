@@ -3,7 +3,7 @@ import { logout, setAccessToken } from "./authSlice";
 import axios from "axios";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:8000",
+  baseUrl: process.env.REACT_APP_API_URL,
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.accessToken;
     if (token) {
@@ -18,7 +18,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   if (result.error && result.error.status === 401) {
     // If the response status is 401 (Unauthorized), try to get a new token
     const refreshResult = await axios.post(
-      "http://localhost:8000/refresh-token",
+      `${process.env.REACT_APP_API_URL}/refresh-token`,
       {
         email: api.getState().auth.user.email,
         refreshToken: api.getState().auth.refreshToken,
@@ -99,6 +99,14 @@ export const apiSlice = createApi({
         body: updatedData,
       }),
     }),
+    // ----- PATCH REQUESTS -----
+    updateTrash: builder.mutation({
+      query: ({ dataType, dataID, restore }) => ({
+        url: `${dataType}/${dataID}`,
+        method: "PATCH",
+        body: { restore: restore },
+      }),
+    }),
     // ----- DELETE REQUESTS -----
     deleteUser: builder.mutation({
       query: ({ dataType, dataID }) => ({
@@ -121,7 +129,10 @@ export const {
   useUpdatePasswordMutation,
   useUpdateCreditCardMutation,
   useUpdateNoteMutation,
+  useUpdateTrashMutation,
   useDeleteUserMutation,
 } = apiSlice;
 
 export default apiSlice.reducer;
+
+// axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`
