@@ -9,6 +9,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export default function SignupPage() {
   const [emailAddress, setEmailAddress] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [userCreated, setUserCreated] = useState(false);
@@ -45,6 +46,22 @@ export default function SignupPage() {
       setErrorMessage('');
     }
   }, [password, confirmPassword, passwordCriteria]);
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmailAddress(newEmail);
+
+    if (!isValidEmail(newEmail)) {
+      setEmailError('Please enter a valid email address.');
+    } else {
+      setEmailError('');
+    }
+  };
 
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
@@ -85,8 +102,8 @@ export default function SignupPage() {
   };
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
+    if (password !== confirmPassword || !isValidEmail(emailAddress)) {
+      alert('Please ensure all fields are valid before submitting.');
       return;
     }
 
@@ -99,7 +116,7 @@ export default function SignupPage() {
     };
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/users`, userData);
+      const response = await axios.post('http://127.0.0.1:8000/users', userData);
 
       if (response.status === 200) {
         console.log('User registered successfully:', response.data);
@@ -136,7 +153,10 @@ export default function SignupPage() {
           <Typography variant='h4'>Getting Started</Typography>
           <TextField
             label='Email Address'
-            onChange={(e) => setEmailAddress(e.target.value)}
+            value={emailAddress}
+            onChange={handleEmailChange}
+            error={!!emailError}
+            helperText={emailError}
             fullWidth
             variant='filled'
             sx={{
@@ -198,7 +218,12 @@ export default function SignupPage() {
               ),
             }}
           />
-          <Button variant='contained' color='primary' onClick={handleRegister} disabled={!!errorMessage}>
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={handleRegister}
+            disabled={!!emailError || !!errorMessage}
+          >
             Register
           </Button>
         </Box>
