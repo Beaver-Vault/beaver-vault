@@ -125,13 +125,3 @@ export const {
 } = apiSlice;
 
 export default apiSlice.reducer;
-
-// GET
-// `http://localhost:8000/creditcards/${currentFolder}`,
-// `http://localhost:8000/passwords/${currentFolder}`,
-// `http://localhost:8000/notes/${currentFolder}`,
-
-// PUT
-// http://localhost:8000/passwords/${id}`,
-// `http://localhost:8000/notes/${id}`,
-//  `http://localhost:8000/creditcards/${id}`,

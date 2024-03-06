@@ -24,6 +24,7 @@ app.add_middleware(
     expose_headers=["Access-Control-Allow-Origin"],
 )
 
+
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -40,7 +41,8 @@ def get_access_token(userEmail: str, db: Session = Depends(get_db)):
 
 
 @app.post("/refresh-token/")
-def get_refresh_token(refreshRequest: schemas.RefreshRequest, db: Session = Depends(get_db)):
+def get_refresh_token(refreshRequest: schemas.RefreshRequest,
+                      db: Session = Depends(get_db)):
     if verify_refresh_token(refreshRequest):
         return create_access_token(crud.get_user_by_email(
             db, refreshRequest.email))
@@ -139,7 +141,8 @@ def verify_mfa(
     refresh_token = create_refresh_token(user_data=user)
     if mfa_type == "login":
         if verify_result:
-            return {"access_token": access_token, "refresh_token": refresh_token}
+            return {"access_token": access_token,
+                    "refresh_token": refresh_token}
         else:
             return None
     else:

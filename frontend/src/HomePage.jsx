@@ -20,6 +20,7 @@ import {
   useGetCreditCardsQuery,
   useGetNotesQuery,
   useDeleteUserMutation,
+} from "./slices/apiSlice";
 import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
 
 export default function HomePage() {
@@ -29,7 +30,8 @@ export default function HomePage() {
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] = useState(false);
+  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] =
+    useState(false);
   const [deletingData, setDeletingData] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -330,9 +332,7 @@ export default function HomePage() {
           <Button
             variant="contained"
             color="error"
-            onClick={() =>
-              nav("/passwordgen")
-            }
+            onClick={() => nav("/passwordgen")}
           >
             Generate Password
           </Button>
@@ -368,18 +368,20 @@ export default function HomePage() {
         </Box>
 
         <Button
-        variant="contained"
-        sx={{ marginLeft: "1rem" }}
-        onClick={() => setAccountDeletionDialogOpen(true)}
-      > Delete Account
-      </Button>
-      <DeleteAccountConfirmationDialog
-        open={accountDeletionDialogOpen}
-        handleClose={() => setAccountDeletionDialogOpen(false)}
-        email={loggedInUser["email"]}
-        userID={loggedInUser["userID"]}
-        accessToken={accessToken}
-      />
+          variant="contained"
+          sx={{ marginLeft: "1rem" }}
+          onClick={() => setAccountDeletionDialogOpen(true)}
+        >
+          {" "}
+          Delete Account
+        </Button>
+        <DeleteAccountConfirmationDialog
+          open={accountDeletionDialogOpen}
+          handleClose={() => setAccountDeletionDialogOpen(false)}
+          email={loggedInUser["email"]}
+          userID={loggedInUser["userID"]}
+          accessToken={accessToken}
+        />
 
         <TabContext value={currentTab}>
           <Box
