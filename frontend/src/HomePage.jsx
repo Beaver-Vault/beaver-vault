@@ -15,6 +15,7 @@ import {
 import { decryptText } from "./encryption";
 import { Edit, Delete } from "@mui/icons-material";
 import ConfirmationDialog from "./DeleteConfirmation";
+import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -23,6 +24,7 @@ export default function HomePage() {
   const [currentTab, setCurrentTab] = useState("0");
   const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] = useState(false);
   const [deletingData, setDeletingData] = useState(null);
   const [currentFolderId, setCurrentFolderId] = useState(null);
 
@@ -124,7 +126,7 @@ export default function HomePage() {
     const { dataType, dataID } = deletingData;
     try {
         const requestBody = { restore: false };
-        await axios.patch(`http://localhost:8000/${dataType}/${dataID}`, requestBody, {
+        await axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, requestBody, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -177,7 +179,7 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -215,7 +217,7 @@ export default function HomePage() {
   useEffect(() => {
     const getData = async () => {
       const response = await axios.get(
-        `http://localhost:8000/folders/${loggedInUser["userID"]}`,
+        `${process.env.REACT_APP_API_URL}/folders/${loggedInUser["userID"]}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -229,9 +231,8 @@ export default function HomePage() {
       let totalNotes = [];
   
       for (let folder of folderData) {
-        setCurrentFolderId(folder["folderID"]);
         const passwordResponse = await axios.get(
-          `http://localhost:8000/passwords/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/passwords/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -249,7 +250,7 @@ export default function HomePage() {
         totalPasswords = totalPasswords.concat(decryptedPasswords);
 
         const ccResponse = await axios.get(
-          `http://localhost:8000/creditcards/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/creditcards/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -269,7 +270,7 @@ export default function HomePage() {
         totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
   
         const noteResponse = await axios.get(
-          `http://localhost:8000/notes/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/notes/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -363,7 +364,6 @@ export default function HomePage() {
             variant="contained"
             color="error"
             onClick={() =>
-              // console.log(passwordGen(12, true, false, false, false))
               nav("/passwordgen")
             }
           >
@@ -401,14 +401,30 @@ export default function HomePage() {
         </Box>
 
         <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/trashbin");
-            }}
-          >
-            Trash Bin
-          </Button>
+          variant="contained"
+          sx={{ marginLeft: "1rem" }}
+          onClick={() => setAccountDeletionDialogOpen(true)}
+        >
+          Delete Account
+        </Button>
+
+        <Button
+          variant="contained"
+          sx={{ marginLeft: "1rem" }}
+          onClick={() => {
+            nav("/trashbin");
+          }}
+        >
+          Trash Bin
+        </Button>
+
+      <DeleteAccountConfirmationDialog
+        open={accountDeletionDialogOpen}
+        handleClose={() => setAccountDeletionDialogOpen(false)}
+        email={loggedInUser["email"]}
+        userID={loggedInUser["userID"]}
+        accessToken={accessToken}
+      />
 
         <TabContext value={currentTab}>
           <Box

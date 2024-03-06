@@ -51,3 +51,6 @@ class Note(BaseModel):
     folderID: int
     trashBin: Optional[bool] = False
     deletionDateTime: Optional[datetime] = None
+
+class TrashBin(BaseModel):
+    restore: bool

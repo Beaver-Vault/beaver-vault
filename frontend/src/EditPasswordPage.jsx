@@ -52,7 +52,7 @@ export default function EditPasswordPage() {
       }
 
       const response = await axios.get(
-        `http://localhost:8000/passwords/${currentFolder}`,
+        `${process.env.REACT_APP_API_URL}/passwords/${currentFolder}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -105,7 +105,7 @@ export default function EditPasswordPage() {
 
     try {
       const response = await axios.put(
-        `http://localhost:8000/passwords/${id}`,
+        `${process.env.REACT_APP_API_URL}/passwords/${id}`,
         updatedPasswordData,
         {
           headers: {

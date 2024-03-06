@@ -133,7 +133,7 @@ export default function TrashBinPage() {
     const { dataType, dataID } = restoringData;
     try {
         const requestBody = { restore: true };
-        await axios.patch(`http://localhost:8000/${dataType}/${dataID}`, requestBody, {
+        await axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, requestBody, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -206,7 +206,7 @@ export default function TrashBinPage() {
   useEffect(() => {
     const getData = async () => {
       const response = await axios.get(
-        `http://localhost:8000/folders/${loggedInUser["userID"]}`,
+        `${process.env.REACT_APP_API_URL}/folders/${loggedInUser["userID"]}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -222,7 +222,7 @@ export default function TrashBinPage() {
       for (let folder of folderData) {
         setCurrentFolderId(folder["folderID"]);
         const passwordResponse = await axios.get(
-          `http://localhost:8000/passwords/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/passwords/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -240,7 +240,7 @@ export default function TrashBinPage() {
         totalPasswords = totalPasswords.concat(decryptedPasswords);
 
         const ccResponse = await axios.get(
-          `http://localhost:8000/creditcards/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/creditcards/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -260,7 +260,7 @@ export default function TrashBinPage() {
         totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
 
         const noteResponse = await axios.get(
-          `http://localhost:8000/notes/${folder["folderID"]}`,
+          `${process.env.REACT_APP_API_URL}/notes/${folder["folderID"]}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

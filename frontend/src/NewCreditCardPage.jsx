@@ -37,7 +37,7 @@ export default function NewCreditCardPage() {
     };
 
     const response = await axios.post(
-      "http://127.0.0.1:8000/creditcards",
+      `${process.env.REACT_APP_API_URL}/creditcards`,
       creditcardData,
       {
         headers: {

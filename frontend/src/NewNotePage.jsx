@@ -30,7 +30,7 @@ export default function NewNotePage() {
       content: encryptText(content, loggedInUser.masterKey),
     };
 
-    const response = await axios.post("http://127.0.0.1:8000/notes", noteData, {
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/notes`, noteData, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

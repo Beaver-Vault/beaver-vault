@@ -10,20 +10,17 @@ from database import SessionLocal
 from mfa import create_qrcode_url
 from access_token import verify_token, create_access_token
 
-# models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
+origins = ["*"]
 
-# CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    # You might want to restrict this to a specific origin in production
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Access-Control-Allow-Origin"],
 )
-
 
 # Dependency
 def get_db():
@@ -32,10 +29,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# CRUD: passwords, notes, credit cards
-# RUD: users, folders
 
 
 # FOR TESTING ONLY
@@ -378,16 +371,17 @@ def update_creditcard(
 @app.patch("/passwords/{password_id}")
 def patch_trashbin_password(
     password_id: int,
-    restore: bool = False,  
+    restore: schemas.TrashBin,  
     db: Session = Depends(get_db),
     verified_token=Depends(verify_token)
 ):
+    print(restore)
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid"
         )
-    updated_password = crud.patch_trashbin_password(db, password_id=password_id, restore=restore)
+    updated_password = crud.patch_trashbin_password(db, password_id=password_id, restore=restore.restore)
     if updated_password is None:
         raise HTTPException(status_code=404, detail="Password not found")
     return updated_password
@@ -395,16 +389,17 @@ def patch_trashbin_password(
 @app.patch("/notes/{note_id}")
 def patch_trashbin_note(
     note_id: int,
-    restore: bool = False,  
+    restore: schemas.TrashBin,   
     db: Session = Depends(get_db),
     verified_token=Depends(verify_token)
 ):
+    print(restore)
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid"
         )
-    updated_note = crud.patch_trashbin_note(db, note_id=note_id, restore=restore)
+    updated_note = crud.patch_trashbin_note(db, note_id=note_id, restore=restore.restore)
     if updated_note is None:
         raise HTTPException(status_code=404, detail="Note not found")
     return updated_note
@@ -412,16 +407,17 @@ def patch_trashbin_note(
 @app.patch("/creditcards/{creditcard_id}")
 def patch_trashbin_creditcard(
     creditcard_id: int,
-    restore: bool = False,  
+    restore: schemas.TrashBin,  
     db: Session = Depends(get_db),
     verified_token=Depends(verify_token)
 ):
+    print(restore)
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid"
         )
-    updated_creditcard = crud.patch_trashbin_creditcard(db, creditcard_id=creditcard_id, restore=restore)
+    updated_creditcard = crud.patch_trashbin_creditcard(db, creditcard_id=creditcard_id, restore=restore.restore)
     if updated_creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
     return updated_creditcard

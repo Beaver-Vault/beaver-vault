@@ -1,4 +1,5 @@
-import { Box, Typography, ButtonBase, Button } from "@mui/material";
+import React from 'react';
+import { Box, Typography, ButtonBase, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "./slices/authSlice";
@@ -10,6 +11,16 @@ export default function NavBar() {
   const dispatch = useDispatch();
 
   const loggedInUser = useSelector((state) => state.auth.user);
+
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const handleSignOut = () => {
     dispatch(logout());
