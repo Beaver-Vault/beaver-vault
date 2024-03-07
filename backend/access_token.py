@@ -28,6 +28,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 
 
 def verify_refresh_token(refresh_request: RefreshRequest):
+    # TODO - Verify refresh token better. This is just a placeholder
     try:
         decoded_token = jwt.decode(
             refresh_request.refreshToken,
@@ -57,6 +58,7 @@ def create_access_token(user_data: User):
 
 
 def create_refresh_token(user_data: User):
+    # TODO - Make refresh token expire after a longer period of time
     to_encode = {
         "email": user_data.email,
     }

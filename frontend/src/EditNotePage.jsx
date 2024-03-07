@@ -26,7 +26,7 @@ export default function EditNotePage() {
 
   const { data: noteData, refetch: noteRefetch } =
     useGetNotesQuery(currentFolder);
-  const [updateNote, updateNoteResult] = useUpdateNoteMutation();
+  const [updateNote] = useUpdateNoteMutation();
 
   const fetchNoteData = async () => {
     noteRefetch();
@@ -66,8 +66,7 @@ export default function EditNotePage() {
     };
 
     try {
-      await updateNote({ noteID: id, updatedData: updatedNoteData });
-
+      await updateNote({ notesID: id, updatedData: updatedNoteData });
       alert("Note updated successfully");
       navigate("/");
     } catch (error) {

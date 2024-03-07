@@ -12,8 +12,9 @@ import {
   setNotes,
 } from "./slices/userInfoSlice";
 import { decryptText } from "./encryption";
-import { Edit, Delete } from "@mui/icons-material";
-import ConfirmationDialog from "./DeleteConfirmation";
+import { Cached, Delete } from "@mui/icons-material";
+import ConfirmationDialogTrash from "./DeleteConfirmationTrash";
+import RestoreConfirmationDialog from "./RestoreConfirmations";
 import {
   useGetFoldersQuery,
   useGetPasswordsQuery,
@@ -22,23 +23,18 @@ import {
   useUpdateTrashMutation,
   useDeleteUserMutation,
 } from "./slices/apiSlice";
-import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
 
-export default function HomePage() {
-  const nav = useNavigate();
+export default function TrashBinPage() {
   const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
-  const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [accountDeletionDialogOpen, setAccountDeletionDialogOpen] =
+  const [RestoreconfirmationDialogOpen, setRestoreConfirmationDialogOpen] =
     useState(false);
   const [deletingData, setDeletingData] = useState(null);
-  const [currentFolderId, setCurrentFolderId] = useState(null);
+  const [restoringData, setRestoringData] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
-  const userFolders = useSelector((state) => state.userInfo.folders);
-  const accessToken = useSelector((state) => state.auth.accessToken);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
@@ -60,8 +56,8 @@ export default function HomePage() {
     folderData ? folderData.map((folder) => folder.folderID) : [-1]
   );
 
-  const [deleteUser] = useDeleteUserMutation();
   const [updateTrash] = useUpdateTrashMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -79,9 +75,9 @@ export default function HomePage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleEdit("passwords", params.row.passwordID)}
+            onClick={() => handleRestore("passwords", params.row.passwordID)}
           >
-            <Edit />
+            <Cached />
           </IconButton>
           <IconButton
             onClick={() => handleDelete("passwords", params.row.passwordID)}
@@ -116,9 +112,11 @@ export default function HomePage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleEdit("creditcards", params.row.creditcardID)}
+            onClick={() =>
+              handleRestore("creditcards", params.row.creditcardID)
+            }
           >
-            <Edit />
+            <Cached />
           </IconButton>
           <IconButton
             onClick={() => handleDelete("creditcards", params.row.creditcardID)}
@@ -139,8 +137,8 @@ export default function HomePage() {
       flex: 1,
       renderCell: (params) => (
         <>
-          <IconButton onClick={() => handleEdit("notes", params.row.noteID)}>
-            <Edit />
+          <IconButton onClick={() => handleRestore("notes", params.row.noteID)}>
+            <Cached />
           </IconButton>
           <IconButton onClick={() => handleDelete("notes", params.row.noteID)}>
             <Delete />
@@ -150,11 +148,16 @@ export default function HomePage() {
     },
   ];
 
-  const confirmTrashBin = async () => {
-    const { dataType, dataID } = deletingData;
+  const handleRestore = (dataType, dataID) => {
+    setRestoringData({ dataType, dataID });
+    setRestoreConfirmationDialogOpen(true);
+  };
+
+  const confirmRestore = async () => {
+    const { dataType, dataID } = restoringData;
     try {
-      await updateTrash({ dataType, dataID, restore: false });
-      setConfirmationDialogOpen(false);
+      await updateTrash({ dataType, dataID, restore: true });
+      setRestoreConfirmationDialogOpen(false);
 
       switch (dataType) {
         case "passwords":
@@ -181,23 +184,6 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error(`Error updating ${dataType}:`, error);
-    }
-  };
-
-  const handleEdit = (dataType, dataID) => {
-    // Navigate to the edit page based on the data type
-    switch (dataType) {
-      case "passwords":
-        nav(`/editpassword/${dataID}`);
-        break;
-      case "creditcards":
-        nav(`/editcreditcard/${dataID}`);
-        break;
-      case "notes":
-        nav(`/editnote/${dataID}`);
-        break;
-      default:
-        console.error("Invalid data type for edit:", dataType);
     }
   };
 
@@ -248,13 +234,12 @@ export default function HomePage() {
 
     dispatch(setFolders(folderData));
 
-    // Decrypt Passwords
     if (passwordData) {
       let passwords = [];
       for (let password of passwordData) {
-        if (password.trashBin) continue;
+        if (!password.trashBin) continue;
         passwords.push({
-          passwordID: password.passwordID,
+          ...password,
           websiteName: decryptText(
             password.websiteName,
             loggedInUser.masterKey
@@ -269,11 +254,10 @@ export default function HomePage() {
       dispatch(setPasswords(passwords));
     }
 
-    // Decrypt Credit Cards
     if (creditcardData) {
       let creditcards = [];
       for (let creditcard of creditcardData) {
-        if (creditcard.trashBin) continue;
+        if (!creditcard.trashBin) continue;
         creditcards.push({
           creditcardID: creditcard.creditcardID,
           cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
@@ -292,15 +276,13 @@ export default function HomePage() {
       dispatch(setCreditCards(creditcards));
     }
 
-    // Decrypt Notes
     if (noteData) {
       let notes = [];
       for (let note of noteData) {
-        if (note.trashBin) continue;
+        if (!note.trashBin) continue;
         notes.push({
           noteID: note.noteID,
           noteName: decryptText(note.noteName, loggedInUser.masterKey),
-          content: decryptText(note.content, loggedInUser.masterKey),
         });
       }
       dispatch(setNotes(notes));
@@ -309,226 +291,110 @@ export default function HomePage() {
 
   return (
     <>
-      <ConfirmationDialog
+      <ConfirmationDialogTrash
         open={confirmationDialogOpen}
         handleClose={() => setConfirmationDialogOpen(false)}
         handleConfirm={confirmDeletion}
-        handle30DayTrashBin={confirmTrashBin}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1rem",
-          padding: "1rem",
-        }}
-      >
+      <RestoreConfirmationDialog
+        open={RestoreconfirmationDialogOpen}
+        handleClose={() => setRestoreConfirmationDialogOpen(false)}
+        handleConfirm={confirmRestore}
+      />
+
+      <TabContext value={currentTab}>
         <Box
           sx={{
-            width: "70%",
+            width: "100%",
             display: "flex",
-            justifyContent: "flex-start",
-            marginBottom: "1rem",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "1rem",
           }}
         >
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataimport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Import
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/dataexport")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Export
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            onClick={() => {
-              nav("/encryptiontest");
-            }}
-          >
-            Encryption Tester
-          </Button>
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/cache-test")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Cache Testing
-          </Button>
-
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-          <label htmlFor="upload" style={{ marginRight: "1rem" }}></label>
-
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => nav("/passwordgen")}
-          >
-            Generate Password
-          </Button>
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newpassword");
-            }}
-          >
-            Add Password
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newcreditcard");
-            }}
-          >
-            Add Credit Card
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{ marginLeft: "1rem" }}
-            onClick={() => {
-              nav("/newnote");
-            }}
-          >
-            Add Note
-          </Button>
+          <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
+            <Tab label="Passwords" value={"0"} />
+            <Tab label="Credit Cards" value={"1"} />
+            <Tab label="Notes" value={"2"} />
+          </TabList>
         </Box>
-
-        <Button
-          variant="contained"
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => setAccountDeletionDialogOpen(true)}
-        >
-          Delete Account
-        </Button>
-
-        <Button
-          variant="contained"
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => {
-            nav("/trashbin");
+        <TabPanel
+          value={"0"}
+          sx={{
+            width: "100%",
           }}
         >
-          Trash Bin
-        </Button>
-
-        <DeleteAccountConfirmationDialog
-          open={accountDeletionDialogOpen}
-          handleClose={() => setAccountDeletionDialogOpen(false)}
-          email={loggedInUser["email"]}
-          userID={loggedInUser["userID"]}
-          accessToken={accessToken}
-        />
-
-        <TabContext value={currentTab}>
           <Box
             sx={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "1rem",
+              width: "70%",
+              height: "50vh",
+              margin: "auto",
             }}
           >
-            <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
-              <Tab label="Passwords" value={"0"} />
-              <Tab label="Credit Cards" value={"1"} />
-              <Tab label="Notes" value={"2"} />
-            </TabList>
+            <DataGrid
+              columns={passwordColumns}
+              rows={allPasswords}
+              getRowId={(row) => row.passwordID}
+              autoPageSize
+              density="compact"
+              disableRowSelectionOnClick
+            />
           </Box>
-          <TabPanel
-            value={"0"}
+        </TabPanel>
+
+        <TabPanel
+          value={"1"}
+          sx={{
+            width: "100%",
+          }}
+        >
+          <Box
             sx={{
-              width: "100%",
+              width: "70%",
+              height: "50vh",
+              margin: "auto",
             }}
           >
-            <Box
-              sx={{
-                width: "70%",
-                height: "50vh",
-                margin: "auto",
-              }}
-            >
+            {
               <DataGrid
-                columns={passwordColumns}
-                rows={allPasswords}
-                getRowId={(row) => row.passwordID}
+                columns={creditCardColumns}
+                rows={allCreditcards}
+                getRowId={(row) => row.creditcardID}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
               />
-            </Box>
-          </TabPanel>
+            }
+          </Box>
+        </TabPanel>
 
-          <TabPanel
-            value={"1"}
+        <TabPanel
+          value={"2"}
+          sx={{
+            width: "100%",
+          }}
+        >
+          <Box
             sx={{
-              width: "100%",
+              width: "70%",
+              height: "50vh",
+              margin: "auto",
             }}
           >
-            <Box
-              sx={{
-                width: "70%",
-                height: "50vh",
-                margin: "auto",
-              }}
-            >
-              {
-                <DataGrid
-                  columns={creditCardColumns}
-                  rows={allCreditcards}
-                  getRowId={(row) => row.creditcardID}
-                  autoPageSize
-                  density="compact"
-                  disableRowSelectionOnClick
-                />
-              }
-            </Box>
-          </TabPanel>
-
-          <TabPanel
-            value={"2"}
-            sx={{
-              width: "100%",
-            }}
-          >
-            <Box
-              sx={{
-                width: "70%",
-                height: "50vh",
-                margin: "auto",
-              }}
-            >
-              {
-                <DataGrid
-                  columns={notesColumns}
-                  rows={allNotes}
-                  getRowId={(row) => row.noteID}
-                  autoPageSize
-                  density="compact"
-                  disableRowSelectionOnClick
-                />
-              }
-            </Box>
-          </TabPanel>
-        </TabContext>
-      </Box>
+            {
+              <DataGrid
+                columns={notesColumns}
+                rows={allNotes}
+                getRowId={(row) => row.noteID}
+                autoPageSize
+                density="compact"
+                disableRowSelectionOnClick
+              />
+            }
+          </Box>
+        </TabPanel>
+      </TabContext>
     </>
   );
 }

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 import models
 import schemas
@@ -166,6 +167,55 @@ def update_creditcard(db: Session, creditcard_id: int, creditcard: schemas.Credi
     db_creditcard.expiration = creditcard.expiration if creditcard.expiration is not None else db_creditcard.expiration
     db_creditcard.csv = creditcard.csv if creditcard.csv is not None else db_creditcard.csv
     db_creditcard.folderID = creditcard.folderID if creditcard.folderID is not None else db_creditcard.folderID
+    db.commit()
+    db.refresh(db_creditcard)
+    return db_creditcard
+
+
+def patch_trashbin_password(db: Session, password_id: int, restore: bool):
+    db_password = db.query(models.Passwords).filter(models.Passwords.passwordID == password_id).first()
+    if db_password is None:
+        return None
+
+    if restore:
+        db_password.trashBin = False
+        db_password.deletionDateTime = None
+    if not restore:
+        db_password.trashBin = True
+        db_password.deletionDateTime = datetime.utcnow()
+
+    db.commit()
+    db.refresh(db_password)
+    return db_password
+
+def patch_trashbin_note(db: Session, note_id: int, restore: bool):
+    db_note = db.query(models.Note).filter(models.Note.noteID == note_id).first()
+    if db_note is None:
+        return None
+
+    if restore == True:
+        db_note.trashBin = False
+        db_note.deletionDateTime = None
+    if restore == False:
+        db_note.trashBin = True
+        db_note.deletionDateTime = datetime.utcnow()
+
+    db.commit()
+    db.refresh(db_note)
+    return db_note
+
+def patch_trashbin_creditcard(db: Session, creditcard_id: int, restore: bool):
+    db_creditcard = db.query(models.CreditCard).filter(models.CreditCard.creditcardID == creditcard_id).first()
+    if db_creditcard is None:
+        return None
+
+    if restore == True:
+        db_creditcard.trashBin = False
+        db_creditcard.deletionDateTime = None
+    if restore == False:
+        db_creditcard.trashBin = True
+        db_creditcard.deletionDateTime = datetime.utcnow()
+
     db.commit()
     db.refresh(db_creditcard)
     return db_creditcard

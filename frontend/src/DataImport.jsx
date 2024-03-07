@@ -63,7 +63,7 @@ export default function DataImportPage() {
           };
 
           await axios.post(
-            "http://127.0.0.1:8000/passwords",
+            `${process.env.REACT_APP_API_URL}/passwords`,
             encryptedPasswordData,
             {
               headers: {
@@ -92,7 +92,7 @@ export default function DataImportPage() {
           };
 
           await axios.post(
-            "http://127.0.0.1:8000/creditcards",
+            `${process.env.REACT_APP_API_URL}/creditcards`,
             encryptedCreditCardData,
             {
               headers: {
@@ -111,7 +111,7 @@ export default function DataImportPage() {
             content: encryptText(note.content, loggedInUser.masterKey),
           };
 
-          await axios.post("http://127.0.0.1:8000/notes", encryptedNoteData, {
+          await axios.post(`${process.env.REACT_APP_API_URL}/notes`, encryptedNoteData, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },

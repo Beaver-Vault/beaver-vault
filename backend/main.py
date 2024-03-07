@@ -12,18 +12,16 @@ from access_token import (verify_token, verify_refresh_token,
                           create_access_token,
                           create_refresh_token)
 
-# models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
+origins = ["*"]
 
-# CORS settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    # You might want to restrict this to a specific origin in production
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Access-Control-Allow-Origin"],
 )
 
 
@@ -36,10 +34,6 @@ def get_db():
         db.close()
 
 
-# CRUD: passwords, notes, credit cards
-# RUD: users, folders
-
-
 # FOR TESTING ONLY
 @app.get("/access-token/{userEmail}")
 def get_access_token(userEmail: str, db: Session = Depends(get_db)):
@@ -47,7 +41,8 @@ def get_access_token(userEmail: str, db: Session = Depends(get_db)):
 
 
 @app.post("/refresh-token/")
-def get_refresh_token(refreshRequest: schemas.RefreshRequest, db: Session = Depends(get_db)):
+def get_refresh_token(refreshRequest: schemas.RefreshRequest,
+                      db: Session = Depends(get_db)):
     if verify_refresh_token(refreshRequest):
         return create_access_token(crud.get_user_by_email(
             db, refreshRequest.email))
@@ -146,7 +141,8 @@ def verify_mfa(
     refresh_token = create_refresh_token(user_data=user)
     if mfa_type == "login":
         if verify_result:
-            return {"access_token": access_token, "refresh_token": refresh_token}
+            return {"access_token": access_token,
+                    "refresh_token": refresh_token}
         else:
             return None
     else:
@@ -387,6 +383,63 @@ def update_creditcard(
             detail="Token not valid")
     updated_creditcard = crud.update_creditcard(db, creditcard_id=creditcard_id,
                                                 creditcard=creditcard)
+    if updated_creditcard is None:
+        raise HTTPException(status_code=404, detail="Credit card not found")
+    return updated_creditcard
+
+
+# PATCH
+
+@app.patch("/passwords/{password_id}")
+def patch_trashbin_password(
+    password_id: int,
+    restore: schemas.TrashBin,  
+    db: Session = Depends(get_db),
+    verified_token=Depends(verify_token)
+):
+    print(restore)
+    if not verified_token:
+        return HTTPException(
+            status_code=401,
+            detail="Token not valid"
+        )
+    updated_password = crud.patch_trashbin_password(db, password_id=password_id, restore=restore.restore)
+    if updated_password is None:
+        raise HTTPException(status_code=404, detail="Password not found")
+    return updated_password
+
+@app.patch("/notes/{note_id}")
+def patch_trashbin_note(
+    note_id: int,
+    restore: schemas.TrashBin,   
+    db: Session = Depends(get_db),
+    verified_token=Depends(verify_token)
+):
+    print(restore)
+    if not verified_token:
+        return HTTPException(
+            status_code=401,
+            detail="Token not valid"
+        )
+    updated_note = crud.patch_trashbin_note(db, note_id=note_id, restore=restore.restore)
+    if updated_note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return updated_note
+
+@app.patch("/creditcards/{creditcard_id}")
+def patch_trashbin_creditcard(
+    creditcard_id: int,
+    restore: schemas.TrashBin,  
+    db: Session = Depends(get_db),
+    verified_token=Depends(verify_token)
+):
+    print(restore)
+    if not verified_token:
+        return HTTPException(
+            status_code=401,
+            detail="Token not valid"
+        )
+    updated_creditcard = crud.patch_trashbin_creditcard(db, creditcard_id=creditcard_id, restore=restore.restore)
     if updated_creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
     return updated_creditcard
