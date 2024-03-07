@@ -52,5 +52,11 @@ class Note(BaseModel):
     trashBin: Optional[bool] = False
     deletionDateTime: Optional[datetime] = None
 
+
+class RefreshRequest(BaseModel):
+    email: str
+    refreshToken: str
+
+
 class TrashBin(BaseModel):
     restore: bool

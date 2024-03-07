@@ -2,7 +2,7 @@ import { Box, Typography, TextField, Button } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setAccessToken } from "./slices/authSlice";
+import { setAccessToken, setRefreshToken } from "./slices/authSlice";
 import axios from "axios";
 
 export default function MFALoginPage() {
@@ -17,13 +17,15 @@ export default function MFALoginPage() {
       mfaCode,
       email: user.email,
     });
-    const accessToken = result.data;
-    if (accessToken !== null) {
-      dispatch(setAccessToken(accessToken));
-      navigate("/");
-    } else {
+    if (result.data === null) {
       alert("Invalid MFA Code");
+      return;
     }
+    const { access_token: accessToken, refresh_token: refreshToken } =
+      result.data;
+    dispatch(setAccessToken(accessToken));
+    dispatch(setRefreshToken(refreshToken));
+    navigate("/");
   };
 
   return (

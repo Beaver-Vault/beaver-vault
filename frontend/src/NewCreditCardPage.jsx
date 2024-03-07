@@ -10,14 +10,15 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { encryptText } from "./encryption";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAddCreditCardMutation } from "./slices/apiSlice";
 
 export default function NewCreditCardPage() {
   const navigate = useNavigate();
 
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
-  const accessToken = useSelector((state) => state.auth.accessToken);
+
+  const [addCreditCardPost, creditCardResult] = useAddCreditCardMutation();
 
   const [currentFolder, setCurrentFolder] = useState(userFolders[0].folderID);
   const [cardname, setCardname] = useState("");
@@ -36,22 +37,13 @@ export default function NewCreditCardPage() {
       csv: encryptText(csv, loggedInUser.masterKey),
     };
 
-    const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}/creditcards`,
-      creditcardData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    if (response.status === 200) {
-      alert("Credit Card added successfully");
+    try {
+      await addCreditCardPost(creditcardData);
+      alert("Password added successfully");
       navigate("/");
-    } else {
-      alert("Failed to add Credit Card");
-      console.log(response.data);
+    } catch (error) {
+      console.error("Error adding password:", error);
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 
