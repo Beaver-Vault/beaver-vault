@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "js-cookie": "^3.0.5",
-    "redux-persist": "^6.0.0",
-    "redux-thunk": "^3.1.0"
-  }
-}
