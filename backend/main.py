@@ -8,7 +8,9 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from mfa import create_qrcode_url
-from access_token import verify_token, create_access_token
+from access_token import (verify_token, verify_refresh_token,
+                          create_access_token,
+                          create_refresh_token)
 
 app = FastAPI()
 origins = ["*"]
@@ -21,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["Access-Control-Allow-Origin"],
 )
+
 
 # Dependency
 def get_db():
@@ -36,7 +39,16 @@ def get_db():
 def get_access_token(userEmail: str, db: Session = Depends(get_db)):
     return create_access_token(crud.get_user_by_email(db, userEmail))
 
-# Create rows
+
+@app.post("/refresh-token/")
+def get_refresh_token(refreshRequest: schemas.RefreshRequest,
+                      db: Session = Depends(get_db)):
+    if verify_refresh_token(refreshRequest):
+        return create_access_token(crud.get_user_by_email(
+            db, refreshRequest.email))
+    else:
+        return HTTPException(status_code=401, detail="Refresh Token not valid")
+
 
 @app.post("/users")
 def create_user(
@@ -124,9 +136,15 @@ def verify_mfa(
     secret_key = user.get_totpKey()
     mfa_code = mfa_verify.mfaCode
     verify_result = mfa.verify_mfa(secret_key, mfa_code)
+    print(verify_result)
     access_token = create_access_token(user_data=user)
+    refresh_token = create_refresh_token(user_data=user)
     if mfa_type == "login":
-        return access_token if verify_result else None
+        if verify_result:
+            return {"access_token": access_token,
+                    "refresh_token": refresh_token}
+        else:
+            return None
     else:
         return verify_result
 
@@ -165,17 +183,21 @@ def get_password(
     return password
 
 
-@app.get("/passwords/{folder_id}")
-def get_passwords_by_user(
-        folder_id: int,
+@app.get("/passwords/{folder_ids}")
+def get_passwords_by_folder_ids(
+        folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
+    all_folder_ids = folder_ids.split(',')
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid")
-    passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
-    return passwords
+    output = []
+    for folder_id in all_folder_ids:
+        passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
+        output.extend(passwords)
+    return output
 
 
 @app.get("/notes")

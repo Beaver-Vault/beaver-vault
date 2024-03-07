@@ -4,7 +4,6 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setFolders,
@@ -16,25 +15,49 @@ import { decryptText } from "./encryption";
 import { Cached, Delete } from "@mui/icons-material";
 import ConfirmationDialogTrash from "./DeleteConfirmationTrash";
 import RestoreConfirmationDialog from "./RestoreConfirmations";
+import {
+  useGetFoldersQuery,
+  useGetPasswordsQuery,
+  useGetCreditCardsQuery,
+  useGetNotesQuery,
+  useUpdateTrashMutation,
+  useDeleteUserMutation,
+} from "./slices/apiSlice";
 
 export default function TrashBinPage() {
-  const nav = useNavigate();
   const dispatch = useDispatch();
 
   const [currentTab, setCurrentTab] = useState("0");
-  const [importedData, setImportedData] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [RestoreconfirmationDialogOpen, setRestoreConfirmationDialogOpen] = useState(false);  
+  const [RestoreconfirmationDialogOpen, setRestoreConfirmationDialogOpen] =
+    useState(false);
   const [deletingData, setDeletingData] = useState(null);
   const [restoringData, setRestoringData] = useState(null);
-  const [currentFolderId, setCurrentFolderId] = useState(null);
 
   const loggedInUser = useSelector((state) => state.auth.user);
-  const userFolders = useSelector((state) => state.userInfo.folders);
-  const accessToken = useSelector((state) => state.auth.accessToken);
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
+
+  const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
+    loggedInUser["userID"]
+  );
+
+  const { data: passwordData, refetch: passwordRefetch } = useGetPasswordsQuery(
+    folderData ? folderData.map((folder) => folder.folderID) : [-1]
+  );
+
+  const { data: creditcardData, refetch: creditcardRefetch } =
+    useGetCreditCardsQuery(
+      folderData ? folderData.map((folder) => folder.folderID) : [-1]
+    );
+
+  const { data: noteData, refetch: noteRefetch } = useGetNotesQuery(
+    folderData ? folderData.map((folder) => folder.folderID) : [-1]
+  );
+
+  const [updateTrash] = useUpdateTrashMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -89,7 +112,9 @@ export default function TrashBinPage() {
       renderCell: (params) => (
         <>
           <IconButton
-            onClick={() => handleRestore("creditcards", params.row.creditcardID)}
+            onClick={() =>
+              handleRestore("creditcards", params.row.creditcardID)
+            }
           >
             <Cached />
           </IconButton>
@@ -123,7 +148,6 @@ export default function TrashBinPage() {
     },
   ];
 
-
   const handleRestore = (dataType, dataID) => {
     setRestoringData({ dataType, dataID });
     setRestoreConfirmationDialogOpen(true);
@@ -132,33 +156,36 @@ export default function TrashBinPage() {
   const confirmRestore = async () => {
     const { dataType, dataID } = restoringData;
     try {
-        const requestBody = { restore: true };
-        await axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, requestBody, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+      await updateTrash({ dataType, dataID, restore: true });
+      setRestoreConfirmationDialogOpen(false);
 
-        setRestoreConfirmationDialogOpen(false);
-
-        switch (dataType) {
-            case "passwords":
-                dispatch(setPasswords(allPasswords.filter(password => password.passwordID !== dataID)));
-                break;
-            case "creditcards":
-                dispatch(setCreditCards(allCreditcards.filter(creditcard => creditcard.creditcardID !== dataID)));
-                break;
-            case "notes":
-                dispatch(setNotes(allNotes.filter(note => note.noteID !== dataID)));
-                break;
-            default:
-                break;
-        }
+      switch (dataType) {
+        case "passwords":
+          dispatch(
+            setPasswords(
+              allPasswords.filter((password) => password.passwordID !== dataID)
+            )
+          );
+          break;
+        case "creditcards":
+          dispatch(
+            setCreditCards(
+              allCreditcards.filter(
+                (creditcard) => creditcard.creditcardID !== dataID
+              )
+            )
+          );
+          break;
+        case "notes":
+          dispatch(setNotes(allNotes.filter((note) => note.noteID !== dataID)));
+          break;
+        default:
+          break;
+      }
     } catch (error) {
-        console.error(`Error updating ${dataType}:`, error);
+      console.error(`Error updating ${dataType}:`, error);
     }
-};
-
+  };
 
   const handleDelete = (dataType, dataID) => {
     setDeletingData({ dataType, dataID });
@@ -168,11 +195,7 @@ export default function TrashBinPage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`http://localhost:8000/${dataType}/${dataID}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await deleteUser({ dataType, dataID });
       setConfirmationDialogOpen(false);
 
       switch (dataType) {
@@ -204,86 +227,67 @@ export default function TrashBinPage() {
   };
 
   useEffect(() => {
-    const getData = async () => {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/folders/${loggedInUser["userID"]}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const folderData = response.data;
-  
-      let totalPasswords = [];
-      let totalCreditCards = [];
-      let totalNotes = [];
-  
-      for (let folder of folderData) {
-        setCurrentFolderId(folder["folderID"]);
-        const passwordResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/passwords/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedPasswords = passwordResponse.data
-          .filter(password => password.trashBin === true)
-          .map(password => ({
-            ...password,
-            websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
-            username: decryptText(password.username, loggedInUser.masterKey),
-            encryptedPassword: decryptText(password.encryptedPassword, loggedInUser.masterKey),
-          }));
-        totalPasswords = totalPasswords.concat(decryptedPasswords);
+    folderRefetch();
+    passwordRefetch();
+    creditcardRefetch();
+    noteRefetch();
 
-        const ccResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/creditcards/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedCreditCards = ccResponse.data
-          .filter(creditcard => creditcard.trashBin === true)  
-          .map(creditcard => ({
-            ...creditcard,
-            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-            cardholderName: decryptText(creditcard.cardholderName, loggedInUser.masterKey),
-            number: decryptText(creditcard.number, loggedInUser.masterKey),
-            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
-            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-          }));
-        totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
+    dispatch(setFolders(folderData));
 
-        const noteResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/notes/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedNotes = noteResponse.data
-          .filter(note => note.trashBin === true) 
-          .map(note => ({
-            ...note,
-            noteName: decryptText(note.noteName, loggedInUser.masterKey),
-            content: decryptText(note.content, loggedInUser.masterKey),
-          }));
-        totalNotes = totalNotes.concat(decryptedNotes);
+    if (passwordData) {
+      let passwords = [];
+      for (let password of passwordData) {
+        if (!password.trashBin) continue;
+        passwords.push({
+          ...password,
+          websiteName: decryptText(
+            password.websiteName,
+            loggedInUser.masterKey
+          ),
+          username: decryptText(password.username, loggedInUser.masterKey),
+          encryptedPassword: decryptText(
+            password.encryptedPassword,
+            loggedInUser.masterKey
+          ),
+        });
       }
-      dispatch(setFolders(folderData));
-      dispatch(setPasswords(totalPasswords));
-      dispatch(setCreditCards(totalCreditCards));
-      dispatch(setNotes(totalNotes));
-    };
-  
-    getData();
-  }, [loggedInUser]);
+      dispatch(setPasswords(passwords));
+    }
+
+    if (creditcardData) {
+      let creditcards = [];
+      for (let creditcard of creditcardData) {
+        if (!creditcard.trashBin) continue;
+        creditcards.push({
+          creditcardID: creditcard.creditcardID,
+          cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+          cardholderName: decryptText(
+            creditcard.cardholderName,
+            loggedInUser.masterKey
+          ),
+          number: decryptText(creditcard.number, loggedInUser.masterKey),
+          expiration: decryptText(
+            creditcard.expiration,
+            loggedInUser.masterKey
+          ),
+          csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+        });
+      }
+      dispatch(setCreditCards(creditcards));
+    }
+
+    if (noteData) {
+      let notes = [];
+      for (let note of noteData) {
+        if (!note.trashBin) continue;
+        notes.push({
+          noteID: note.noteID,
+          noteName: decryptText(note.noteName, loggedInUser.masterKey),
+        });
+      }
+      dispatch(setNotes(notes));
+    }
+  }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
 
   return (
     <>
@@ -293,104 +297,104 @@ export default function TrashBinPage() {
         handleConfirm={confirmDeletion}
       />
 
-        <RestoreConfirmationDialog
-            open={RestoreconfirmationDialogOpen}
-            handleClose={() => setRestoreConfirmationDialogOpen(false)}
-            handleConfirm={confirmRestore}
-        />
+      <RestoreConfirmationDialog
+        open={RestoreconfirmationDialogOpen}
+        handleClose={() => setRestoreConfirmationDialogOpen(false)}
+        handleConfirm={confirmRestore}
+      />
 
-        <TabContext value={currentTab}>
+      <TabContext value={currentTab}>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
+          <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
+            <Tab label="Passwords" value={"0"} />
+            <Tab label="Credit Cards" value={"1"} />
+            <Tab label="Notes" value={"2"} />
+          </TabList>
+        </Box>
+        <TabPanel
+          value={"0"}
+          sx={{
+            width: "100%",
+          }}
+        >
           <Box
             sx={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "1rem",
+              width: "70%",
+              height: "50vh",
+              margin: "auto",
             }}
           >
-            <TabList onChange={(e, newValue) => setCurrentTab(newValue)}>
-              <Tab label="Passwords" value={"0"} />
-              <Tab label="Credit Cards" value={"1"} />
-              <Tab label="Notes" value={"2"} />
-            </TabList>
+            <DataGrid
+              columns={passwordColumns}
+              rows={allPasswords}
+              getRowId={(row) => row.passwordID}
+              autoPageSize
+              density="compact"
+              disableRowSelectionOnClick
+            />
           </Box>
-          <TabPanel
-            value={"0"}
+        </TabPanel>
+
+        <TabPanel
+          value={"1"}
+          sx={{
+            width: "100%",
+          }}
+        >
+          <Box
             sx={{
-              width: "100%",
+              width: "70%",
+              height: "50vh",
+              margin: "auto",
             }}
           >
-            <Box
-              sx={{
-                width: "70%",
-                height: "50vh",
-                margin: "auto",
-              }}
-            >
+            {
               <DataGrid
-                columns={passwordColumns}
-                rows={allPasswords}
-                getRowId={(row) => row.passwordID}
+                columns={creditCardColumns}
+                rows={allCreditcards}
+                getRowId={(row) => row.creditcardID}
                 autoPageSize
                 density="compact"
                 disableRowSelectionOnClick
               />
-            </Box>
-          </TabPanel>
+            }
+          </Box>
+        </TabPanel>
 
-          <TabPanel
-            value={"1"}
+        <TabPanel
+          value={"2"}
+          sx={{
+            width: "100%",
+          }}
+        >
+          <Box
             sx={{
-              width: "100%",
+              width: "70%",
+              height: "50vh",
+              margin: "auto",
             }}
           >
-            <Box
-              sx={{
-                width: "70%",
-                height: "50vh",
-                margin: "auto",
-              }}
-            >
-              {
-                <DataGrid
-                  columns={creditCardColumns}
-                  rows={allCreditcards}
-                  getRowId={(row) => row.creditcardID}
-                  autoPageSize
-                  density="compact"
-                  disableRowSelectionOnClick
-                />
-              }
-            </Box>
-          </TabPanel>
-
-          <TabPanel
-            value={"2"}
-            sx={{
-              width: "100%",
-            }}
-          >
-            <Box
-              sx={{
-                width: "70%",
-                height: "50vh",
-                margin: "auto",
-              }}
-            >
-              {
-                <DataGrid
-                  columns={notesColumns}
-                  rows={allNotes}
-                  getRowId={(row) => row.noteID}
-                  autoPageSize
-                  density="compact"
-                  disableRowSelectionOnClick
-                />
-              }
-            </Box>
-          </TabPanel>
-        </TabContext>
+            {
+              <DataGrid
+                columns={notesColumns}
+                rows={allNotes}
+                getRowId={(row) => row.noteID}
+                autoPageSize
+                density="compact"
+                disableRowSelectionOnClick
+              />
+            }
+          </Box>
+        </TabPanel>
+      </TabContext>
     </>
   );
 }

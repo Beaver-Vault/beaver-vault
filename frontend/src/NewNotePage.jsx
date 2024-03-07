@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { encryptText } from "./encryption";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAddNoteMutation } from "./slices/apiSlice";
 
 export default function NewNotePage() {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ export default function NewNotePage() {
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
   const accessToken = useSelector((state) => state.auth.accessToken);
+
+  const [addNotePost, noteResult] = useAddNoteMutation();
 
   const [currentFolder, setCurrentFolder] = useState(userFolders[0].folderID);
   const [notename, setNotename] = useState("");
@@ -30,18 +32,13 @@ export default function NewNotePage() {
       content: encryptText(content, loggedInUser.masterKey),
     };
 
-    const response = await axios.post(`${process.env.REACT_APP_API_URL}/notes`, noteData, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (response.status === 200) {
+    try {
+      await addNotePost(noteData);
       alert("Note added successfully");
       navigate("/");
-    } else {
-      alert("Failed to add note");
-      console.log(response.data);
+    } catch (error) {
+      console.error("Error adding note:", error);
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 

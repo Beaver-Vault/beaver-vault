@@ -4,7 +4,6 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import PasswordCell from "./PasswordCell";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setFolders,
@@ -15,6 +14,14 @@ import {
 import { decryptText } from "./encryption";
 import { Edit, Delete } from "@mui/icons-material";
 import ConfirmationDialog from "./DeleteConfirmation";
+import {
+  useGetFoldersQuery,
+  useGetPasswordsQuery,
+  useGetCreditCardsQuery,
+  useGetNotesQuery,
+  useUpdateTrashMutation,
+  useDeleteUserMutation,
+} from "./slices/apiSlice";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -32,6 +39,26 @@ export default function HomePage() {
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
+
+  const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
+    loggedInUser["userID"]
+  );
+
+  const { data: passwordData, refetch: passwordRefetch } = useGetPasswordsQuery(
+    folderData ? folderData.map((folder) => folder.folderID) : [-1]
+  );
+
+  const { data: creditcardData, refetch: creditcardRefetch } =
+    useGetCreditCardsQuery(
+      folderData ? folderData.map((folder) => folder.folderID) : [-1]
+    );
+
+  const { data: noteData, refetch: noteRefetch } = useGetNotesQuery(
+    folderData ? folderData.map((folder) => folder.folderID) : [-1]
+  );
+
+  const [deleteUser] = useDeleteUserMutation();
+  const [updateTrash] = useUpdateTrashMutation();
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -123,34 +150,36 @@ export default function HomePage() {
   const confirmTrashBin = async () => {
     const { dataType, dataID } = deletingData;
     try {
-        const requestBody = { restore: false };
-        await axios.patch(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, requestBody, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+      await updateTrash({ dataType, dataID, restore: false });
+      setConfirmationDialogOpen(false);
 
-        setConfirmationDialogOpen(false);
-
-        switch (dataType) {
-            case "passwords":
-                dispatch(setPasswords(allPasswords.filter(password => password.passwordID !== dataID)));
-                break;
-            case "creditcards":
-                dispatch(setCreditCards(allCreditcards.filter(creditcard => creditcard.creditcardID !== dataID)));
-                break;
-            case "notes":
-                dispatch(setNotes(allNotes.filter(note => note.noteID !== dataID)));
-                break;
-            default:
-                break;
-        }
+      switch (dataType) {
+        case "passwords":
+          dispatch(
+            setPasswords(
+              allPasswords.filter((password) => password.passwordID !== dataID)
+            )
+          );
+          break;
+        case "creditcards":
+          dispatch(
+            setCreditCards(
+              allCreditcards.filter(
+                (creditcard) => creditcard.creditcardID !== dataID
+              )
+            )
+          );
+          break;
+        case "notes":
+          dispatch(setNotes(allNotes.filter((note) => note.noteID !== dataID)));
+          break;
+        default:
+          break;
+      }
     } catch (error) {
-        console.error(`Error updating ${dataType}:`, error);
+      console.error(`Error updating ${dataType}:`, error);
     }
-};
-
-
+  };
 
   const handleEdit = (dataType, dataID) => {
     // Navigate to the edit page based on the data type
@@ -177,11 +206,7 @@ export default function HomePage() {
   const confirmDeletion = async () => {
     const { dataType, dataID } = deletingData;
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/${dataType}/${dataID}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await deleteUser({ dataType, dataID });
       setConfirmationDialogOpen(false);
 
       switch (dataType) {
@@ -213,85 +238,71 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    const getData = async () => {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/folders/${loggedInUser["userID"]}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const folderData = response.data;
-  
-      let totalPasswords = [];
-      let totalCreditCards = [];
-      let totalNotes = [];
-  
-      for (let folder of folderData) {
-        const passwordResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/passwords/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedPasswords = passwordResponse.data
-          .filter(password => password.trashBin === false)  
-          .map(password => ({
-            ...password,
-            websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
-            username: decryptText(password.username, loggedInUser.masterKey),
-            encryptedPassword: decryptText(password.encryptedPassword, loggedInUser.masterKey),
-          }));
-        totalPasswords = totalPasswords.concat(decryptedPasswords);
+    folderRefetch();
+    passwordRefetch();
+    creditcardRefetch();
+    noteRefetch();
 
-        const ccResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/creditcards/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedCreditCards = ccResponse.data
-          .filter(creditcard => creditcard.trashBin === false)  
-          .map(creditcard => ({
-            ...creditcard,
-            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-            cardholderName: decryptText(creditcard.cardholderName, loggedInUser.masterKey),
-            number: decryptText(creditcard.number, loggedInUser.masterKey),
-            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
-            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-          }));
-        totalCreditCards = totalCreditCards.concat(decryptedCreditCards);
-  
-        const noteResponse = await axios.get(
-          `${process.env.REACT_APP_API_URL}/notes/${folder["folderID"]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        let decryptedNotes = noteResponse.data
-          .filter(note => note.trashBin === false)  
-          .map(note => ({
-            ...note,
-            noteName: decryptText(note.noteName, loggedInUser.masterKey),
-            content: decryptText(note.content, loggedInUser.masterKey),
-          }));
-        totalNotes = totalNotes.concat(decryptedNotes);
+    dispatch(setFolders(folderData));
+
+    // Decrypt Passwords
+    if (passwordData) {
+      let passwords = [];
+      for (let password of passwordData) {
+        if (password.trashBin) continue;
+        passwords.push({
+          passwordID: password.passwordID,
+          websiteName: decryptText(
+            password.websiteName,
+            loggedInUser.masterKey
+          ),
+          username: decryptText(password.username, loggedInUser.masterKey),
+          encryptedPassword: decryptText(
+            password.encryptedPassword,
+            loggedInUser.masterKey
+          ),
+        });
       }
-      dispatch(setFolders(folderData));
-      dispatch(setPasswords(totalPasswords));
-      dispatch(setCreditCards(totalCreditCards));
-      dispatch(setNotes(totalNotes));
-    };
-  
-    getData();
-  }, [loggedInUser]);
+      dispatch(setPasswords(passwords));
+    }
+
+    // Decrypt Credit Cards
+    if (creditcardData) {
+      let creditcards = [];
+      for (let creditcard of creditcardData) {
+        if (creditcard.trashBin) continue;
+        creditcards.push({
+          creditcardID: creditcard.creditcardID,
+          cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+          cardholderName: decryptText(
+            creditcard.cardholderName,
+            loggedInUser.masterKey
+          ),
+          number: decryptText(creditcard.number, loggedInUser.masterKey),
+          expiration: decryptText(
+            creditcard.expiration,
+            loggedInUser.masterKey
+          ),
+          csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+        });
+      }
+      dispatch(setCreditCards(creditcards));
+    }
+
+    // Decrypt Notes
+    if (noteData) {
+      let notes = [];
+      for (let note of noteData) {
+        if (note.trashBin) continue;
+        notes.push({
+          noteID: note.noteID,
+          noteName: decryptText(note.noteName, loggedInUser.masterKey),
+          content: decryptText(note.content, loggedInUser.masterKey),
+        });
+      }
+      dispatch(setNotes(notes));
+    }
+  }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
 
   return (
     <>

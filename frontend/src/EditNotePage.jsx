@@ -10,14 +10,13 @@ import {
 import { useSelector } from "react-redux";
 import { encryptText, decryptText } from "./encryption";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import { useGetNotesQuery, useUpdateNoteMutation } from "./slices/apiSlice";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
-  const accessToken = useSelector((state) => state.auth.accessToken);
 
   const [currentFolder, setCurrentFolder] = useState(
     userFolders.length > 0 ? userFolders[0].folderID : ""
@@ -25,24 +24,23 @@ export default function EditNotePage() {
   const [notename, setNotename] = useState("");
   const [content, setContent] = useState("");
 
+  const { data: noteData, refetch: noteRefetch } =
+    useGetNotesQuery(currentFolder);
+  const [updateNote] = useUpdateNoteMutation();
+
   const fetchNoteData = async () => {
+    noteRefetch();
     try {
       if (!loggedInUser) {
         console.error("User not logged in");
         navigate("/");
         return;
       }
+      if (!noteData) {
+        return;
+      }
 
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/notes/${currentFolder}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const notes = response.data;
-      const matchedNote = notes.find((note) => note.noteID === parseInt(id));
+      const matchedNote = noteData.find((note) => note.noteID === parseInt(id));
       if (!matchedNote) {
         console.error("Note not found");
         navigate("/");
@@ -58,7 +56,7 @@ export default function EditNotePage() {
 
   useEffect(() => {
     fetchNoteData();
-  }, [id, loggedInUser.folderID]);
+  }, [id, loggedInUser.folderID, noteData]);
 
   const handleSubmit = async () => {
     const updatedNoteData = {
@@ -68,23 +66,9 @@ export default function EditNotePage() {
     };
 
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/notes/${id}`,
-        updatedNoteData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        alert("Note updated successfully");
-        navigate("/");
-      } else {
-        alert("Failed to update note");
-        console.error("Error updating note:", response.data);
-      }
+      await updateNote({ notesID: id, updatedData: updatedNoteData });
+      alert("Note updated successfully");
+      navigate("/");
     } catch (error) {
       console.error("Error updating note:", error);
       alert("An unexpected error occurred. Please try again.");

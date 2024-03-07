@@ -34,7 +34,6 @@ export default function LoginPage() {
         ...response.data,
       };
       dispatch(login(newUserData));
-      // navigate("/");
     } else {
       alert("Invalid email or password");
     }

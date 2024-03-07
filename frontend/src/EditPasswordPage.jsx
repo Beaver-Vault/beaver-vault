@@ -8,16 +8,17 @@ import {
   Button,
   FormControlLabel,
   Checkbox,
-  LinearProgress,
   IconButton,
   InputAdornment,
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { encryptText, decryptText } from "./encryption";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import {
+  useGetPasswordsQuery,
+  useUpdatePasswordMutation,
+} from "./slices/apiSlice";
 import PasswordGenerator from "./PasswordGenPage";
-import zxcvbn from "zxcvbn";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -26,7 +27,6 @@ export default function EditPasswordPage() {
   const { id } = useParams();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
-  const accessToken = useSelector((state) => state.auth.accessToken);
 
   const [currentFolder, setCurrentFolder] = useState(
     userFolders.length > 0 ? userFolders[0].folderID : ""
@@ -37,30 +37,27 @@ export default function EditPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [strengthColor, setStrengthColor] = useState("grey");
-  const [strengthLabel, setStrengthLabel] = useState("");
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
+
+  const { data: passwordData, refetch: passwordRefetch } =
+    useGetPasswordsQuery(currentFolder);
+  const [updatePassword, updatePasswordResult] = useUpdatePasswordMutation();
 
   // Fetch the password data using the ID
   const fetchPasswordData = async () => {
+    passwordRefetch();
+
     try {
       if (!loggedInUser) {
         console.error("User not logged in");
         navigate("/");
         return;
       }
-
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/passwords/${currentFolder}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const passwords = response.data;
-      const matchedPassword = passwords.find(
+      if (!passwordData) {
+        return;
+      }
+      // const passwords = response.data;
+      const matchedPassword = passwordData.find(
         (password) => password.passwordID === parseInt(id)
       );
       if (!matchedPassword) {
@@ -88,7 +85,7 @@ export default function EditPasswordPage() {
 
   useEffect(() => {
     fetchPasswordData();
-  }, [id, loggedInUser.folderID]);
+  }, [id, loggedInUser.folderID, passwordData]);
 
   const handleSubmit = async () => {
     if (password !== confirmPassword) {
@@ -104,23 +101,9 @@ export default function EditPasswordPage() {
     };
 
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/passwords/${id}`,
-        updatedPasswordData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        alert("Password updated successfully");
-        navigate("/");
-      } else {
-        alert("Failed to update password");
-        console.error("Error updating password:", response.data);
-      }
+      await updatePassword({ id, updatedPasswordData });
+      alert("Password updated successfully");
+      navigate("/");
     } catch (error) {
       console.error("Error updating password:", error);
       alert("An unexpected error occurred. Please try again.");
