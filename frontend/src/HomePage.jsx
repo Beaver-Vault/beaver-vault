@@ -331,15 +331,6 @@ export default function HomePage() {
             marginBottom: "1rem",
           }}
         >
-
-          <Button
-            variant="contained"
-            onClick={() => nav("/cache-test")}
-            sx={{ marginLeft: "1rem" }}
-          >
-            Cache Testing
-          </Button>
-
           <Button
             variant="contained"
             sx={{ marginLeft: "1rem" }}

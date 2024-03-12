@@ -100,6 +100,16 @@ export default function NavBar() {
             </MenuItem>
 
             <MenuItem 
+              onClick={() => { 
+                navigate('/cache-test');
+                handleClose();
+              }} 
+              sx={{ minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0 }}
+            >
+              Cache Testing
+            </MenuItem>
+
+            <MenuItem 
               onClick={() => {
                 navigate('/passwordgen');
                 handleClose();
