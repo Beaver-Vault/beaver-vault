@@ -50,7 +50,7 @@ def create_access_token(user_data: User):
         "email": user_data.email,
     }
     now = datetime.utcnow()
-    expire = now + timedelta(seconds=30)
+    expire = now + timedelta(minutes=20)
     to_encode.update({"exp": expire.timestamp()})
     encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"),
                              algorithm="HS256")
