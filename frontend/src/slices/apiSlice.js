@@ -65,14 +65,14 @@ export const apiSlice = createApi({
     }),
     addCreditCard: builder.mutation({
       query: (newCreditCard) => ({
-        url: `creditcards/`,
+        url: `creditcards`,
         method: "POST",
         body: newCreditCard,
       }),
     }),
     addNote: builder.mutation({
       query: (newNote) => ({
-        url: `notes/`,
+        url: `notes`,
         method: "POST",
         body: newNote,
       }),
