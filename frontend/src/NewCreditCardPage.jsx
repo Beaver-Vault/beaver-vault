@@ -39,7 +39,7 @@ export default function NewCreditCardPage() {
 
     try {
       await addCreditCardPost(creditcardData);
-      alert("Password added successfully");
+      alert("Credit Card added successfully");
       navigate("/");
     } catch (error) {
       console.error("Error adding password:", error);

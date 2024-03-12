@@ -58,7 +58,7 @@ export const apiSlice = createApi({
     // ----- POST REQUESTS -----
     addPassword: builder.mutation({
       query: (newPassword) => ({
-        url: `passwords/`,
+        url: `passwords`,
         method: "POST",
         body: newPassword,
       }),
