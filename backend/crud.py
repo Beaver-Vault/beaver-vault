@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import models
 import schemas
@@ -171,6 +171,10 @@ def update_creditcard(db: Session, creditcard_id: int, creditcard: schemas.Credi
     db.refresh(db_creditcard)
     return db_creditcard
 
+# Trashbin (PATCH)
+
+delete_date = datetime.now().replace(tzinfo=None, microsecond=0, second=0, minute=0, hour=0) + timedelta(days=30)
+
 
 def patch_trashbin_password(db: Session, password_id: int, restore: bool):
     db_password = db.query(models.Passwords).filter(models.Passwords.passwordID == password_id).first()
@@ -182,7 +186,7 @@ def patch_trashbin_password(db: Session, password_id: int, restore: bool):
         db_password.deletionDateTime = None
     if not restore:
         db_password.trashBin = True
-        db_password.deletionDateTime = datetime.utcnow()
+        db_password.deletionDateTime = delete_date
 
     db.commit()
     db.refresh(db_password)
@@ -198,7 +202,7 @@ def patch_trashbin_note(db: Session, note_id: int, restore: bool):
         db_note.deletionDateTime = None
     if restore == False:
         db_note.trashBin = True
-        db_note.deletionDateTime = datetime.utcnow()
+        db_note.deletionDateTime = delete_date
 
     db.commit()
     db.refresh(db_note)
@@ -214,7 +218,7 @@ def patch_trashbin_creditcard(db: Session, creditcard_id: int, restore: bool):
         db_creditcard.deletionDateTime = None
     if restore == False:
         db_creditcard.trashBin = True
-        db_creditcard.deletionDateTime = datetime.utcnow()
+        db_creditcard.deletionDateTime = delete_date
 
     db.commit()
     db.refresh(db_creditcard)
