@@ -62,6 +62,7 @@ export default function TrashBinPage() {
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
     { field: "username", headerName: "Username", flex: 1 },
+    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "encryptedPassword",
       headerName: "Password",
@@ -92,6 +93,7 @@ export default function TrashBinPage() {
   const creditCardColumns = [
     { field: "cardName", headerName: "Card Name", flex: 1 },
     { field: "cardholderName", headerName: "Cardholder Name", flex: 1 },
+    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "number",
       headerName: "Number",
@@ -131,6 +133,7 @@ export default function TrashBinPage() {
   const notesColumns = [
     { field: "noteName", headerName: "Note Name", flex: 1 },
     { field: "content", headerName: "Content", flex: 1 },
+    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "actions",
       headerName: "Actions",
@@ -235,6 +238,7 @@ export default function TrashBinPage() {
     dispatch(setFolders(folderData));
 
     if (passwordData) {
+      console.log("Password Data:", passwordData);
       let passwords = [];
       for (let password of passwordData) {
         if (!password.trashBin) continue;
@@ -249,12 +253,14 @@ export default function TrashBinPage() {
             password.encryptedPassword,
             loggedInUser.masterKey
           ),
+          deletionDateTime: new Date(password.deletionDateTime).toISOString().split('T')[0],
         });
       }
       dispatch(setPasswords(passwords));
     }
 
     if (creditcardData) {
+      console.log("Credit Card Data:", creditcardData);
       let creditcards = [];
       for (let creditcard of creditcardData) {
         if (!creditcard.trashBin) continue;
@@ -271,18 +277,22 @@ export default function TrashBinPage() {
             loggedInUser.masterKey
           ),
           csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+          deletionDateTime: new Date(creditcard.deletionDateTime).toISOString().split('T')[0],
         });
       }
       dispatch(setCreditCards(creditcards));
     }
 
     if (noteData) {
+      console.log("Note Data:", noteData);
       let notes = [];
       for (let note of noteData) {
         if (!note.trashBin) continue;
         notes.push({
           noteID: note.noteID,
           noteName: decryptText(note.noteName, loggedInUser.masterKey),
+          content: decryptText(note.content, loggedInUser.masterKey),
+          deletionDateTime: new Date(note.deletionDateTime).toISOString().split('T')[0],
         });
       }
       dispatch(setNotes(notes));
