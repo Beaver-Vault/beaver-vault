@@ -2,7 +2,7 @@ import { Box, Typography, TextField, Button } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setAccessToken, setRefreshToken } from "./slices/authSlice";
+import { setAccessToken, setRefreshToken } from "../slices/authSlice";
 import axios from "axios";
 
 export default function MFALoginPage() {
@@ -13,10 +13,13 @@ export default function MFALoginPage() {
   const [mfaCode, setMfaCode] = useState("");
 
   const handleSubmit = async () => {
-    const result = await axios.post(`${process.env.REACT_APP_API_URL}/mfa/login`, {
-      mfaCode,
-      email: user.email,
-    });
+    const result = await axios.post(
+      `${process.env.REACT_APP_API_URL}/mfa/login`,
+      {
+        mfaCode,
+        email: user.email,
+      }
+    );
     if (result.data === null) {
       alert("Invalid MFA Code");
       return;

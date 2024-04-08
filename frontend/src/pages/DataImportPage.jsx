@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { encryptText } from "./encryption";
+import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
 
 export default function DataImportPage() {
@@ -111,11 +111,15 @@ export default function DataImportPage() {
             content: encryptText(note.content, loggedInUser.masterKey),
           };
 
-          await axios.post(`${process.env.REACT_APP_API_URL}/notes`, encryptedNoteData, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
+          await axios.post(
+            `${process.env.REACT_APP_API_URL}/notes`,
+            encryptedNoteData,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
         }
       }
 

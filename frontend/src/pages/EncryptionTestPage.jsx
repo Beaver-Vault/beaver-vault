@@ -1,4 +1,4 @@
-import { pdfk, encryptText, decryptText } from "./encryption";
+import { pdfk, encryptText, decryptText } from "../scripts/encryption";
 import { TextField, Button, Box } from "@mui/material";
 import { useState } from "react";
 

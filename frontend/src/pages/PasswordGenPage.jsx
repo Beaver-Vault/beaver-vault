@@ -10,7 +10,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { passwordGen } from "./passwordGen";
+import { passwordGen } from "../scripts/passwordGen";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 export default function PasswordGenPage() {

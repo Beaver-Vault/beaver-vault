@@ -2,7 +2,7 @@ import { Box, Tab, Button, IconButton } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import PasswordCell from "./PasswordCell";
+import PasswordCell from "../components/PasswordCell";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -10,11 +10,11 @@ import {
   setPasswords,
   setCreditCards,
   setNotes,
-} from "./slices/userInfoSlice";
-import { decryptText } from "./encryption";
+} from "../slices/userInfoSlice";
+import { decryptText } from "../scripts/encryption";
 import { Cached, Delete } from "@mui/icons-material";
-import ConfirmationDialogTrash from "./DeleteConfirmationTrash";
-import RestoreConfirmationDialog from "./RestoreConfirmations";
+import ConfirmationDialogTrash from "../components/DeleteConfirmationTrash";
+import RestoreConfirmationDialog from "../components/RestoreConfirmations";
 import {
   useGetFoldersQuery,
   useGetPasswordsQuery,
@@ -22,7 +22,7 @@ import {
   useGetNotesQuery,
   useUpdateTrashMutation,
   useDeleteUserMutation,
-} from "./slices/apiSlice";
+} from "../slices/apiSlice";
 
 export default function TrashBinPage() {
   const dispatch = useDispatch();
@@ -253,7 +253,9 @@ export default function TrashBinPage() {
             password.encryptedPassword,
             loggedInUser.masterKey
           ),
-          deletionDateTime: new Date(password.deletionDateTime).toISOString().split('T')[0],
+          deletionDateTime: new Date(password.deletionDateTime)
+            .toISOString()
+            .split("T")[0],
         });
       }
       dispatch(setPasswords(passwords));
@@ -277,7 +279,9 @@ export default function TrashBinPage() {
             loggedInUser.masterKey
           ),
           csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-          deletionDateTime: new Date(creditcard.deletionDateTime).toISOString().split('T')[0],
+          deletionDateTime: new Date(creditcard.deletionDateTime)
+            .toISOString()
+            .split("T")[0],
         });
       }
       dispatch(setCreditCards(creditcards));
@@ -292,7 +296,9 @@ export default function TrashBinPage() {
           noteID: note.noteID,
           noteName: decryptText(note.noteName, loggedInUser.masterKey),
           content: decryptText(note.content, loggedInUser.masterKey),
-          deletionDateTime: new Date(note.deletionDateTime).toISOString().split('T')[0],
+          deletionDateTime: new Date(note.deletionDateTime)
+            .toISOString()
+            .split("T")[0],
         });
       }
       dispatch(setNotes(notes));

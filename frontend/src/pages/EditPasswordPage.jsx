@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,26 +8,25 @@ import {
   Button,
   FormControlLabel,
   Checkbox,
-  LinearProgress,
   IconButton,
   InputAdornment,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { encryptText } from "./encryption";
-import { useNavigate } from "react-router-dom";
-import { useAddPasswordMutation } from "./slices/apiSlice";
+import { encryptText, decryptText } from "../scripts/encryption";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useGetPasswordsQuery,
+  useUpdatePasswordMutation,
+} from "../slices/apiSlice";
 import PasswordGenerator from "./PasswordGenPage";
-
-import zxcvbn from "zxcvbn";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-export default function NewPasswordPage() {
+export default function EditPasswordPage() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
-
-  const [addPasswordPost, passwordResult] = useAddPasswordMutation();
 
   const [currentFolder, setCurrentFolder] = useState(
     userFolders.length > 0 ? userFolders[0].folderID : ""
@@ -38,78 +37,55 @@ export default function NewPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [strengthColor, setStrengthColor] = useState("grey");
-  const [strengthLabel, setStrengthLabel] = useState("");
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
 
-  const passwordCriteria = [
-    { label: "Minimum 8 characters", test: (input) => input.length >= 8 },
-    {
-      label: "At least one uppercase letter",
-      test: (input) => /[A-Z]/.test(input),
-    },
-    {
-      label: "At least one lowercase letter",
-      test: (input) => /[a-z]/.test(input),
-    },
-    { label: "At least one number", test: (input) => /[0-9]/.test(input) },
-    {
-      label: "At least one special character",
-      test: (input) => /[^A-Za-z0-9]/.test(input),
-    },
-  ];
-  const [passwordValidation, setPasswordValidation] = useState(
-    passwordCriteria.map((criteria) => ({ ...criteria, isMet: false }))
-  );
+  const { data: passwordData, refetch: passwordRefetch } =
+    useGetPasswordsQuery(currentFolder);
+  const [updatePassword, updatePasswordResult] = useUpdatePasswordMutation();
 
-  const handlePasswordChange = (e) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
+  // Fetch the password data using the ID
+  const fetchPasswordData = async () => {
+    passwordRefetch();
 
-    const evaluation = zxcvbn(newPassword);
-    setPasswordStrength(evaluation.score / 4);
-    switch (evaluation.score) {
-      case 0:
-      case 1:
-        setStrengthColor("red");
-        setStrengthLabel("Weak");
-        break;
-      case 2:
-        setStrengthColor("yellow");
-        setStrengthLabel("Fair");
-        break;
-      case 3:
-        setStrengthColor("orange");
-        setStrengthLabel("Good");
-        break;
-      case 4:
-        setStrengthColor("green");
-        setStrengthLabel("Strong");
-        break;
-      default:
-        setStrengthColor("grey");
-        setStrengthLabel("");
+    try {
+      if (!loggedInUser) {
+        console.error("User not logged in");
+        navigate("/");
+        return;
+      }
+      if (!passwordData) {
+        return;
+      }
+      // const passwords = response.data;
+      const matchedPassword = passwordData.find(
+        (password) => password.passwordID === parseInt(id)
+      );
+      if (!matchedPassword) {
+        console.error("Password not found");
+        navigate("/");
+        return;
+      }
+      setCurrentFolder(matchedPassword.folderID);
+      setWebsite(
+        decryptText(matchedPassword.websiteName, loggedInUser.masterKey)
+      );
+      setUsername(
+        decryptText(matchedPassword.username, loggedInUser.masterKey)
+      );
+      setPassword(
+        decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey)
+      );
+      setConfirmPassword(
+        decryptText(matchedPassword.encryptedPassword, loggedInUser.masterKey)
+      );
+    } catch (error) {
+      console.error("Error fetching password data:", error);
     }
-
-    setPasswordsMatch(newPassword === confirmPassword);
-
-    const validationResults = passwordCriteria.map((criteria) => ({
-      ...criteria,
-      isMet: criteria.test(newPassword),
-    }));
-    setPasswordValidation(validationResults);
   };
 
-  const handleConfirmPasswordChange = (e) => {
-    const newConfirmPassword = e.target.value;
-    setConfirmPassword(newConfirmPassword);
-    setPasswordsMatch(password === newConfirmPassword);
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  useEffect(() => {
+    fetchPasswordData();
+  }, [id, loggedInUser.folderID, passwordData]);
 
   const handleSubmit = async () => {
     if (password !== confirmPassword) {
@@ -117,7 +93,7 @@ export default function NewPasswordPage() {
       return;
     }
 
-    const passwordData = {
+    const updatedPasswordData = {
       folderID: currentFolder,
       websiteName: encryptText(website, loggedInUser.masterKey),
       username: encryptText(username, loggedInUser.masterKey),
@@ -125,11 +101,11 @@ export default function NewPasswordPage() {
     };
 
     try {
-      await addPasswordPost(passwordData).unwrap();
-      alert("Password added successfully");
+      await updatePassword({ id, updatedPasswordData });
+      alert("Password updated successfully");
       navigate("/");
     } catch (error) {
-      console.error("Error adding password:", error);
+      console.error("Error updating password:", error);
       alert("An unexpected error occurred. Please try again.");
     }
   };
@@ -146,7 +122,7 @@ export default function NewPasswordPage() {
         margin: "auto",
       }}
     >
-      <Typography variant="h4">Add New Password</Typography>
+      <Typography variant="h4">Edit Password</Typography>
       <Select
         fullWidth
         value={currentFolder}
@@ -178,13 +154,13 @@ export default function NewPasswordPage() {
         label="Password"
         type={showPassword ? "text" : "password"}
         value={password}
-        onChange={handlePasswordChange}
+        onChange={(e) => setPassword(e.target.value)}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
                 aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
+                onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -192,36 +168,13 @@ export default function NewPasswordPage() {
           ),
         }}
       />
-      <LinearProgress
-        variant="determinate"
-        value={passwordStrength * 100}
-        sx={{
-          width: "100%",
-          marginTop: "8px",
-          marginBottom: "8px",
-          backgroundColor: "lightgrey",
-          "& .MuiLinearProgress-bar": { backgroundColor: strengthColor },
-        }}
-      />
-      <Typography variant="caption" display="block" gutterBottom>
-        Password Strength: {strengthLabel}
-      </Typography>
-      {passwordValidation.map((criteria, index) => (
-        <Typography
-          key={index}
-          variant="caption"
-          sx={{ color: criteria.isMet ? "green" : "red" }}
-        >
-          {criteria.isMet ? "✓" : "✗"} {criteria.label}
-        </Typography>
-      ))}
       <TextField
         fullWidth
         variant="outlined"
         label="Confirm Password"
         type={showPassword ? "text" : "password"}
         value={confirmPassword}
-        onChange={handleConfirmPasswordChange}
+        onChange={(e) => setConfirmPassword(e.target.value)}
         error={!passwordsMatch}
         helperText={!passwordsMatch ? "Passwords do not match" : ""}
       />

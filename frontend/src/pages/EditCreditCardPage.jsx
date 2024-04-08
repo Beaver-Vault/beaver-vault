@@ -8,12 +8,12 @@ import {
   Button,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { encryptText, decryptText } from "./encryption";
+import { encryptText, decryptText } from "../scripts/encryption";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetCreditCardsQuery,
   useUpdateCreditCardMutation,
-} from "./slices/apiSlice";
+} from "../slices/apiSlice";
 
 export default function EditNotePage() {
   const navigate = useNavigate();

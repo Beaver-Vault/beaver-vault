@@ -1,9 +1,9 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
-import { pdfk } from "./encryption";
+import { pdfk } from "../scripts/encryption";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "./slices/authSlice";
+import { login } from "../slices/authSlice";
 import MFALoginPage from "./MFALoginPage";
 
 export default function LoginPage() {

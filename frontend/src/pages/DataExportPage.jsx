@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { decryptText } from "./encryption";
+import { decryptText } from "../scripts/encryption";
 
 export default function DataExportPage() {
   const loggedInUser = useSelector((state) => state.auth.user);

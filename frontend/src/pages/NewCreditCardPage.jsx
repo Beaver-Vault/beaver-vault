@@ -8,9 +8,9 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { encryptText } from "./encryption";
+import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
-import { useAddCreditCardMutation } from "./slices/apiSlice";
+import { useAddCreditCardMutation } from "../slices/apiSlice";
 
 export default function NewCreditCardPage() {
   const navigate = useNavigate();
