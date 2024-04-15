@@ -2,8 +2,6 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
 import NavBar from "./components/NavBar";
 import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
 import HomePage from "./pages/HomePage";
 import PasswordGenPage from "./pages/PasswordGenPage";
 import EncryptionTestPage from "./pages/EncryptionTestPage";
@@ -24,14 +22,12 @@ function App() {
   return (
     <div>
       <Router>
-        <NavBar />
+        {loggedInUser ? <NavBar /> : null}
         <Routes>
           <Route
             path="/"
             element={loggedInUser ? <HomePage /> : <LandingPage />}
           />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
           <Route path="/passwordgen" element={<PasswordGenPage />} />
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
           <Route path="/newpassword" element={<NewPasswordPage />} />

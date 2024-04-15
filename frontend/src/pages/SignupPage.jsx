@@ -175,13 +175,12 @@ export default function SignupPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: "1rem",
-            padding: "1rem",
             margin: "auto",
-            width: "40%",
+            width: "100%",
           }}
         >
-          <Typography variant="h4">Getting Started</Typography>
           <TextField
+            autoFocus
             label="Email Address"
             value={emailAddress}
             onChange={handleEmailChange}
@@ -264,6 +263,7 @@ export default function SignupPage() {
             }}
           />
           <Button
+            fullWidth
             variant="contained"
             color="primary"
             onClick={handleRegister}
