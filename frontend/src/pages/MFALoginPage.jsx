@@ -1,34 +1,47 @@
-import { Box, Typography, TextField, Button } from "@mui/material";
+import { Box, Typography, TextField } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setAccessToken, setRefreshToken } from "../slices/authSlice";
 import axios from "axios";
 
 export default function MFALoginPage() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
 
   const [mfaCode, setMfaCode] = useState("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (the_code) => {
     const result = await axios.post(
       `${process.env.REACT_APP_API_URL}/mfa/login`,
       {
-        mfaCode,
+        mfaCode: the_code,
         email: user.email,
       }
     );
     if (result.data === null) {
       alert("Invalid MFA Code");
+      setMfaCode("");
       return;
     }
     const { access_token: accessToken, refresh_token: refreshToken } =
       result.data;
     dispatch(setAccessToken(accessToken));
     dispatch(setRefreshToken(refreshToken));
-    navigate("/");
+  };
+
+  const onTextChange = (e) => {
+    const value = e.target.value;
+    if (value.length > 6) {
+      return;
+    }
+    const last_char = value[value.length - 1];
+    if (isNaN(last_char) && value !== "") {
+      return;
+    }
+    setMfaCode(value);
+    if (value.length === 6) {
+      handleSubmit(value);
+    }
   };
 
   return (
@@ -43,19 +56,34 @@ export default function MFALoginPage() {
           padding: "1rem",
         }}
       >
-        <Typography variant="h4">Multi-factor Authentication</Typography>
-        <Typography variant="body1">
+        <Typography
+          variant="h5"
+          sx={{
+            textAlign: "center",
+          }}
+        >
+          Multi-factor Authentication
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            textAlign: "center",
+          }}
+        >
           Enter your 6 digit code from your Authenticator App
         </Typography>
         <TextField
-          type="number"
-          onChange={(e) => {
-            setMfaCode(e.target.value);
+          value={mfaCode}
+          autoFocus
+          onChange={onTextChange}
+          sx={{
+            "& .MuiInputBase-input": {
+              textAlign: "center",
+              fontSize: "3rem",
+              padding: "0",
+            },
           }}
         />
-        <Button variant="contained" onClick={handleSubmit}>
-          Submit
-        </Button>
       </Box>
     </>
   );

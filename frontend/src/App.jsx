@@ -2,7 +2,8 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
 import NavBar from "./components/NavBar";
 import LandingPage from "./pages/LandingPage";
-import HomePage from "./pages/HomePage";
+// import HomePage from "./pages/HomePage";
+import HomePage_new from "./pages/HomePage_new";
 import PasswordGenPage from "./pages/PasswordGenPage";
 import EncryptionTestPage from "./pages/EncryptionTestPage";
 import NewPasswordPage from "./pages/NewPasswordPage";
@@ -17,7 +18,7 @@ import EditCreditCardPage from "./pages/EditCreditCardPage";
 import TrashBin from "./pages/TrashBinPage";
 
 function App() {
-  const loggedInUser = useSelector((state) => state.auth.user);
+  const loggedInUser = useSelector((state) => state.auth.accessToken);
 
   return (
     <div>
@@ -26,14 +27,14 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={loggedInUser ? <HomePage /> : <LandingPage />}
+            // element={loggedInUser ? <HomePage /> : <LandingPage />}
+            element={loggedInUser ? <HomePage_new /> : <LandingPage />}
           />
           <Route path="/passwordgen" element={<PasswordGenPage />} />
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
           <Route path="/newpassword" element={<NewPasswordPage />} />
           <Route path="/newcreditcard" element={<NewCreditCardPage />} />
           <Route path="/newnote" element={<NewNotePage />} />
-          <Route path="/cache-test" element={<CacheTestPage />} />
           <Route path="/dataexport" element={<DataExport />} />
           <Route path="/dataimport" element={<DataImport />} />
           <Route path="/editpassword/:id" element={<EditPasswordPage />} />

@@ -7,10 +7,6 @@ export const mainTheme = createTheme({
       light: "#ffb780",
       dark: "#CC5900",
     },
-    background: {
-      default: "#ff0000",
-      paper: "#ff0000",
-    },
   },
   shape: {
     borderRadius: 10,
