@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from mfa import create_qrcode_url
+from exception_handler import validate_token
 from access_token import (verify_token, verify_refresh_token,
                           create_access_token,
                           create_refresh_token)
@@ -70,10 +71,7 @@ def create_folder(
         folder: schemas.Folder,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     folder = crud.create_folder(db=db, folder=folder)
     if folder is None:
         raise HTTPException(status_code=404, detail="Folder not found")
@@ -85,10 +83,7 @@ def create_password(
         password: schemas.Password,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     password = crud.create_password(db=db, password=password)
     if password is None:
         raise HTTPException(status_code=404, detail="Password not found")
@@ -100,10 +95,7 @@ def create_note(
         note: schemas.Note,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     notes = crud.create_note(db=db, note=note)
     if notes is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -115,10 +107,7 @@ def create_creditcard(
         creditcard: schemas.CreditCard,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     creditcard = crud.create_creditcard(db=db, creditcard=creditcard)
     if creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
@@ -173,10 +162,7 @@ def get_password(
         password_id: int, db:
         Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     password = crud.get_password(db, password_id=password_id)
     if password is None:
         raise HTTPException(status_code=404, detail="Password not found")
@@ -189,10 +175,7 @@ def get_passwords_by_folder_ids(
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     all_folder_ids = folder_ids.split(',')
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     output = []
     for folder_id in all_folder_ids:
         passwords = crud.get_passwords_by_folder_id(db, folder_id=folder_id)
@@ -205,10 +188,7 @@ def get_note(
         note_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     note = crud.get_note(db, note_id=note_id)
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -220,10 +200,7 @@ def get_notes_by_folder(
         folder_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     notes = crud.get_notes_by_folder_id(db, folder_id=folder_id)
     return notes
 
@@ -233,10 +210,7 @@ def get_creditcard(
         creditcard_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     creditcard = crud.get_creditcard(db, creditcard_id=creditcard_id)
     if creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
@@ -248,10 +222,7 @@ def get_creditcards_by_folder(
         folder_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     creditcards = crud.get_creditcards_by_folder_id(db, folder_id=folder_id)
     return creditcards
 
@@ -261,10 +232,7 @@ def get_folder(
         folder_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     folder = crud.get_folder(db, folder_id=folder_id)
     if folder is None:
         raise HTTPException(status_code=404, detail="Folder not found")
@@ -276,10 +244,7 @@ def get_folders_by_user(
         user_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     folders = crud.get_folders_by_user_id(db, user_id=user_id)
     return folders
 
@@ -293,10 +258,7 @@ def update_folder(
         folder: schemas.Folder,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     folder = crud.update_folder(db, folder_id, folder)
     if folder is None:
         raise HTTPException(status_code=404, detail="Folder not found")
@@ -310,10 +272,7 @@ def update_user(
         user: schemas.User,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     updated_user = crud.update_user(db, user_id=user_id, user=user)
     if updated_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -326,10 +285,7 @@ def update_folder(
         folder: schemas.Folder,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     updated_folder = crud.update_folder(db, folder_id == folder_id,
                                         folder=folder)
     if updated_folder is None:
@@ -344,10 +300,7 @@ def update_password(
         password: schemas.Password,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     updated_password = crud.update_password(db, password_id=password_id,
                                             password=password)
     if updated_password is None:
@@ -361,10 +314,7 @@ def update_note(
         note: schemas.Note,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     updated_note = crud.update_note(db, note_id=note_id, note=note)
     if updated_note is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -377,10 +327,7 @@ def update_creditcard(
         creditcard: schemas.CreditCard,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     updated_creditcard = crud.update_creditcard(db, creditcard_id=creditcard_id,
                                                 creditcard=creditcard)
     if updated_creditcard is None:
@@ -398,11 +345,7 @@ def patch_trashbin_password(
     verified_token=Depends(verify_token)
 ):
     print(restore)
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid"
-        )
+    validate_token(verified_token)
     updated_password = crud.patch_trashbin_password(db, password_id=password_id, restore=restore.restore)
     if updated_password is None:
         raise HTTPException(status_code=404, detail="Password not found")
@@ -416,11 +359,7 @@ def patch_trashbin_note(
     verified_token=Depends(verify_token)
 ):
     print(restore)
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid"
-        )
+    validate_token(verified_token)
     updated_note = crud.patch_trashbin_note(db, note_id=note_id, restore=restore.restore)
     if updated_note is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -434,11 +373,7 @@ def patch_trashbin_creditcard(
     verified_token=Depends(verify_token)
 ):
     print(restore)
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid"
-        )
+    validate_token(verified_token)
     updated_creditcard = crud.patch_trashbin_creditcard(db, creditcard_id=creditcard_id, restore=restore.restore)
     if updated_creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
@@ -452,10 +387,7 @@ def delete_user(
         user_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     user = crud.delete_user(db, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -467,10 +399,7 @@ def delete_password(
         password_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     password = crud.delete_password(db, password_id)
     if password is None:
         raise HTTPException(status_code=404, detail="Password not found")
@@ -482,10 +411,7 @@ def delete_note(
         note_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     note = crud.delete_note(db, note_id)
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -497,10 +423,7 @@ def delete_creditcard(
         creditcard_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     creditcard = crud.delete_creditcard(db, creditcard_id)
     if creditcard is None:
         raise HTTPException(status_code=404, detail="Credit card not found")
@@ -512,10 +435,7 @@ def delete_folder(
         folder_id: int,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
-    if not verified_token:
-        return HTTPException(
-            status_code=401,
-            detail="Token not valid")
+    validate_token(verified_token)
     folder = crud.delete_folder(db, folder_id)
     if folder is None:
         raise HTTPException(status_code=404, detail="Folder not found")
