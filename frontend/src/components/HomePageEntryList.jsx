@@ -1,23 +1,31 @@
-import { useSelector } from "react-redux";
 import { styled } from "@mui/material/styles";
 import { Box, Button, Typography, IconButton } from "@mui/material";
 import ControlPointIcon from "@mui/icons-material/ControlPoint";
-import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
-
-const MyButton = styled(Button)(({ theme }) => ({
-  backgroundColor: theme.palette.grey[400],
-  "&:hover": {
-    backgroundColor: theme.palette.grey[500],
-  },
-}));
+import { useDispatch, useSelector } from "react-redux";
+import { setCurrentEntry } from "../slices/uiStatusSlice";
 
 export default function HomePageEntryList() {
-  const folders = useSelector((state) => state.userInfo.folders);
+  const dispatch = useDispatch();
+
   const passwords = useSelector((state) => state.userInfo.passwords);
   const creditCards = useSelector((state) => state.userInfo.creditCards);
   const notes = useSelector((state) => state.userInfo.notes);
+  const currentEntry = useSelector((state) => state.uiStatus.currentEntry);
 
-  console.log(passwords);
+  const MyButton = styled(Button)(({ theme, entry }) => ({
+    backgroundColor: currentEntry
+      ? currentEntry.passwordID == entry.passwordID
+        ? theme.primary
+        : theme.palette.grey[400]
+      : theme.palette.grey[400],
+    "&:hover": {
+      backgroundColor: currentEntry
+        ? currentEntry.passwordID == entry.passwordID
+          ? theme.primary
+          : theme.palette.grey[500]
+        : theme.palette.grey[500],
+    },
+  }));
   return (
     <>
       <Box
@@ -38,19 +46,26 @@ export default function HomePageEntryList() {
             marginBottom: "1rem",
           }}
         >
-          <Typography variant="h5">Entries</Typography>
+          <Typography variant="h5">Passwords</Typography>
           <IconButton>
             <ControlPointIcon color="primary" />
           </IconButton>
         </Box>
-        {folders.map((folder) => {
+        {passwords.map((password, i) => {
           return (
             <MyButton
+              key={i}
+              entry={password}
               variant="contained"
-              startIcon={<FolderOutlinedIcon />}
               fullWidth
+              sx={{
+                marginBottom: "1rem",
+              }}
+              onClick={() => {
+                dispatch(setCurrentEntry(password));
+              }}
             >
-              {folder.folderName}
+              {password.websiteName}
             </MyButton>
           );
         })}

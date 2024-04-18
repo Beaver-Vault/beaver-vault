@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Box, Button, Typography, Grid } from "@mui/material";
+import { Box, Button, Grid, Divider } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { decryptText } from "../scripts/encryption";
 import {
@@ -16,34 +16,52 @@ import {
 } from "../slices/apiSlice";
 import HomePageFolders from "../components/HomePageFolders";
 import HomePageEntryList from "../components/HomePageEntryList";
+import HomePageEntryDetails from "../components/HomePageEntryDetails";
 
 export default function HomePage_new() {
   const dispatch = useDispatch();
   const loggedInUser = useSelector((state) => state.auth.user);
-  const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
-    loggedInUser["userID"]
-  );
 
-  const { data: passwordData, refetch: passwordRefetch } = useGetPasswordsQuery(
+  const {
+    data: folderData,
+    refetch: folderRefetch,
+    status: folderStatus,
+  } = useGetFoldersQuery(loggedInUser["userID"]);
+
+  const {
+    data: passwordData,
+    refetch: passwordRefetch,
+    status: passwordStatus,
+  } = useGetPasswordsQuery(
     folderData ? folderData.map((folder) => folder.folderID) : [-1]
   );
 
-  const { data: creditcardData, refetch: creditcardRefetch } =
-    useGetCreditCardsQuery(
-      folderData ? folderData.map((folder) => folder.folderID) : [-1]
-    );
+  const {
+    data: creditcardData,
+    refetch: creditcardRefetch,
+    status: creditcardStatus,
+  } = useGetCreditCardsQuery(
+    folderData ? folderData.map((folder) => folder.folderID) : [-1]
+  );
 
-  const { data: noteData, refetch: noteRefetch } = useGetNotesQuery(
+  const {
+    data: noteData,
+    refetch: noteRefetch,
+    status: noteStatus,
+  } = useGetNotesQuery(
     folderData ? folderData.map((folder) => folder.folderID) : [-1]
   );
 
   useEffect(() => {
     folderRefetch();
+    if (folderStatus === "fulfilled") dispatch(setFolders(folderData));
     passwordRefetch();
+    if (passwordStatus === "fulfilled") dispatch(setPasswords(passwordData));
     creditcardRefetch();
+    if (creditcardStatus === "fulfilled")
+      dispatch(setCreditCards(creditcardData));
     noteRefetch();
-
-    dispatch(setFolders(folderData));
+    if (noteStatus === "fulfilled") dispatch(setNotes(noteData));
 
     // Decrypt Passwords
     if (passwordData) {
@@ -65,7 +83,6 @@ export default function HomePage_new() {
       }
       dispatch(setPasswords(passwords));
     }
-
     // Decrypt Credit Cards
     if (creditcardData) {
       let creditcards = [];
@@ -88,7 +105,6 @@ export default function HomePage_new() {
       }
       dispatch(setCreditCards(creditcards));
     }
-
     // Decrypt Notes
     if (noteData) {
       let notes = [];
@@ -102,7 +118,8 @@ export default function HomePage_new() {
       }
       dispatch(setNotes(notes));
     }
-  }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
+    // }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
+  }, [loggedInUser, folderData, passwordData, creditcardData, noteData]);
 
   return (
     <>
@@ -111,6 +128,7 @@ export default function HomePage_new() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          width: "100%",
           //   backgroundColor: "green",
         }}
       >
@@ -123,11 +141,17 @@ export default function HomePage_new() {
             gap: "2rem",
           }}
         >
-          <Button variant="outlined">Passwords</Button>
+          <Button variant="contained">Passwords</Button>
           <Button variant="outlined">Credit Cards</Button>
           <Button variant="outlined">Notes</Button>
         </Box>
-        <Grid container spacing={2}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            marginTop: "1rem",
+          }}
+        >
           <Grid item xs={4}>
             <Box
               sx={{
@@ -164,7 +188,7 @@ export default function HomePage_new() {
                 justifyContent: "center",
               }}
             >
-              <Typography variant="h5">Entry Details</Typography>
+              <HomePageEntryDetails />
             </Box>
           </Grid>
         </Grid>

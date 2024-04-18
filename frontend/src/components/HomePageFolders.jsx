@@ -13,7 +13,6 @@ const MyButton = styled(Button)(({ theme }) => ({
 
 export default function HomePageFolders() {
   const folders = useSelector((state) => state.userInfo.folders);
-  console.log(folders);
   return (
     <>
       <Box
@@ -39,12 +38,16 @@ export default function HomePageFolders() {
             <ControlPointIcon color="primary" />
           </IconButton>
         </Box>
-        {folders.map((folder) => {
+        {folders.map((folder, i) => {
           return (
             <MyButton
+              key={i}
               variant="contained"
               startIcon={<FolderOutlinedIcon />}
               fullWidth
+              sx={{
+                marginBottom: "1rem",
+              }}
             >
               {folder.folderName}
             </MyButton>

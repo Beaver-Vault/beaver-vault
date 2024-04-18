@@ -215,17 +215,21 @@ def get_note(
     return note
 
 
-@app.get('/notes/{folder_id}')
+@app.get('/notes/{folder_ids}')
 def get_notes_by_folder(
-        folder_id: int,
+        folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
+    all_folder_ids = folder_ids.split(',')
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid")
-    notes = crud.get_notes_by_folder_id(db, folder_id=folder_id)
-    return notes
+    output = []
+    for folder_id in all_folder_ids:
+        notes = crud.get_notes_by_folder_id(db, folder_id=folder_id)
+        output.extend(notes)
+    return output
 
 
 @app.get("/creditcards")
@@ -243,17 +247,21 @@ def get_creditcard(
     return creditcard
 
 
-@app.get('/creditcards/{folder_id}')
+@app.get('/creditcards/{folder_ids}')
 def get_creditcards_by_folder(
-        folder_id: int,
+        folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
+    all_folder_ids = folder_ids.split(',')
     if not verified_token:
         return HTTPException(
             status_code=401,
             detail="Token not valid")
-    creditcards = crud.get_creditcards_by_folder_id(db, folder_id=folder_id)
-    return creditcards
+    output = []
+    for folder_id in all_folder_ids:
+        creditcards = crud.get_creditcards_by_folder_id(db, folder_id=folder_id)
+        output.extend(creditcards)
+    return output
 
 
 @app.get("/folders")
