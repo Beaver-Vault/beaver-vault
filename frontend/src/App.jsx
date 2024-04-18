@@ -10,6 +10,7 @@ import EncryptionTestPage from "./EncryptionTestPage";
 import NewPasswordPage from "./NewPasswordPage";
 import NewCreditCardPage from "./NewCreditCardPage";
 import NewNotePage from "./NewNotePage";
+import NewFolderPage from "./NewFolderPage";
 import CacheTestPage from "./cacheTestPage";
 import DataExport from "./DataExport";
 import DataImport from "./DataImport";
@@ -37,6 +38,7 @@ function App() {
           <Route path="/newpassword" element={<NewPasswordPage />} />
           <Route path="/newcreditcard" element={<NewCreditCardPage />} />
           <Route path="/newnote" element={<NewNotePage />} />
+          <Route path="/newfolder" element={<NewFolderPage />} />
           <Route path="/cache-test" element={<CacheTestPage />} />
           <Route path="/dataexport" element={<DataExport />} />
           <Route path="/dataimport" element={<DataImport />} />
