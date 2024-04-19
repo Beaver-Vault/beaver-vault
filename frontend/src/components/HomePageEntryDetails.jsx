@@ -7,23 +7,36 @@ import {
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import PasswordEntryDetails from "./PasswordEntryDetails";
+import CreditCardEntryDetails from "./CreditCardEntryDetails";
+import NoteEntryDetails from "./NoteEntryDetails";
+import { EntryTypes } from "../scripts/EntryTypes";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 export default function HomePageEntryDetails() {
-  const currentEntry = useSelector((state) => state.uiStatus.currentEntry);
+  const { currentEntry, currentEntryType } = useSelector(
+    (state) => state.uiStatus
+  );
 
+  const [title, setTitle] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [usernameVisible, setUsernameVisible] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
-    setIsEditing(false);
-    setUsernameVisible(false);
-    setPasswordVisible(false);
-  }, [currentEntry]);
+    switch (currentEntryType) {
+      case EntryTypes.PASSWORD:
+        setTitle("Password Details");
+        break;
+      case EntryTypes.CREDITCARD:
+        setTitle("Credit Card Details");
+        break;
+      case EntryTypes.NOTE:
+        setTitle("Note Details");
+        break;
+      default:
+        setTitle("Entry Details");
+    }
+  });
 
   return (
     <>
@@ -37,7 +50,7 @@ export default function HomePageEntryDetails() {
         }}
       >
         <div></div>
-        <Typography variant="h5">Entry Details</Typography>
+        <Typography variant="h5">{title}</Typography>
         <Box
           sx={{
             display: "flex",
@@ -46,70 +59,20 @@ export default function HomePageEntryDetails() {
           }}
         >
           <IconButton onClick={() => setIsEditing(!isEditing)}>
-            <EditIcon />
+            <EditIcon color="primary" />
           </IconButton>
           <IconButton>
-            <DeleteIcon />
+            <DeleteIcon color="primary" />
           </IconButton>
         </Box>
       </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          width: "80%",
-        }}
-      >
-        <TextField
-          label="Website"
-          value={currentEntry ? currentEntry.websiteName : ""}
-          fullWidth
-          disabled={!isEditing}
-        />
-        <TextField
-          label="Username"
-          value={currentEntry ? currentEntry.username : ""}
-          fullWidth
-          type={usernameVisible ? "text" : "password"}
-          disabled={!isEditing}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton
-                  onClick={() => setUsernameVisible(!usernameVisible)}
-                >
-                  <RemoveRedEyeIcon />
-                </IconButton>
-                <IconButton>
-                  <ContentCopyIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          label="Password"
-          value={currentEntry ? currentEntry.encryptedPassword : ""}
-          fullWidth
-          type={passwordVisible ? "text" : "password"}
-          disabled={!isEditing}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton
-                  onClick={() => setPasswordVisible(!passwordVisible)}
-                >
-                  <RemoveRedEyeIcon />
-                </IconButton>
-                <IconButton>
-                  <ContentCopyIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Box>
+      {currentEntryType === EntryTypes.PASSWORD ? (
+        <PasswordEntryDetails currentEntry={currentEntry} />
+      ) : currentEntryType === EntryTypes.CREDITCARD ? (
+        <CreditCardEntryDetails currentEntry={currentEntry} />
+      ) : (
+        <NoteEntryDetails currentEntry={currentEntry} />
+      )}
     </>
   );
 }

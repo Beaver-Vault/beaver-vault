@@ -5,6 +5,7 @@ export const uiStatusSlice = createSlice({
   initialState: {
     currentFolder: null,
     currentEntry: null,
+    currentEntryType: null,
   },
   reducers: {
     setCurrentFolder: (state, action) => {
@@ -13,9 +14,13 @@ export const uiStatusSlice = createSlice({
     setCurrentEntry: (state, action) => {
       state.currentEntry = action.payload;
     },
+    setCurrentEntryType: (state, action) => {
+      state.currentEntryType = action.payload;
+    },
   },
 });
 
-export const { setCurrentEntry, setCurrentFolder } = uiStatusSlice.actions;
+export const { setCurrentEntry, setCurrentFolder, setCurrentEntryType } =
+  uiStatusSlice.actions;
 
 export default uiStatusSlice.reducer;

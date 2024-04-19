@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Box, Button, Grid, Divider } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { decryptText } from "../scripts/encryption";
 import {
@@ -14,6 +14,8 @@ import {
   useGetCreditCardsQuery,
   useGetNotesQuery,
 } from "../slices/apiSlice";
+import { setCurrentEntryType } from "../slices/uiStatusSlice";
+import { EntryTypes } from "../scripts/EntryTypes";
 import HomePageFolders from "../components/HomePageFolders";
 import HomePageEntryList from "../components/HomePageEntryList";
 import HomePageEntryDetails from "../components/HomePageEntryDetails";
@@ -21,6 +23,9 @@ import HomePageEntryDetails from "../components/HomePageEntryDetails";
 export default function HomePage_new() {
   const dispatch = useDispatch();
   const loggedInUser = useSelector((state) => state.auth.user);
+  const currentEntryType = useSelector(
+    (state) => state.uiStatus.currentEntryType
+  );
 
   const {
     data: folderData,
@@ -132,19 +137,6 @@ export default function HomePage_new() {
           //   backgroundColor: "green",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            // backgroundColor: "red",
-            gap: "2rem",
-          }}
-        >
-          <Button variant="contained">Passwords</Button>
-          <Button variant="outlined">Credit Cards</Button>
-          <Button variant="outlined">Notes</Button>
-        </Box>
         <Grid
           container
           spacing={2}
@@ -152,7 +144,7 @@ export default function HomePage_new() {
             marginTop: "1rem",
           }}
         >
-          <Grid item xs={4}>
+          <Grid item xs={3}>
             <Box
               sx={{
                 // backgroundColor: "blue",
@@ -178,7 +170,7 @@ export default function HomePage_new() {
               <HomePageEntryList />
             </Box>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={5}>
             <Box
               sx={{
                 // backgroundColor: "blue",
