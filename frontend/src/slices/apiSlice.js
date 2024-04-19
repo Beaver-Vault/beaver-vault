@@ -77,6 +77,13 @@ export const apiSlice = createApi({
         body: newNote,
       }),
     }),
+    addFolder: builder.mutation({
+      query: (newFolder) => ({
+        url: `folders`,
+        method: "POST",
+        body: newFolder,
+      }),
+    }),
     // ----- PUT REQUESTS -----
     updatePassword: builder.mutation({
       query: ({ id: passwordID, updatedPasswordData: updatedData }) => ({
@@ -126,6 +133,7 @@ export const {
   useAddPasswordMutation,
   useAddCreditCardMutation,
   useAddNoteMutation,
+  useAddFolderMutation,
   useUpdatePasswordMutation,
   useUpdateCreditCardMutation,
   useUpdateNoteMutation,
