@@ -360,6 +360,16 @@ export default function HomePage() {
           >
             Add Note
           </Button>
+
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "1rem" }}
+            onClick={() => {
+              nav("/newfolder");
+            }}
+          >
+            Add Folder
+          </Button>
         </Box>
 
         <TabContext value={currentTab}>
