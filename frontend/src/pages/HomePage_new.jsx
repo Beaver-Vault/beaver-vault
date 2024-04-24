@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Box, Grid } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { decryptText } from "../scripts/encryption";
+import { setCurrentFolder } from "../slices/uiStatusSlice";
 import {
   setFolders,
   setPasswords,
@@ -14,8 +15,6 @@ import {
   useGetCreditCardsQuery,
   useGetNotesQuery,
 } from "../slices/apiSlice";
-import { setCurrentEntryType } from "../slices/uiStatusSlice";
-import { EntryTypes } from "../scripts/EntryTypes";
 import HomePageFolders from "../components/HomePageFolders";
 import HomePageEntryList from "../components/HomePageEntryList";
 import HomePageEntryDetails from "../components/HomePageEntryDetails";
@@ -23,9 +22,7 @@ import HomePageEntryDetails from "../components/HomePageEntryDetails";
 export default function HomePage_new() {
   const dispatch = useDispatch();
   const loggedInUser = useSelector((state) => state.auth.user);
-  const currentEntryType = useSelector(
-    (state) => state.uiStatus.currentEntryType
-  );
+  const currentFolder = useSelector((state) => state.uiStatus.currentFolder);
 
   const {
     data: folderData,
@@ -58,8 +55,14 @@ export default function HomePage_new() {
   );
 
   useEffect(() => {
+    if (folderData?.length > 0) dispatch(setCurrentFolder(folderData[0]));
+  }, [folderData]);
+
+  useEffect(() => {
     folderRefetch();
-    if (folderStatus === "fulfilled") dispatch(setFolders(folderData));
+    if (folderStatus === "fulfilled") {
+      dispatch(setFolders(folderData));
+    }
     passwordRefetch();
     if (passwordStatus === "fulfilled") dispatch(setPasswords(passwordData));
     creditcardRefetch();
@@ -73,8 +76,10 @@ export default function HomePage_new() {
       let passwords = [];
       for (let password of passwordData) {
         if (password.trashBin) continue;
+        if (password.folderID !== currentFolder?.folderID) continue;
         passwords.push({
           passwordID: password.passwordID,
+          folderID: password.folderID,
           websiteName: decryptText(
             password.websiteName,
             loggedInUser.masterKey
@@ -93,8 +98,10 @@ export default function HomePage_new() {
       let creditcards = [];
       for (let creditcard of creditcardData) {
         if (creditcard.trashBin) continue;
+        if (creditcard.folderID !== currentFolder?.folderID) continue;
         creditcards.push({
           creditcardID: creditcard.creditcardID,
+          folderID: creditcard.folderID,
           cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
           cardholderName: decryptText(
             creditcard.cardholderName,
@@ -115,16 +122,24 @@ export default function HomePage_new() {
       let notes = [];
       for (let note of noteData) {
         if (note.trashBin) continue;
+        if (note.folderID !== currentFolder?.folderID) continue;
         notes.push({
           noteID: note.noteID,
+          folderID: note.folderID,
           noteName: decryptText(note.noteName, loggedInUser.masterKey),
           content: decryptText(note.content, loggedInUser.masterKey),
         });
       }
       dispatch(setNotes(notes));
     }
-    // }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
-  }, [loggedInUser, folderData, passwordData, creditcardData, noteData]);
+  }, [
+    loggedInUser,
+    folderData,
+    passwordData,
+    creditcardData,
+    noteData,
+    currentFolder,
+  ]);
 
   return (
     <>
@@ -154,7 +169,7 @@ export default function HomePage_new() {
                 justifyContent: "center",
               }}
             >
-              <HomePageFolders />
+              <HomePageFolders folderRefetch={folderRefetch} />
             </Box>
           </Grid>
           <Grid item xs={4}>
@@ -167,7 +182,11 @@ export default function HomePage_new() {
                 justifyContent: "center",
               }}
             >
-              <HomePageEntryList />
+              <HomePageEntryList
+                passwordRefetch={passwordRefetch}
+                creditcardRefetch={creditcardRefetch}
+                noteRefetch={noteRefetch}
+              />
             </Box>
           </Grid>
           <Grid item xs={5}>

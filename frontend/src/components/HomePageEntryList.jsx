@@ -5,8 +5,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCurrentEntry, setCurrentEntryType } from "../slices/uiStatusSlice";
 import { useState, useEffect } from "react";
 import { EntryTypes } from "../scripts/EntryTypes";
+import ModalPage from "../pages/ModalPage";
+import NewPasswordPage from "../pages/NewPasswordPage";
+import NewCreditCardPage from "../pages/NewCreditCardPage";
+import NewNotePage from "../pages/NewNotePage";
 
-export default function HomePageEntryList() {
+export default function HomePageEntryList({
+  passwordRefetch,
+  creditcardRefetch,
+  noteRefetch,
+}) {
   const dispatch = useDispatch();
 
   const passwords = useSelector((state) => state.userInfo.passwords);
@@ -19,6 +27,7 @@ export default function HomePageEntryList() {
   const currentEntry = useSelector((state) => state.uiStatus.currentEntry);
 
   const [currentEntries, setCurrentEntries] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     if (currentEntryType == EntryTypes.PASSWORD) {
@@ -28,7 +37,7 @@ export default function HomePageEntryList() {
     } else if (currentEntryType == EntryTypes.NOTE) {
       setCurrentEntries(notes);
     }
-  }, [currentEntryType]);
+  }, [currentEntryType, passwords, creditCards, notes]);
 
   const MyButton = styled(Button)(({ theme, entry }) => {
     let isActive = false;
@@ -116,7 +125,7 @@ export default function HomePageEntryList() {
               </Button>
             </ButtonGroup>
           </Box>
-          <IconButton>
+          <IconButton onClick={() => setModalOpen(true)}>
             <ControlPointIcon color="primary" />
           </IconButton>
         </Box>
@@ -153,6 +162,34 @@ export default function HomePageEntryList() {
             </MyButton>
           );
         })}
+        <ModalPage
+          modalOpen={modalOpen}
+          setModalOpen={setModalOpen}
+          ModalForm={() => {
+            if (currentEntryType === EntryTypes.PASSWORD) {
+              return (
+                <NewPasswordPage
+                  setModalOpen={setModalOpen}
+                  refetch={passwordRefetch}
+                />
+              );
+            } else if (currentEntryType === EntryTypes.CREDITCARD) {
+              return (
+                <NewCreditCardPage
+                  setModalOpen={setModalOpen}
+                  refetch={creditcardRefetch}
+                />
+              );
+            } else {
+              return (
+                <NewNotePage
+                  setModalOpen={setModalOpen}
+                  refetch={noteRefetch}
+                />
+              );
+            }
+          }}
+        />
       </Box>
     </>
   );

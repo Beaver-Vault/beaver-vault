@@ -12,7 +12,7 @@ import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
 import { useAddCreditCardMutation } from "../slices/apiSlice";
 
-export default function NewCreditCardPage() {
+export default function NewCreditCardPage({ setModalOpen, refetch }) {
   const navigate = useNavigate();
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -39,8 +39,9 @@ export default function NewCreditCardPage() {
 
     try {
       await addCreditCardPost(creditcardData);
+      setModalOpen(false);
       alert("Credit Card added successfully");
-      navigate("/");
+      refetch();
     } catch (error) {
       console.error("Error adding password:", error);
       alert("An unexpected error occurred. Please try again.");
@@ -54,7 +55,7 @@ export default function NewCreditCardPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "30%",
+        width: "100%",
         height: "75vh",
         margin: "auto",
       }}

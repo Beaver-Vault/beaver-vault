@@ -12,7 +12,7 @@ import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
 import { useAddNoteMutation } from "../slices/apiSlice";
 
-export default function NewNotePage() {
+export default function NewNotePage({ setModalOpen, refetch }) {
   const navigate = useNavigate();
 
   const loggedInUser = useSelector((state) => state.auth.user);
@@ -34,8 +34,9 @@ export default function NewNotePage() {
 
     try {
       await addNotePost(noteData);
+      setModalOpen(false);
       alert("Note added successfully");
-      navigate("/");
+      refetch();
     } catch (error) {
       console.error("Error adding note:", error);
       alert("An unexpected error occurred. Please try again.");
@@ -49,7 +50,7 @@ export default function NewNotePage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "30%",
+        width: "100%",
         height: "75vh",
         margin: "auto",
       }}
@@ -80,6 +81,8 @@ export default function NewNotePage() {
       />
       <TextField
         fullWidth
+        multiline
+        rows={4}
         variant="outlined"
         label="Content"
         onChange={(e) => {

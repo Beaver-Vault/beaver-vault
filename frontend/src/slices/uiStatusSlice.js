@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { EntryTypes } from "../scripts/EntryTypes";
 
 export const uiStatusSlice = createSlice({
   name: "uiStatus",
   initialState: {
     currentFolder: null,
     currentEntry: null,
-    currentEntryType: null,
+    currentEntryType: EntryTypes.PASSWORD,
   },
   reducers: {
     setCurrentFolder: (state, action) => {
