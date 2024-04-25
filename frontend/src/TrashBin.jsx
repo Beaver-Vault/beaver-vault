@@ -38,6 +38,7 @@ export default function TrashBinPage() {
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
+  
 
   const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
     loggedInUser["userID"]
@@ -58,6 +59,21 @@ export default function TrashBinPage() {
 
   const [updateTrash] = useUpdateTrashMutation();
   const [deleteUser] = useDeleteUserMutation();
+
+  const EmptyTrashBinButton = () => {
+  
+    const handleEmptyTrashBin = async () => {
+      }
+
+  
+    return (
+      <Button variant="contained" color="secondary" onClick={handleEmptyTrashBin}>
+        Empty Trash Bin
+      </Button>
+    );
+  };
+  
+  
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -190,9 +206,18 @@ export default function TrashBinPage() {
     }
   };
 
-  const handleDelete = (dataType, dataID) => {
+  const handleDelete = (dataType, dataID, requireConfirmation = true) => {
+    if (!deletingData) {
+      console.error("No data to delete.");
+      return;
+    }
+
     setDeletingData({ dataType, dataID });
-    setConfirmationDialogOpen(true);
+    if (!requireConfirmation) {
+      confirmDeletion();
+    } else {
+      setConfirmationDialogOpen(true);
+    }
   };
 
   const confirmDeletion = async () => {
@@ -230,75 +255,114 @@ export default function TrashBinPage() {
   };
 
   useEffect(() => {
-    folderRefetch();
-    passwordRefetch();
-    creditcardRefetch();
-    noteRefetch();
-
-    dispatch(setFolders(folderData));
-
-    if (passwordData) {
-      console.log("Password Data:", passwordData);
-      let passwords = [];
-      for (let password of passwordData) {
-        if (!password.trashBin) continue;
-        passwords.push({
-          ...password,
-          websiteName: decryptText(
-            password.websiteName,
-            loggedInUser.masterKey
-          ),
-          username: decryptText(password.username, loggedInUser.masterKey),
-          encryptedPassword: decryptText(
-            password.encryptedPassword,
-            loggedInUser.masterKey
-          ),
-          deletionDateTime: new Date(password.deletionDateTime).toISOString().split('T')[0],
-        });
+    const fetchData = async () => {
+      folderRefetch();
+      passwordRefetch();
+      creditcardRefetch();
+      noteRefetch();
+  
+      dispatch(setFolders(folderData));
+  
+      let passwordIDsToDelete = [];
+      let creditCardIDsToDelete = [];
+      let noteIDsToDelete = [];
+  
+      if (passwordData) {
+        console.log("Password Data:", passwordData);
+        let passwords = [];
+        for (let password of passwordData) {
+          if (!password.trashBin) continue;
+          const decryptedPassword = {
+            ...password,
+            websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
+            username: decryptText(password.username, loggedInUser.masterKey),
+            encryptedPassword: decryptText(password.encryptedPassword, loggedInUser.masterKey),
+            deletionDateTime: new Date(password.deletionDateTime).toISOString().split('T')[0],
+          };
+          if (new Date(password.deletionDateTime) <= new Date()) {
+            passwordIDsToDelete.push(password.passwordID);
+          } else {
+            passwords.push(decryptedPassword);
+          }
+        }
+        dispatch(setPasswords(passwords));
       }
-      dispatch(setPasswords(passwords));
-    }
-
-    if (creditcardData) {
-      console.log("Credit Card Data:", creditcardData);
-      let creditcards = [];
-      for (let creditcard of creditcardData) {
-        if (!creditcard.trashBin) continue;
-        creditcards.push({
-          creditcardID: creditcard.creditcardID,
-          cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-          cardholderName: decryptText(
-            creditcard.cardholderName,
-            loggedInUser.masterKey
-          ),
-          number: decryptText(creditcard.number, loggedInUser.masterKey),
-          expiration: decryptText(
-            creditcard.expiration,
-            loggedInUser.masterKey
-          ),
-          csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-          deletionDateTime: new Date(creditcard.deletionDateTime).toISOString().split('T')[0],
-        });
+      
+      if (creditcardData) {
+        console.log("Credit Card Data:", creditcardData);
+        let creditcards = [];
+        for (let creditcard of creditcardData) {
+          if (!creditcard.trashBin) continue;
+          const decryptedCreditCard = {
+            creditcardID: creditcard.creditcardID,
+            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+            cardholderName: decryptText(creditcard.cardholderName, loggedInUser.masterKey),
+            number: decryptText(creditcard.number, loggedInUser.masterKey),
+            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
+            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+            deletionDateTime: new Date(creditcard.deletionDateTime).toISOString().split('T')[0],
+          };
+          if (new Date(creditcard.deletionDateTime) <= new Date()) {
+            creditCardIDsToDelete.push(creditcard.creditcardID);
+          } else {
+            creditcards.push(decryptedCreditCard);
+          }
+        }
+        dispatch(setCreditCards(creditcards));
       }
-      dispatch(setCreditCards(creditcards));
-    }
-
-    if (noteData) {
-      console.log("Note Data:", noteData);
-      let notes = [];
-      for (let note of noteData) {
-        if (!note.trashBin) continue;
-        notes.push({
-          noteID: note.noteID,
-          noteName: decryptText(note.noteName, loggedInUser.masterKey),
-          content: decryptText(note.content, loggedInUser.masterKey),
-          deletionDateTime: new Date(note.deletionDateTime).toISOString().split('T')[0],
-        });
+      
+      if (noteData) {
+        console.log("Note Data:", noteData);
+        let notes = [];
+        for (let note of noteData) {
+          if (!note.trashBin) continue;
+          const decryptedNote = {
+            noteID: note.noteID,
+            noteName: decryptText(note.noteName, loggedInUser.masterKey),
+            content: decryptText(note.content, loggedInUser.masterKey),
+            deletionDateTime: new Date(note.deletionDateTime).toISOString().split('T')[0],
+          };
+          if (new Date(note.deletionDateTime) <= new Date()) {
+            noteIDsToDelete.push(note.noteID);
+          } else {
+            notes.push(decryptedNote);
+          }
+        }
+        dispatch(setNotes(notes));
       }
-      dispatch(setNotes(notes));
-    }
-  }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
+  
+      for (const passwordID of passwordIDsToDelete) {
+        try {
+          await dispatch(deleteUser({ dataType: "passwords", dataID: passwordID }));
+          await passwordRefetch();
+        } catch (error) {
+          console.error(`Error deleting password with ID ${passwordID}:`, error);
+        }
+      }
+  
+      for (const creditCardID of creditCardIDsToDelete) {
+        try {
+          await dispatch(deleteUser({ dataType: "creditcards", dataID: creditCardID }));
+          await creditcardRefetch();
+        } catch (error) {
+          console.error(`Error deleting credit card with ID ${creditCardID}:`, error);
+        }
+      }
+  
+      for (const noteID of noteIDsToDelete) {
+        try {
+          await dispatch(deleteUser({ dataType: "notes", dataID: noteID }));
+          await noteRefetch();
+        } catch (error) {
+          console.error(`Error deleting note with ID ${noteID}:`, error);
+        }
+      }
+    };
 
+    fetchData();
+  }, [folderData, passwordData, creditcardData, noteData]);
+  
+  
   return (
     <>
       <ConfirmationDialogTrash
@@ -405,6 +469,12 @@ export default function TrashBinPage() {
           </Box>
         </TabPanel>
       </TabContext>
+      <center>
+      <EmptyTrashBinButton />
+      </center>
     </>
+
+    
+
   );
 }
