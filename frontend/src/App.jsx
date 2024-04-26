@@ -32,9 +32,6 @@ function App() {
           />
           <Route path="/passwordgen" element={<PasswordGenPage />} />
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
-          <Route path="/newpassword" element={<NewPasswordPage />} />
-          <Route path="/newcreditcard" element={<NewCreditCardPage />} />
-          <Route path="/newnote" element={<NewNotePage />} />
           <Route path="/dataexport" element={<DataExport />} />
           <Route path="/dataimport" element={<DataImport />} />
           <Route path="/editpassword/:id" element={<EditPasswordPage />} />
