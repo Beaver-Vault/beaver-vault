@@ -1,4 +1,15 @@
-export const passwordGen = (
+export async function loadWordList() {
+  try {
+    const response = await fetch('/words.txt'); // Fetching from the public directory
+    const text = await response.text();
+    return text.split('\n');
+  } catch (error) {
+    console.error('Failed to load word list:', error);
+    return []; // Return an empty array if there's an error
+  }
+}
+
+export const passwordGen = async (
   length,
   useUpper,
   useLower,
@@ -10,26 +21,13 @@ export const passwordGen = (
   const lowerChars = "abcdefghijklmnopqrstuvwxyz";
   const numberChars = "0123456789";
   const symbolChars = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
-  // Word list for passphrase
-  const wordList = [
-    "apple",
-    "orange",
-    "banana",
-    "grape",
-    "cherry",
-    "pear",
-    "peach",
-    "lemon",
-    "lime",
-    "berry",
-  ];
 
-  // If usePassphrase is true, generate a passphrase
   if (usePassphrase) {
+    const wordList = await loadWordList();
     let passphrase = "";
     for (let i = 0; i < length; i++) {
-      passphrase += wordList[Math.floor(Math.random() * wordList.length)];
-      if (i < length - 1) passphrase += "-"; // Add delimiter between words
+      passphrase += wordList[Math.floor(Math.random() * wordList.length)].trim();
+      if (i < length - 1) passphrase += "-";
     }
     return passphrase;
   }
@@ -40,16 +38,15 @@ export const passwordGen = (
   if (useNumbers) allChars += numberChars;
   if (useSymbols) allChars += symbolChars;
 
-  // Check if allChars is empty
   if (allChars === "") {
     return "Error: No character types selected. Please choose at least one character type.";
   }
 
   let password = "";
   for (let i = 0; i < length; i++) {
-    const randomIndex =
-      crypto.getRandomValues(new Uint32Array(1))[0] % allChars.length;
-    password += allChars[randomIndex];
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    password += allChars[array[0] % allChars.length];
   }
 
   return password;
