@@ -26,7 +26,7 @@ export const passwordGen = async (
     const wordList = await loadWordList();
     let passphrase = "";
     for (let i = 0; i < length; i++) {
-      passphrase += wordList[Math.floor(Math.random() * wordList.length)];
+      passphrase += wordList[Math.floor(Math.random() * wordList.length)].trim();
       if (i < length - 1) passphrase += "-";
     }
     return passphrase;
