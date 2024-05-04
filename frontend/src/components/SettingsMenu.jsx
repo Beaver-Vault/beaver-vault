@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Typography, Button, Menu, MenuItem } from "@mui/material";
 import DeleteAccountConfirmationDialog from "./DeleteAccountConfirmation";
+import AboutAccountModelDialog from "../AboutAccountModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
@@ -16,6 +17,7 @@ export default function SettingsMenu() {
   const accessToken = useSelector((state) => state.auth.accessToken);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const buttonRef = useRef(null);
 
@@ -143,6 +145,17 @@ export default function SettingsMenu() {
         >
           Trash Bin
         </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setAboutDialogOpen(true);
+            handleClose();
+          }}
+          sx={{
+            minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
+          }}
+        >
+          About
+        </MenuItem>
 
         <MenuItem
           onClick={() => {
@@ -162,6 +175,10 @@ export default function SettingsMenu() {
         email={loggedInUser["email"]}
         userID={loggedInUser["userID"]}
         accessToken={accessToken}
+      />
+      <AboutAccountModelDialog
+        open={aboutDialogOpen}
+        handleClose={() => setAboutDialogOpen(false)}
       />
     </>
   );

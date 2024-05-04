@@ -63,11 +63,7 @@ export default function TrashBinPage() {
     const handleEmptyTrashBin = async () => {};
 
     return (
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={handleEmptyTrashBin}
-      >
+      <Button variant="contained" color="error" onClick={handleEmptyTrashBin}>
         Empty Trash Bin
       </Button>
     );

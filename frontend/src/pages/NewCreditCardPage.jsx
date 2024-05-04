@@ -10,11 +10,10 @@ import {
 import { useSelector } from "react-redux";
 import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
-import { useAddCreditCardMutation } from "./slices/apiSlice";
+import { useAddCreditCardMutation } from "../slices/apiSlice";
 import cardValidator from "card-validator";
 
 export default function NewCreditCardPage({ setModalOpen, refetch }) {
-  const navigate = useNavigate();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 
@@ -149,8 +148,8 @@ export default function NewCreditCardPage({ setModalOpen, refetch }) {
         alignItems: "center",
         justifyContent: "space-between",
         width: "100%",
-        height: "75vh",
         margin: "auto",
+        gap: "2rem",
       }}
     >
       <Typography variant="h4">Add New Credit Card</Typography>

@@ -38,9 +38,9 @@ export default function NewFolderPage({ setModalOpen, refetch }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "30%",
-        height: "75vh",
+        width: "100%",
         margin: "auto",
+        gap: "2rem",
       }}
     >
       <Typography variant="h4">Add New Folder</Typography>

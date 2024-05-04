@@ -98,8 +98,8 @@ export default function NewPasswordPage({ setModalOpen, refetch }) {
         alignItems: "center",
         justifyContent: "space-between",
         width: "100%",
-        height: "75vh",
         margin: "auto",
+        gap: "2rem",
       }}
     >
       <Typography variant="h4">Add New Password</Typography>

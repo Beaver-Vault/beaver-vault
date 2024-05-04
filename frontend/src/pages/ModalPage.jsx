@@ -21,7 +21,6 @@ export default function ModalPage({ modalOpen, setModalOpen, ModalForm }) {
             bgcolor: "background.paper",
             border: "2px solid #000",
             boxShadow: 24,
-            // p: 4,
           }}
         >
           <Box
