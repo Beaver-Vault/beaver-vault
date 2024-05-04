@@ -59,16 +59,30 @@ export default function TrashBinPage() {
   const [updateTrash] = useUpdateTrashMutation();
   const [deleteUser] = useDeleteUserMutation();
 
+  const EmptyTrashBinButton = () => {
+    const handleEmptyTrashBin = async () => {};
+
+    return (
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleEmptyTrashBin}
+      >
+        Empty Trash Bin
+      </Button>
+    );
+  };
+
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
     { field: "username", headerName: "Username", flex: 1 },
-    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "encryptedPassword",
       headerName: "Password",
       flex: 1,
       renderCell: (e) => <PasswordCell password={e.value} />,
     },
+    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "actions",
       headerName: "Actions",
@@ -93,7 +107,6 @@ export default function TrashBinPage() {
   const creditCardColumns = [
     { field: "cardName", headerName: "Card Name", flex: 1 },
     { field: "cardholderName", headerName: "Cardholder Name", flex: 1 },
-    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "number",
       headerName: "Number",
@@ -107,6 +120,7 @@ export default function TrashBinPage() {
       flex: 1,
       renderCell: (e) => <PasswordCell password={e.value} />,
     },
+    { field: "deletionDateTime", headerName: "Deletion Date", flex: 1 },
     {
       field: "actions",
       headerName: "Actions",
@@ -190,9 +204,18 @@ export default function TrashBinPage() {
     }
   };
 
-  const handleDelete = (dataType, dataID) => {
+  const handleDelete = (dataType, dataID, requireConfirmation = true) => {
+    if (!deletingData) {
+      console.error("No data to delete.");
+      return;
+    }
+
     setDeletingData({ dataType, dataID });
-    setConfirmationDialogOpen(true);
+    if (!requireConfirmation) {
+      confirmDeletion();
+    } else {
+      setConfirmationDialogOpen(true);
+    }
   };
 
   const confirmDeletion = async () => {
@@ -411,6 +434,9 @@ export default function TrashBinPage() {
           </Box>
         </TabPanel>
       </TabContext>
+      <center>
+        <EmptyTrashBinButton />
+      </center>
     </>
   );
 }

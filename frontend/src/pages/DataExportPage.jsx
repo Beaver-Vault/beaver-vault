@@ -95,7 +95,12 @@ export default function DataExportPage() {
 
       if (selectedData.notes) {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/notes/${currentFolder}`
+          `${process.env.REACT_APP_API_URL}/notes/${currentFolder}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
         const decryptedNotes = response.data.map((note) => {
           const { noteID, folderID, ...rest } = note;

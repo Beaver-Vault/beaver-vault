@@ -22,8 +22,8 @@ export default function PasswordGenPage() {
   const [symbols, setSymbols] = useState(false);
   const [passphrase, setPassphrase] = useState(false);
 
-  const generatePassword = () => {
-    const newPassword = passwordGen(
+  const generatePassword = async () => {
+    const newPassword = await passwordGen(
       passwordLength,
       upperCase,
       lowerCase,
@@ -85,13 +85,14 @@ export default function PasswordGenPage() {
             Password Length: {passwordLength}
           </Typography>
           <Slider
-            defaultValue={12}
+            value={passwordLength}
             valueLabelDisplay="auto"
             step={1}
             min={8}
             max={100}
-            onChange={(e) => setPasswordLength(e.target.value)}
+            onChange={(e, newValue) => setPasswordLength(newValue)}
           />
+
         </Box>
         <FormGroup>
           <FormControlLabel
