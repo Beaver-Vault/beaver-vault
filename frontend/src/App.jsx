@@ -2,14 +2,9 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
 import NavBar from "./components/NavBar";
 import LandingPage from "./pages/LandingPage";
-// import HomePage from "./pages/HomePage";
 import HomePage_new from "./pages/HomePage_new";
 import PasswordGenPage from "./pages/PasswordGenPage";
 import EncryptionTestPage from "./pages/EncryptionTestPage";
-import NewPasswordPage from "./pages/NewPasswordPage";
-import NewCreditCardPage from "./pages/NewCreditCardPage";
-import NewNotePage from "./pages/NewNotePage";
-import CacheTestPage from "./pages/cacheTestPage";
 import DataExport from "./pages/DataExportPage";
 import DataImport from "./pages/DataImportPage";
 import EditPasswordPage from "./pages/EditPasswordPage";
@@ -27,7 +22,6 @@ function App() {
         <Routes>
           <Route
             path="/"
-            // element={loggedInUser ? <HomePage /> : <LandingPage />}
             element={loggedInUser ? <HomePage_new /> : <LandingPage />}
           />
           <Route path="/passwordgen" element={<PasswordGenPage />} />
