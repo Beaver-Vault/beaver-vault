@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton } from "@mui/material";
+import { Box, Typography, IconButton, Button } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
 import ConfirmationDialog from "./DeleteConfirmation";
@@ -10,6 +10,7 @@ import {
   setCreditCards,
   setNotes,
 } from "../slices/userInfoSlice";
+import { setCurrentEntry } from "../slices/uiStatusSlice";
 import {
   useUpdateTrashMutation,
   useDeleteUserMutation,
@@ -18,10 +19,14 @@ import { EntryTypes } from "../scripts/EntryTypes";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-export default function HomePageEntryDetails() {
+export default function HomePageEntryDetails({
+  passwordRefetch,
+  creditcardRefetch,
+  noteRefetch,
+}) {
   const dispatch = useDispatch();
 
-  const { currentEntry, currentEntryType } = useSelector(
+  const { currentEntry, currentEntryType, currentFolder } = useSelector(
     (state) => state.uiStatus
   );
 
@@ -36,6 +41,11 @@ export default function HomePageEntryDetails() {
 
   const [deleteUser] = useDeleteUserMutation();
   const [updateTrash] = useUpdateTrashMutation();
+
+  useEffect(() => {
+    setIsEditing(false);
+    dispatch(setCurrentEntry(null));
+  }, [currentFolder]);
 
   useEffect(() => {
     switch (currentEntryType) {
@@ -172,11 +182,26 @@ export default function HomePageEntryDetails() {
         </Box>
       </Box>
       {currentEntryType === EntryTypes.PASSWORD ? (
-        <PasswordEntryDetails currentEntry={currentEntry} />
+        <PasswordEntryDetails
+          currentEntry={currentEntry}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          passwordRefetch={passwordRefetch}
+        />
       ) : currentEntryType === EntryTypes.CREDITCARD ? (
-        <CreditCardEntryDetails currentEntry={currentEntry} />
+        <CreditCardEntryDetails
+          currentEntry={currentEntry}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          creditcardRefetch={creditcardRefetch}
+        />
       ) : (
-        <NoteEntryDetails currentEntry={currentEntry} />
+        <NoteEntryDetails
+          currentEntry={currentEntry}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          noteRefetch={noteRefetch}
+        />
       )}
     </>
   );

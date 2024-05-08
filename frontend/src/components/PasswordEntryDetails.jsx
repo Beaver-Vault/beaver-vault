@@ -1,20 +1,65 @@
-import {
-  Box,
-  TextField,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-} from "@mui/material";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Box, Button } from "@mui/material";
+import { useUpdatePasswordMutation } from "../slices/apiSlice";
+import { setCurrentEntry } from "../slices/uiStatusSlice";
+import EntryDetailTextField from "./EntryDetailTextField";
+import { encryptText } from "../scripts/encryption";
 
-export default function PasswordEntryDetails({ currentEntry, isEditing }) {
-  const [passwordVisible, setPasswordVisible] = useState(false);
+export default function PasswordEntryDetails({
+  currentEntry,
+  isEditing,
+  setIsEditing,
+  passwordRefetch,
+}) {
+  const dispatch = useDispatch();
+  const loggedInUser = useSelector((state) => state.auth.user);
+
+  const [updatePassword, updatePasswordResult] = useUpdatePasswordMutation();
+  const [editWebsiteName, setEditWebsiteName] = useState(
+    currentEntry ? currentEntry.websiteName : ""
+  );
+  const [editUsername, setEditUsername] = useState(
+    currentEntry ? currentEntry.username : ""
+  );
+  const [editPassword, setEditPassword] = useState(
+    currentEntry ? currentEntry.encryptedPassword : ""
+  );
 
   useEffect(() => {
-    setPasswordVisible(false);
+    setEditWebsiteName(currentEntry ? currentEntry.websiteName : "");
+    setEditUsername(currentEntry ? currentEntry.username : "");
+    setEditPassword(currentEntry ? currentEntry.encryptedPassword : "");
   }, [currentEntry]);
+
+  const handleEdit = async () => {
+    const id = currentEntry.passwordID;
+    const updatedPasswordData = {
+      folderID: currentEntry.folderID,
+      websiteName: encryptText(editWebsiteName, loggedInUser.masterKey),
+      username: encryptText(editUsername, loggedInUser.masterKey),
+      encryptedPassword: encryptText(editPassword, loggedInUser.masterKey),
+    };
+
+    try {
+      await updatePassword({ id, updatedPasswordData });
+      alert("Password updated successfully");
+      setIsEditing(false);
+      passwordRefetch();
+      dispatch(
+        setCurrentEntry({
+          ...currentEntry,
+          websiteName: editWebsiteName,
+          username: editUsername,
+          encryptedPassword: editPassword,
+        })
+      );
+    } catch (error) {
+      console.error("Error updating password:", error);
+      alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
   return (
     <>
       <Box
@@ -26,62 +71,54 @@ export default function PasswordEntryDetails({ currentEntry, isEditing }) {
           marginTop: "1rem",
         }}
       >
-        <TextField
+        <EntryDetailTextField
           label="Website"
-          value={currentEntry ? currentEntry.websiteName : ""}
-          fullWidth
-          disabled={!isEditing}
-          InputLabelProps={{ shrink: true }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton>
-                  <ContentCopyIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
+          entry={currentEntry ? currentEntry.websiteName : ""}
+          isEditing={isEditing}
+          isSecret={false}
+          editValue={editWebsiteName}
+          setEditValue={setEditWebsiteName}
         />
-        <TextField
+        <EntryDetailTextField
           label="Username"
-          value={currentEntry ? currentEntry.username : ""}
-          fullWidth
-          type="text"
-          disabled={!isEditing}
-          InputLabelProps={{ shrink: true }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton>
-                  <ContentCopyIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
+          entry={currentEntry ? currentEntry.username : ""}
+          isEditing={isEditing}
+          isSecret={false}
+          editValue={editUsername}
+          setEditValue={setEditUsername}
         />
-        <TextField
+        <EntryDetailTextField
           label="Password"
-          value={currentEntry ? currentEntry.encryptedPassword : ""}
-          fullWidth
-          type={passwordVisible ? "text" : "password"}
-          disabled={!isEditing}
-          InputLabelProps={{ shrink: true }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton
-                  onClick={() => setPasswordVisible(!passwordVisible)}
-                >
-                  <RemoveRedEyeIcon />
-                </IconButton>
-                <IconButton>
-                  <ContentCopyIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
+          entry={currentEntry ? currentEntry.encryptedPassword : ""}
+          isEditing={isEditing}
+          isSecret={true}
+          editValue={editPassword}
+          setEditValue={setEditPassword}
         />
       </Box>
+      {isEditing && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "1rem",
+            marginTop: "1rem",
+          }}
+        >
+          <Button variant="contained" onClick={handleEdit}>
+            Save
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setIsEditing(false);
+            }}
+          >
+            Cancel
+          </Button>
+        </Box>
+      )}
     </>
   );
 }
