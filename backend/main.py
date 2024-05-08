@@ -192,9 +192,13 @@ def get_notes_by_folder(
         folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
+    all_folder_ids = folder_ids.split(',')
     validate_token(verified_token)
-    notes = crud.get_notes_by_folder_id(db, folder_id=folder_id)
-    return notes
+    output = []
+    for folder_id in all_folder_ids:
+        notes = crud.get_notes_by_folder_id(db, folder_id=folder_id)
+        output.extend(notes)
+    return output
 
 
 @app.get("/creditcards")
@@ -213,9 +217,13 @@ def get_creditcards_by_folder(
         folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
+    all_folder_ids = folder_ids.split(',')
     validate_token(verified_token)
-    creditcards = crud.get_creditcards_by_folder_id(db, folder_id=folder_id)
-    return creditcards
+    output = []
+    for folder_id in all_folder_ids:
+        creditcards = crud.get_creditcards_by_folder_id(db, folder_id=folder_id)
+        output.extend(creditcards)
+    return output
 
 
 @app.get("/folders")

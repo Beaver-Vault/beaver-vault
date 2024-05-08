@@ -1,7 +1,18 @@
 import React from "react";
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
+} from "@mui/material";
 
-const ConfirmationDialog = ({ open, handleClose, handleConfirm, handle30DayTrashBin }) => {
+const ConfirmationDialog = ({
+  open,
+  handleClose,
+  handleConfirm,
+  handle30DayTrashBin,
+}) => {
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Confirm Action</DialogTitle>
@@ -11,14 +22,18 @@ const ConfirmationDialog = ({ open, handleClose, handleConfirm, handle30DayTrash
         Move to Trash Bin to recover it within 30 days.
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button onClick={handleClose} color="primary" variant="outlined">
           Cancel
         </Button>
-        <Button onClick={handleConfirm} color="error">
-          Delete
-        </Button>
-        <Button onClick={handle30DayTrashBin} color="primary">
+        <Button
+          onClick={handle30DayTrashBin}
+          color="primary"
+          variant="outlined"
+        >
           Move to Trash Bin
+        </Button>
+        <Button onClick={handleConfirm} color="error" variant="contained">
+          Delete
         </Button>
       </DialogActions>
     </Dialog>

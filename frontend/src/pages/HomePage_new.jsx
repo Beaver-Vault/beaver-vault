@@ -199,7 +199,11 @@ export default function HomePage_new() {
                 justifyContent: "center",
               }}
             >
-              <HomePageEntryDetails />
+              <HomePageEntryDetails
+                passwordRefetch={passwordRefetch}
+                creditcardRefetch={creditcardRefetch}
+                noteRefetch={noteRefetch}
+              />
             </Box>
           </Grid>
         </Grid>
