@@ -1,20 +1,31 @@
-import React, { useState } from "react";
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, Typography } from "@mui/material";
-import BeaverLogo from "./imgs/beaver_logo.png";
-import Box from '@mui/material/Box';
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  Button,
+  Typography,
+} from "@mui/material";
+import BeaverLogo from "./imgs/BeaverVaultLogo_New.svg";
+import Box from "@mui/material/Box";
 
 const AboutAccountModelDialog = ({ open, handleClose }) => {
-  const [input, setInput] = useState("");
-
   const handleCancel = () => {
-    setInput("");
     handleClose();
   };
 
   return (
     <Dialog open={open} onClose={handleCancel}>
       <DialogContent>
-        <img src={BeaverLogo} alt="Logo" style={{ display: 'block', marginLeft: 'auto', marginRight: 'auto', width: '25%' }} />
+        <img
+          src={BeaverLogo}
+          alt="Logo"
+          style={{
+            display: "block",
+            marginLeft: "auto",
+            marginRight: "auto",
+            width: "25%",
+          }}
+        />
         <Box mt={2}>
           <Typography variant="h6" align="center" fontWeight="bold">
             Beaver Vault (Secure Password Manager)
@@ -33,10 +44,11 @@ const AboutAccountModelDialog = ({ open, handleClose }) => {
         </Box>
         <Box mt={2}>
           <Typography variant="body2" align="center">
-            This is a capstone project for Oregon State University's Computer Science program. Built using React, Node.js, and Python.
+            This is a capstone project for Oregon State University's Computer
+            Science program. Built using React, Node.js, and Python.
           </Typography>
           <Typography variant="body2" align="center">
-            Version: 0.9
+            Version: 0.99
           </Typography>
         </Box>
       </DialogContent>

@@ -6,24 +6,21 @@ import {
   MenuItem,
   TextField,
   Button,
-  FormControlLabel,
-  Checkbox,
   LinearProgress,
   IconButton,
   InputAdornment,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { encryptText } from "./encryption";
+import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
-import { useAddPasswordMutation } from "./slices/apiSlice";
+import { useAddPasswordMutation } from "../slices/apiSlice";
 import PasswordGenerator from "./PasswordGenPage";
 
 import zxcvbn from "zxcvbn";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-export default function NewPasswordPage() {
-  const navigate = useNavigate();
+export default function NewPasswordPage({ setModalOpen, refetch }) {
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 
@@ -35,33 +32,10 @@ export default function NewPasswordPage() {
   const [website, setWebsite] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [strengthColor, setStrengthColor] = useState("grey");
   const [strengthLabel, setStrengthLabel] = useState("");
-  const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
-
-  const passwordCriteria = [
-    { label: "Minimum 8 characters", test: (input) => input.length >= 8 },
-    {
-      label: "At least one uppercase letter",
-      test: (input) => /[A-Z]/.test(input),
-    },
-    {
-      label: "At least one lowercase letter",
-      test: (input) => /[a-z]/.test(input),
-    },
-    { label: "At least one number", test: (input) => /[0-9]/.test(input) },
-    {
-      label: "At least one special character",
-      test: (input) => /[^A-Za-z0-9]/.test(input),
-    },
-  ];
-  const [passwordValidation, setPasswordValidation] = useState(
-    passwordCriteria.map((criteria) => ({ ...criteria, isMet: false }))
-  );
 
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
@@ -91,20 +65,6 @@ export default function NewPasswordPage() {
         setStrengthColor("grey");
         setStrengthLabel("");
     }
-
-    setPasswordsMatch(newPassword === confirmPassword);
-
-    const validationResults = passwordCriteria.map((criteria) => ({
-      ...criteria,
-      isMet: criteria.test(newPassword),
-    }));
-    setPasswordValidation(validationResults);
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    const newConfirmPassword = e.target.value;
-    setConfirmPassword(newConfirmPassword);
-    setPasswordsMatch(password === newConfirmPassword);
   };
 
   const handleClickShowPassword = () => {
@@ -112,11 +72,6 @@ export default function NewPasswordPage() {
   };
 
   const handleSubmit = async () => {
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
-
     const passwordData = {
       folderID: currentFolder,
       websiteName: encryptText(website, loggedInUser.masterKey),
@@ -126,8 +81,9 @@ export default function NewPasswordPage() {
 
     try {
       await addPasswordPost(passwordData).unwrap();
+      setModalOpen(false);
       alert("Password added successfully");
-      navigate("/");
+      refetch();
     } catch (error) {
       console.error("Error adding password:", error);
       alert("An unexpected error occurred. Please try again.");
@@ -141,9 +97,9 @@ export default function NewPasswordPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "30%",
-        height: "75vh",
+        width: "100%",
         margin: "auto",
+        gap: "2rem",
       }}
     >
       <Typography variant="h4">Add New Password</Typography>
@@ -206,35 +162,7 @@ export default function NewPasswordPage() {
       <Typography variant="caption" display="block" gutterBottom>
         Password Strength: {strengthLabel}
       </Typography>
-      {passwordValidation.map((criteria, index) => (
-        <Typography
-          key={index}
-          variant="caption"
-          sx={{ color: criteria.isMet ? "green" : "red" }}
-        >
-          {criteria.isMet ? "✓" : "✗"} {criteria.label}
-        </Typography>
-      ))}
-      <TextField
-        fullWidth
-        variant="outlined"
-        label="Confirm Password"
-        type={showPassword ? "text" : "password"}
-        value={confirmPassword}
-        onChange={handleConfirmPasswordChange}
-        error={!passwordsMatch}
-        helperText={!passwordsMatch ? "Passwords do not match" : ""}
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={useGeneratedPassword}
-            onChange={(e) => setUseGeneratedPassword(e.target.checked)}
-          />
-        }
-        label="Use Generated Password"
-      />
-      {useGeneratedPassword && <PasswordGenerator />}
+
       <Button
         variant="contained"
         onClick={handleSubmit}

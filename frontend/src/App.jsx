@@ -1,45 +1,31 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
-import NavBar from "./NavBar";
-import LandingPage from "./LandingPage";
-import LoginPage from "./LoginPage";
-import SignupPage from "./SignupPage";
-import HomePage from "./HomePage";
-import PasswordGenPage from "./PasswordGenPage";
-import EncryptionTestPage from "./EncryptionTestPage";
-import NewPasswordPage from "./NewPasswordPage";
-import NewCreditCardPage from "./NewCreditCardPage";
-import NewNotePage from "./NewNotePage";
-import NewFolderPage from "./NewFolderPage";
-import CacheTestPage from "./cacheTestPage";
-import DataExport from "./DataExport";
-import DataImport from "./DataImport";
-import EditPasswordPage from "./EditPasswordPage";
-import EditNotePage from "./EditNotePage";
-import EditCreditCardPage from "./EditCreditCardPage";
-import TrashBin from "./TrashBin";
+import NavBar from "./components/NavBar";
+import LandingPage from "./pages/LandingPage";
+import HomePage_new from "./pages/HomePage_new";
+import PasswordGenPage from "./pages/PasswordGenPage";
+import EncryptionTestPage from "./pages/EncryptionTestPage";
+import DataExport from "./pages/DataExportPage";
+import DataImport from "./pages/DataImportPage";
+import EditPasswordPage from "./pages/EditPasswordPage";
+import EditNotePage from "./pages/EditNotePage";
+import EditCreditCardPage from "./pages/EditCreditCardPage";
+import TrashBin from "./pages/TrashBinPage";
 
 function App() {
-  const loggedInUser = useSelector((state) => state.auth.user);
+  const loggedInUser = useSelector((state) => state.auth.accessToken);
 
   return (
     <div>
       <Router>
-        <NavBar />
+        {loggedInUser ? <NavBar /> : null}
         <Routes>
           <Route
             path="/"
-            element={loggedInUser ? <HomePage /> : <LandingPage />}
+            element={loggedInUser ? <HomePage_new /> : <LandingPage />}
           />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
           <Route path="/passwordgen" element={<PasswordGenPage />} />
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
-          <Route path="/newpassword" element={<NewPasswordPage />} />
-          <Route path="/newcreditcard" element={<NewCreditCardPage />} />
-          <Route path="/newnote" element={<NewNotePage />} />
-          <Route path="/newfolder" element={<NewFolderPage />} />
-          <Route path="/cache-test" element={<CacheTestPage />} />
           <Route path="/dataexport" element={<DataExport />} />
           <Route path="/dataimport" element={<DataImport />} />
           <Route path="/editpassword/:id" element={<EditPasswordPage />} />

@@ -187,9 +187,9 @@ def get_note(
     return note
 
 
-@app.get('/notes/{folder_id}')
+@app.get('/notes/{folder_ids}')
 def get_notes_by_folder(
-        folder_id: int,
+        folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -208,9 +208,9 @@ def get_creditcard(
     return creditcard
 
 
-@app.get('/creditcards/{folder_id}')
+@app.get('/creditcards/{folder_ids}')
 def get_creditcards_by_folder(
-        folder_id: int,
+        folder_ids: str,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)

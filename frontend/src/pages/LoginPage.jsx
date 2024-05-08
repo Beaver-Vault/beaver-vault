@@ -1,9 +1,9 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
-import { pdfk } from "./encryption";
+import { pdfk } from "../scripts/encryption";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "./slices/authSlice";
+import { login } from "../slices/authSlice";
 import MFALoginPage from "./MFALoginPage";
 
 export default function LoginPage() {
@@ -13,6 +13,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
 
   const user = useSelector((state) => state.auth.user);
+
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleLogin();
+    }
+  };
 
   const handleLogin = async () => {
     const response = await axios.get(
@@ -51,14 +57,14 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: "1rem",
-            padding: "1rem",
             margin: "auto",
-            width: "40%",
+            width: "100%",
           }}
         >
-          <Typography variant="h4">Login</Typography>
           <TextField
+            autoFocus
             onChange={(e) => setEmailAddress(e.target.value)}
+            onKeyDown={handleKeyPress}
             fullWidth
             variant="filled"
             label="Email"
@@ -68,6 +74,7 @@ export default function LoginPage() {
           />
           <TextField
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyPress}
             fullWidth
             variant="filled"
             label="Password"
@@ -76,8 +83,13 @@ export default function LoginPage() {
               backgroundColor: "white",
             }}
           />
-          <Button variant="contained" color="primary" onClick={handleLogin}>
-            Login
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleLogin}
+            fullWidth
+          >
+            <Typography variant="h6">Login</Typography>
           </Button>
         </Box>
       )}

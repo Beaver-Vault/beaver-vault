@@ -12,12 +12,12 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { encryptText, decryptText } from "./encryption";
+import { encryptText, decryptText } from "../scripts/encryption";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetPasswordsQuery,
   useUpdatePasswordMutation,
-} from "./slices/apiSlice";
+} from "../slices/apiSlice";
 import PasswordGenerator from "./PasswordGenPage";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";

@@ -2,7 +2,7 @@ import { Box, Tab, Button, IconButton } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import PasswordCell from "./PasswordCell";
+import PasswordCell from "../components/PasswordCell";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -10,11 +10,11 @@ import {
   setPasswords,
   setCreditCards,
   setNotes,
-} from "./slices/userInfoSlice";
-import { decryptText } from "./encryption";
+} from "../slices/userInfoSlice";
+import { decryptText } from "../scripts/encryption";
 import { Cached, Delete } from "@mui/icons-material";
-import ConfirmationDialogTrash from "./DeleteConfirmationTrash";
-import RestoreConfirmationDialog from "./RestoreConfirmations";
+import ConfirmationDialogTrash from "../components/DeleteConfirmationTrash";
+import RestoreConfirmationDialog from "../components/RestoreConfirmations";
 import {
   useGetFoldersQuery,
   useGetPasswordsQuery,
@@ -22,7 +22,7 @@ import {
   useGetNotesQuery,
   useUpdateTrashMutation,
   useDeleteUserMutation,
-} from "./slices/apiSlice";
+} from "../slices/apiSlice";
 
 export default function TrashBinPage() {
   const dispatch = useDispatch();
@@ -38,7 +38,6 @@ export default function TrashBinPage() {
   const allPasswords = useSelector((state) => state.userInfo.passwords);
   const allCreditcards = useSelector((state) => state.userInfo.creditCards);
   const allNotes = useSelector((state) => state.userInfo.notes);
-  
 
   const { data: folderData, refetch: folderRefetch } = useGetFoldersQuery(
     loggedInUser["userID"]
@@ -61,19 +60,14 @@ export default function TrashBinPage() {
   const [deleteUser] = useDeleteUserMutation();
 
   const EmptyTrashBinButton = () => {
-  
-    const handleEmptyTrashBin = async () => {
-      }
+    const handleEmptyTrashBin = async () => {};
 
-  
     return (
-      <Button variant="contained" color="secondary" onClick={handleEmptyTrashBin}>
+      <Button variant="contained" color="error" onClick={handleEmptyTrashBin}>
         Empty Trash Bin
       </Button>
     );
   };
-  
-  
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -255,114 +249,81 @@ export default function TrashBinPage() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      folderRefetch();
-      passwordRefetch();
-      creditcardRefetch();
-      noteRefetch();
-  
-      dispatch(setFolders(folderData));
-  
-      let passwordIDsToDelete = [];
-      let creditCardIDsToDelete = [];
-      let noteIDsToDelete = [];
-  
-      if (passwordData) {
-        console.log("Password Data:", passwordData);
-        let passwords = [];
-        for (let password of passwordData) {
-          if (!password.trashBin) continue;
-          const decryptedPassword = {
-            ...password,
-            websiteName: decryptText(password.websiteName, loggedInUser.masterKey),
-            username: decryptText(password.username, loggedInUser.masterKey),
-            encryptedPassword: decryptText(password.encryptedPassword, loggedInUser.masterKey),
-            deletionDateTime: new Date(password.deletionDateTime).toISOString().split('T')[0],
-          };
-          if (new Date(password.deletionDateTime) <= new Date()) {
-            passwordIDsToDelete.push(password.passwordID);
-          } else {
-            passwords.push(decryptedPassword);
-          }
-        }
-        dispatch(setPasswords(passwords));
-      }
-      
-      if (creditcardData) {
-        console.log("Credit Card Data:", creditcardData);
-        let creditcards = [];
-        for (let creditcard of creditcardData) {
-          if (!creditcard.trashBin) continue;
-          const decryptedCreditCard = {
-            creditcardID: creditcard.creditcardID,
-            cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
-            cardholderName: decryptText(creditcard.cardholderName, loggedInUser.masterKey),
-            number: decryptText(creditcard.number, loggedInUser.masterKey),
-            expiration: decryptText(creditcard.expiration, loggedInUser.masterKey),
-            csv: decryptText(creditcard.csv, loggedInUser.masterKey),
-            deletionDateTime: new Date(creditcard.deletionDateTime).toISOString().split('T')[0],
-          };
-          if (new Date(creditcard.deletionDateTime) <= new Date()) {
-            creditCardIDsToDelete.push(creditcard.creditcardID);
-          } else {
-            creditcards.push(decryptedCreditCard);
-          }
-        }
-        dispatch(setCreditCards(creditcards));
-      }
-      
-      if (noteData) {
-        console.log("Note Data:", noteData);
-        let notes = [];
-        for (let note of noteData) {
-          if (!note.trashBin) continue;
-          const decryptedNote = {
-            noteID: note.noteID,
-            noteName: decryptText(note.noteName, loggedInUser.masterKey),
-            content: decryptText(note.content, loggedInUser.masterKey),
-            deletionDateTime: new Date(note.deletionDateTime).toISOString().split('T')[0],
-          };
-          if (new Date(note.deletionDateTime) <= new Date()) {
-            noteIDsToDelete.push(note.noteID);
-          } else {
-            notes.push(decryptedNote);
-          }
-        }
-        dispatch(setNotes(notes));
-      }
-  
-      for (const passwordID of passwordIDsToDelete) {
-        try {
-          await dispatch(deleteUser({ dataType: "passwords", dataID: passwordID }));
-          await passwordRefetch();
-        } catch (error) {
-          console.error(`Error deleting password with ID ${passwordID}:`, error);
-        }
-      }
-  
-      for (const creditCardID of creditCardIDsToDelete) {
-        try {
-          await dispatch(deleteUser({ dataType: "creditcards", dataID: creditCardID }));
-          await creditcardRefetch();
-        } catch (error) {
-          console.error(`Error deleting credit card with ID ${creditCardID}:`, error);
-        }
-      }
-  
-      for (const noteID of noteIDsToDelete) {
-        try {
-          await dispatch(deleteUser({ dataType: "notes", dataID: noteID }));
-          await noteRefetch();
-        } catch (error) {
-          console.error(`Error deleting note with ID ${noteID}:`, error);
-        }
-      }
-    };
+    folderRefetch();
+    passwordRefetch();
+    creditcardRefetch();
+    noteRefetch();
 
-    fetchData();
-  }, [folderData, passwordData, creditcardData, noteData]);
-  
-  
+    dispatch(setFolders(folderData));
+
+    if (passwordData) {
+      console.log("Password Data:", passwordData);
+      let passwords = [];
+      for (let password of passwordData) {
+        if (!password.trashBin) continue;
+        passwords.push({
+          ...password,
+          websiteName: decryptText(
+            password.websiteName,
+            loggedInUser.masterKey
+          ),
+          username: decryptText(password.username, loggedInUser.masterKey),
+          encryptedPassword: decryptText(
+            password.encryptedPassword,
+            loggedInUser.masterKey
+          ),
+          deletionDateTime: new Date(password.deletionDateTime)
+            .toISOString()
+            .split("T")[0],
+        });
+      }
+      dispatch(setPasswords(passwords));
+    }
+
+    if (creditcardData) {
+      console.log("Credit Card Data:", creditcardData);
+      let creditcards = [];
+      for (let creditcard of creditcardData) {
+        if (!creditcard.trashBin) continue;
+        creditcards.push({
+          creditcardID: creditcard.creditcardID,
+          cardName: decryptText(creditcard.cardName, loggedInUser.masterKey),
+          cardholderName: decryptText(
+            creditcard.cardholderName,
+            loggedInUser.masterKey
+          ),
+          number: decryptText(creditcard.number, loggedInUser.masterKey),
+          expiration: decryptText(
+            creditcard.expiration,
+            loggedInUser.masterKey
+          ),
+          csv: decryptText(creditcard.csv, loggedInUser.masterKey),
+          deletionDateTime: new Date(creditcard.deletionDateTime)
+            .toISOString()
+            .split("T")[0],
+        });
+      }
+      dispatch(setCreditCards(creditcards));
+    }
+
+    if (noteData) {
+      console.log("Note Data:", noteData);
+      let notes = [];
+      for (let note of noteData) {
+        if (!note.trashBin) continue;
+        notes.push({
+          noteID: note.noteID,
+          noteName: decryptText(note.noteName, loggedInUser.masterKey),
+          content: decryptText(note.content, loggedInUser.masterKey),
+          deletionDateTime: new Date(note.deletionDateTime)
+            .toISOString()
+            .split("T")[0],
+        });
+      }
+      dispatch(setNotes(notes));
+    }
+  }, [loggedInUser, creditcardData, folderData, passwordData, noteData]);
+
   return (
     <>
       <ConfirmationDialogTrash
@@ -470,11 +431,8 @@ export default function TrashBinPage() {
         </TabPanel>
       </TabContext>
       <center>
-      <EmptyTrashBinButton />
+        <EmptyTrashBinButton />
       </center>
     </>
-
-    
-
   );
 }

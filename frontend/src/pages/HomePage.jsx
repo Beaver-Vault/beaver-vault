@@ -2,7 +2,7 @@ import { Box, Tab, Button, IconButton } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import PasswordCell from "./PasswordCell";
+import PasswordCell from "../components/PasswordCell";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -10,10 +10,10 @@ import {
   setPasswords,
   setCreditCards,
   setNotes,
-} from "./slices/userInfoSlice";
-import { decryptText } from "./encryption";
+} from "../slices/userInfoSlice";
+import { decryptText } from "../scripts/encryption";
 import { Edit, Delete } from "@mui/icons-material";
-import ConfirmationDialog from "./DeleteConfirmation";
+import ConfirmationDialog from "../components/DeleteConfirmation";
 import {
   useGetFoldersQuery,
   useGetPasswordsQuery,
@@ -21,7 +21,7 @@ import {
   useGetNotesQuery,
   useUpdateTrashMutation,
   useDeleteUserMutation,
-} from "./slices/apiSlice";
+} from "../slices/apiSlice";
 
 export default function HomePage() {
   const nav = useNavigate();

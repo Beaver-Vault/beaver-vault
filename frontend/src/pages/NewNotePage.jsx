@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -7,70 +6,39 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import { encryptText, decryptText } from "./encryption";
-import { useNavigate, useParams } from "react-router-dom";
-import { useGetNotesQuery, useUpdateNoteMutation } from "./slices/apiSlice";
+import { encryptText } from "../scripts/encryption";
+import { useNavigate } from "react-router-dom";
+import { useAddNoteMutation } from "../slices/apiSlice";
 
-export default function EditNotePage() {
+export default function NewNotePage({ setModalOpen, refetch }) {
   const navigate = useNavigate();
-  const { id } = useParams();
+
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
+  const accessToken = useSelector((state) => state.auth.accessToken);
 
-  const [currentFolder, setCurrentFolder] = useState(
-    userFolders.length > 0 ? userFolders[0].folderID : ""
-  );
+  const [addNotePost, noteResult] = useAddNoteMutation();
+
+  const [currentFolder, setCurrentFolder] = useState(userFolders[0].folderID);
   const [notename, setNotename] = useState("");
   const [content, setContent] = useState("");
 
-  const { data: noteData, refetch: noteRefetch } =
-    useGetNotesQuery(currentFolder);
-  const [updateNote] = useUpdateNoteMutation();
-
-  const fetchNoteData = async () => {
-    noteRefetch();
-    try {
-      if (!loggedInUser) {
-        console.error("User not logged in");
-        navigate("/");
-        return;
-      }
-      if (!noteData) {
-        return;
-      }
-
-      const matchedNote = noteData.find((note) => note.noteID === parseInt(id));
-      if (!matchedNote) {
-        console.error("Note not found");
-        navigate("/");
-        return;
-      }
-      setCurrentFolder(matchedNote.folderID);
-      setNotename(decryptText(matchedNote.noteName, loggedInUser.masterKey));
-      setContent(decryptText(matchedNote.content, loggedInUser.masterKey));
-    } catch (error) {
-      console.error("Error fetching note data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchNoteData();
-  }, [id, loggedInUser.folderID, noteData]);
-
   const handleSubmit = async () => {
-    const updatedNoteData = {
+    const noteData = {
       folderID: currentFolder,
       noteName: encryptText(notename, loggedInUser.masterKey),
       content: encryptText(content, loggedInUser.masterKey),
     };
 
     try {
-      await updateNote({ notesID: id, updatedData: updatedNoteData });
-      alert("Note updated successfully");
-      navigate("/");
+      await addNotePost(noteData);
+      setModalOpen(false);
+      alert("Note added successfully");
+      refetch();
     } catch (error) {
-      console.error("Error updating note:", error);
+      console.error("Error adding note:", error);
       alert("An unexpected error occurred. Please try again.");
     }
   };
@@ -82,12 +50,12 @@ export default function EditNotePage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "30%",
-        height: "75vh",
+        width: "100%",
         margin: "auto",
+        gap: "2rem",
       }}
     >
-      <Typography variant="h4">Edit Note</Typography>
+      <Typography variant="h4">Add New Note</Typography>
       <Select
         fullWidth
         value={currentFolder}
@@ -107,16 +75,16 @@ export default function EditNotePage() {
         fullWidth
         variant="outlined"
         label="Note Name"
-        value={notename}
         onChange={(e) => {
           setNotename(e.target.value);
         }}
       />
       <TextField
         fullWidth
+        multiline
+        rows={4}
         variant="outlined"
         label="Content"
-        value={content}
         onChange={(e) => {
           setContent(e.target.value);
         }}

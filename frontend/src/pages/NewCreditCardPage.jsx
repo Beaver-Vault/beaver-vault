@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -8,13 +8,12 @@ import {
   Button,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { encryptText } from "./encryption";
+import { encryptText } from "../scripts/encryption";
 import { useNavigate } from "react-router-dom";
-import { useAddCreditCardMutation } from "./slices/apiSlice";
-import cardValidator from 'card-validator';
+import { useAddCreditCardMutation } from "../slices/apiSlice";
+import cardValidator from "card-validator";
 
-export default function NewCreditCardPage() {
-  const navigate = useNavigate();
+export default function NewCreditCardPage({ setModalOpen, refetch }) {
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
 
@@ -26,42 +25,45 @@ export default function NewCreditCardPage() {
   const [number, setNumber] = useState("");
   const [expiration, setExpiration] = useState("");
   const [csv, setCsv] = useState("");
-  const [numberError, setNumberError] = useState('');
-  const [expirationError, setExpirationError] = useState('');
-  const [csvError, setCsvError] = useState('');
-  const [cardNameError, setCardNameError] = useState('');
-  const [cardHolderError, setCardHolderError] = useState('');
+  const [numberError, setNumberError] = useState("");
+  const [expirationError, setExpirationError] = useState("");
+  const [csvError, setCsvError] = useState("");
+  const [cardNameError, setCardNameError] = useState("");
+  const [cardHolderError, setCardHolderError] = useState("");
 
   const handleNumberChange = (e) => {
     const newNumber = e.target.value;
     setNumber(newNumber);
     const numberValidation = cardValidator.number(newNumber);
-    setNumberError(numberValidation.isValid ? '' : 'Invalid card number');
+    setNumberError(numberValidation.isValid ? "" : "Invalid card number");
   };
 
   const handleExpirationChange = (e) => {
     const newExpiration = e.target.value;
     setExpiration(newExpiration);
     const expirationValidation = cardValidator.expirationDate(newExpiration);
-    setExpirationError(expirationValidation.isValid ? '' : 'Invalid expiration date');
+    setExpirationError(
+      expirationValidation.isValid ? "" : "Invalid expiration date"
+    );
   };
 
   const handleCsvChange = (e) => {
     const newCsv = e.target.value;
     setCsv(newCsv);
     const numberValidation = cardValidator.number(number);
-    const isAmericanExpress = numberValidation.card && numberValidation.card.type === 'american-express';
+    const isAmericanExpress =
+      numberValidation.card &&
+      numberValidation.card.type === "american-express";
 
     const cvvValidation = cardValidator.cvv(newCsv, isAmericanExpress ? 4 : 3);
-    setCsvError(cvvValidation.isValid ? '' : 'Invalid CSV');
+    setCsvError(cvvValidation.isValid ? "" : "Invalid CSV");
   };
-
 
   const handleCardNameChange = (e) => {
     const newName = e.target.value;
     setCardname(newName);
     if (newName.trim()) {
-      setCardNameError('');
+      setCardNameError("");
     }
   };
 
@@ -69,7 +71,7 @@ export default function NewCreditCardPage() {
     const newHolder = e.target.value;
     setCardholder(newHolder);
     if (newHolder.trim()) {
-      setCardHolderError('');
+      setCardHolderError("");
     }
   };
 
@@ -77,27 +79,39 @@ export default function NewCreditCardPage() {
     let valid = true;
 
     if (!number.trim() || !cardValidator.number(number).isValid) {
-      setNumberError('Please enter a valid card number');
+      setNumberError("Please enter a valid card number");
       valid = false;
     }
 
-    if (!expiration.trim() || !cardValidator.expirationDate(expiration).isValid) {
-      setExpirationError('Please enter a valid expiration date');
+    if (
+      !expiration.trim() ||
+      !cardValidator.expirationDate(expiration).isValid
+    ) {
+      setExpirationError("Please enter a valid expiration date");
       valid = false;
     }
 
-    if (!csv.trim() || !cardValidator.cvv(csv, cardValidator.number(number).card && cardValidator.number(number).card.type === 'american-express' ? 4 : 3).isValid) {
-      setCsvError('Please enter a valid CSV');
+    if (
+      !csv.trim() ||
+      !cardValidator.cvv(
+        csv,
+        cardValidator.number(number).card &&
+          cardValidator.number(number).card.type === "american-express"
+          ? 4
+          : 3
+      ).isValid
+    ) {
+      setCsvError("Please enter a valid CSV");
       valid = false;
     }
 
     if (!cardname.trim()) {
-      setCardNameError('Card name is required');
+      setCardNameError("Card name is required");
       valid = false;
     }
 
     if (!cardholder.trim()) {
-      setCardHolderError('Card holder name is required');
+      setCardHolderError("Card holder name is required");
       valid = false;
     }
 
@@ -117,8 +131,9 @@ export default function NewCreditCardPage() {
 
     try {
       await addCreditCardPost(creditcardData);
+      setModalOpen(false);
       alert("Credit Card added successfully");
-      navigate("/");
+      refetch();
     } catch (error) {
       console.error("Error adding credit card:", error);
       alert("An unexpected error occurred. Please try again.");
@@ -132,9 +147,9 @@ export default function NewCreditCardPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        width: "30%",
-        height: "75vh",
+        width: "100%",
         margin: "auto",
+        gap: "2rem",
       }}
     >
       <Typography variant="h4">Add New Credit Card</Typography>
@@ -144,7 +159,9 @@ export default function NewCreditCardPage() {
         onChange={(e) => setCurrentFolder(e.target.value)}
       >
         {userFolders.map((folder, i) => (
-          <MenuItem key={i} value={folder.folderID}>{folder.folderName}</MenuItem>
+          <MenuItem key={i} value={folder.folderID}>
+            {folder.folderName}
+          </MenuItem>
         ))}
       </Select>
       <TextField
@@ -195,7 +212,13 @@ export default function NewCreditCardPage() {
       <Button
         variant="contained"
         onClick={handleSubmit}
-        disabled={numberError || expirationError || csvError || cardNameError || cardHolderError}
+        disabled={
+          numberError ||
+          expirationError ||
+          csvError ||
+          cardNameError ||
+          cardHolderError
+        }
         sx={{
           width: "100%",
         }}
