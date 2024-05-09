@@ -15,6 +15,7 @@ import { decryptText } from "../scripts/encryption";
 import { Cached, Delete } from "@mui/icons-material";
 import ConfirmationDialogTrash from "../components/DeleteConfirmationTrash";
 import RestoreConfirmationDialog from "../components/RestoreConfirmations";
+import ConfirmEmptyTrashBinDialog from "../components/DeleteConfirmationEmptyTrash";
 import {
   useGetFoldersQuery,
   useGetPasswordsQuery,
@@ -31,6 +32,7 @@ export default function TrashBinPage() {
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [RestoreconfirmationDialogOpen, setRestoreConfirmationDialogOpen] =
     useState(false);
+  const [ConfirmEmptyTrashBinDialogOpen, setConfirmEmptyDialogOpen] = useState(false);
   const [deletingData, setDeletingData] = useState(null);
   const [restoringData, setRestoringData] = useState(null);
 
@@ -59,15 +61,6 @@ export default function TrashBinPage() {
   const [updateTrash] = useUpdateTrashMutation();
   const [deleteUser] = useDeleteUserMutation();
 
-  const EmptyTrashBinButton = () => {
-    const handleEmptyTrashBin = async () => {};
-
-    return (
-      <Button variant="contained" color="error" onClick={handleEmptyTrashBin}>
-        Empty Trash Bin
-      </Button>
-    );
-  };
 
   const passwordColumns = [
     { field: "websiteName", headerName: "Website", flex: 1 },
@@ -248,6 +241,39 @@ export default function TrashBinPage() {
     }
   };
 
+  const EmptyTrashBinButton = () => {
+    const handleEmptyTrashBin = async () => {
+      setConfirmEmptyDialogOpen(true);
+    };
+
+    return (
+      <Button variant="contained" color="error" onClick={handleEmptyTrashBin}>
+        Empty Trash Bin
+      </Button>
+    );
+  };
+
+  const confirmEmptyTrashBin = async () => {
+    try {
+      for (const password of allPasswords) {
+        await deleteUser({ dataType: "passwords", dataID: password.passwordID });
+      }
+      for (const creditcard of allCreditcards) {
+        await deleteUser({ dataType: "creditcards", dataID: creditcard.creditcardID });
+      }
+      for (const note of allNotes) {
+        await deleteUser({ dataType: "notes", dataID: note.noteID });
+      }
+      dispatch(setPasswords([]));
+      dispatch(setCreditCards([]));
+      dispatch(setNotes([]));
+    } catch (error) {
+      console.error("Error emptying trash bin:", error);
+    } finally {
+      setConfirmEmptyDialogOpen(false);
+    }
+  };
+
   useEffect(() => {
     folderRefetch();
     passwordRefetch();
@@ -336,6 +362,12 @@ export default function TrashBinPage() {
         open={RestoreconfirmationDialogOpen}
         handleClose={() => setRestoreConfirmationDialogOpen(false)}
         handleConfirm={confirmRestore}
+      />
+
+      <ConfirmEmptyTrashBinDialog
+        open={ConfirmEmptyTrashBinDialogOpen}
+        handleClose={() => setConfirmEmptyDialogOpen(false)} 
+        handleConfirm={confirmEmptyTrashBin}
       />
 
       <TabContext value={currentTab}>
