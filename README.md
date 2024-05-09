@@ -1,7 +1,7 @@
 <h1><p align="center"> Beaver Vault </p></h1>
 
 <p align="center">
-  <img src="frontend/src/imgs/beaver_logo.png" width="150">
+  <img src="frontend/src/imgs/BeaverVaultLogo_New.svg" width="150">
 </p>
 
 This project aims to provide a secure way to store passwords, notes, and credit card information for anyone needing to bolster their online security.

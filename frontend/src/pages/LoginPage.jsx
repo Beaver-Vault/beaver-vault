@@ -3,6 +3,7 @@ import axios from "axios";
 import { useState } from "react";
 import { pdfk } from "../scripts/encryption";
 import { useDispatch, useSelector } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { login } from "../slices/authSlice";
 import MFALoginPage from "./MFALoginPage";
 
@@ -27,7 +28,9 @@ export default function LoginPage() {
 
     const data = response.data;
     if (data === null) {
-      alert("Invalid email or password");
+      dispatch(
+        setSnackbar({ message: "Invalid email or password", severity: "error" })
+      );
       return;
     }
 
@@ -41,7 +44,9 @@ export default function LoginPage() {
       };
       dispatch(login(newUserData));
     } else {
-      alert("Invalid email or password");
+      dispatch(
+        setSnackbar({ message: "Invalid email or password", severity: "error" })
+      );
     }
   };
 

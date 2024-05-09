@@ -30,14 +30,14 @@ export default function HomePageEntryList({
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    if (currentEntryType == EntryTypes.PASSWORD) {
+    if (currentEntryType === EntryTypes.PASSWORD) {
       setCurrentEntries(passwords);
-    } else if (currentEntryType == EntryTypes.CREDITCARD) {
+    } else if (currentEntryType === EntryTypes.CREDITCARD) {
       setCurrentEntries(creditCards);
-    } else if (currentEntryType == EntryTypes.NOTE) {
+    } else if (currentEntryType === EntryTypes.NOTE) {
       setCurrentEntries(notes);
     }
-  }, [currentEntryType, passwords, creditCards, notes]);
+  }, [currentEntryType, passwords, creditCards, notes, dispatch]);
 
   const MyButton = styled(Button)(({ theme, entry }) => {
     let isActive = false;

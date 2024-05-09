@@ -11,6 +11,7 @@ import EditPasswordPage from "./pages/EditPasswordPage";
 import EditNotePage from "./pages/EditNotePage";
 import EditCreditCardPage from "./pages/EditCreditCardPage";
 import TrashBin from "./pages/TrashBinPage";
+import SnackbarManager from "./components/SnackbarManager";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.accessToken);
@@ -34,6 +35,7 @@ function App() {
           <Route path="/trashbin" element={<TrashBin />} />
         </Routes>
       </Router>
+      <SnackbarManager />
     </div>
   );
 }
