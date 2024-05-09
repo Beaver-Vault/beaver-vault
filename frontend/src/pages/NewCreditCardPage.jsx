@@ -7,19 +7,21 @@ import {
   TextField,
   Button,
 } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { encryptText } from "../scripts/encryption";
-import { useNavigate } from "react-router-dom";
 import { useAddCreditCardMutation } from "../slices/apiSlice";
 import cardValidator from "card-validator";
 
 export default function NewCreditCardPage({ setModalOpen, refetch }) {
+  const dispatch = useDispatch();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
+  const currentUIFolder = useSelector((state) => state.uiStatus.currentFolder);
 
   const [addCreditCardPost] = useAddCreditCardMutation();
 
-  const [currentFolder, setCurrentFolder] = useState(userFolders[0].folderID);
+  const [currentFolder, setCurrentFolder] = useState(currentUIFolder.folderID);
   const [cardname, setCardname] = useState("");
   const [cardholder, setCardholder] = useState("");
   const [number, setNumber] = useState("");
@@ -116,7 +118,12 @@ export default function NewCreditCardPage({ setModalOpen, refetch }) {
     }
 
     if (!valid) {
-      alert("Please correct the errors before submitting.");
+      dispatch(
+        setSnackbar({
+          message: "Please correct the errors before submitting.",
+          severity: "error",
+        })
+      );
       return;
     }
 
@@ -132,11 +139,21 @@ export default function NewCreditCardPage({ setModalOpen, refetch }) {
     try {
       await addCreditCardPost(creditcardData);
       setModalOpen(false);
-      alert("Credit Card added successfully");
+      dispatch(
+        setSnackbar({
+          message: "Credit Card added successfully",
+          severity: "success",
+        })
+      );
       refetch();
     } catch (error) {
       console.error("Error adding credit card:", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "An unexpected error occurred. Please try again.",
+          severity: "error",
+        })
+      );
     }
   };
 

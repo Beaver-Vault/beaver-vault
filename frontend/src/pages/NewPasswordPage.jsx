@@ -10,25 +10,27 @@ import {
   IconButton,
   InputAdornment,
 } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { encryptText } from "../scripts/encryption";
-import { useNavigate } from "react-router-dom";
 import { useAddPasswordMutation } from "../slices/apiSlice";
-import PasswordGenerator from "./PasswordGenPage";
 
 import zxcvbn from "zxcvbn";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 export default function NewPasswordPage({ setModalOpen, refetch }) {
+  const dispatch = useDispatch();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
+  const currentUIFolder = useSelector((state) => state.uiStatus.currentFolder);
 
   const [addPasswordPost, passwordResult] = useAddPasswordMutation();
 
   const [currentFolder, setCurrentFolder] = useState(
-    userFolders.length > 0 ? userFolders[0].folderID : ""
+    userFolders.length > 0 ? currentUIFolder.folderID : ""
   );
+
   const [website, setWebsite] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -82,11 +84,21 @@ export default function NewPasswordPage({ setModalOpen, refetch }) {
     try {
       await addPasswordPost(passwordData).unwrap();
       setModalOpen(false);
-      alert("Password added successfully");
+      dispatch(
+        setSnackbar({
+          message: "Password added successfully",
+          severity: "success",
+        })
+      );
       refetch();
     } catch (error) {
       console.error("Error adding password:", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "An unexpected error occurred. Please try again.",
+          severity: "error",
+        })
+      );
     }
   };
 

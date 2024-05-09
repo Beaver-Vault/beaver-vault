@@ -8,6 +8,8 @@ import {
   IconButton,
   InputAdornment,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { login } from "../slices/authSlice";
 import axios from "axios";
 import zxcvbn from "zxcvbn";
 import { pdfk } from "../scripts/encryption";
@@ -16,6 +18,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 export default function SignupPage() {
+  const dispatch = useDispatch();
   const [emailAddress, setEmailAddress] = useState("");
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +73,7 @@ export default function SignupPage() {
     } else {
       setErrorMessage("");
     }
-  }, [password, confirmPassword, passwordCriteria]);
+  }, [password, confirmPassword]);
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -147,7 +150,11 @@ export default function SignupPage() {
       );
 
       if (response.status === 200) {
-        console.log("User registered successfully:", response.data);
+        const newUserData = {
+          masterKey: masterKey,
+          ...response.data["user"],
+        };
+        dispatch(login(newUserData));
         setNewUser(response.data);
         setUserCreated(true);
         alert("User signed up successfully!");

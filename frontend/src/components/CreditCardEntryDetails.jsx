@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { useUpdateCreditCardMutation } from "../slices/apiSlice";
 import { setCurrentEntry } from "../slices/uiStatusSlice";
 import { Box, Button } from "@mui/material";
@@ -54,7 +55,12 @@ export default function CreditCardEntryDetails({
         creditCardID: id,
         updatedData: updatedCreditCardData,
       });
-      alert("Credit Card updated successfully");
+      dispatch(
+        setSnackbar({
+          message: "Credit Card updated successfully",
+          severity: "success",
+        })
+      );
       setIsEditing(false);
       creditcardRefetch();
       dispatch(
@@ -69,7 +75,12 @@ export default function CreditCardEntryDetails({
       );
     } catch (error) {
       console.error("Error updating credit card", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "An unexpected error occurred. Please try again.",
+          severity: "error",
+        })
+      );
     }
   };
   return (

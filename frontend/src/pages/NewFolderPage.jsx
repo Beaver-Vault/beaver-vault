@@ -1,11 +1,11 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { useAddFolderMutation } from "../slices/apiSlice";
 
 export default function NewFolderPage({ setModalOpen, refetch }) {
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const loggedInUser = useSelector((state) => state.auth.user);
   const accessToken = useSelector((state) => state.auth.accessToken);
@@ -23,11 +23,21 @@ export default function NewFolderPage({ setModalOpen, refetch }) {
     try {
       await addFolderPost(folderData);
       setModalOpen(false);
-      alert("Folder added successfully");
+      dispatch(
+        setSnackbar({
+          message: "Folder added successfully",
+          severity: "success",
+        })
+      );
       refetch();
     } catch (error) {
       console.error("Error adding folder:", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "An unexpected error occurred. Please try again.",
+          severity: "error",
+        })
+      );
     }
   };
 

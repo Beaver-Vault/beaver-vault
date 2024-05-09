@@ -1,6 +1,7 @@
 import { Box, Typography, TextField } from "@mui/material";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { setAccessToken, setRefreshToken } from "../slices/authSlice";
 import axios from "axios";
 
@@ -19,7 +20,7 @@ export default function MFALoginPage() {
       }
     );
     if (result.data === null) {
-      alert("Invalid MFA Code");
+      dispatch(setSnackbar({ message: "Invalid MFA Code", severity: "error" }));
       setMfaCode("");
       return;
     }

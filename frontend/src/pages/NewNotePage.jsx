@@ -7,21 +7,20 @@ import {
   Button,
 } from "@mui/material";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { encryptText } from "../scripts/encryption";
-import { useNavigate } from "react-router-dom";
 import { useAddNoteMutation } from "../slices/apiSlice";
 
 export default function NewNotePage({ setModalOpen, refetch }) {
-  const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const loggedInUser = useSelector((state) => state.auth.user);
   const userFolders = useSelector((state) => state.userInfo.folders);
-  const accessToken = useSelector((state) => state.auth.accessToken);
+  const currentUIFolder = useSelector((state) => state.uiStatus.currentFolder);
 
   const [addNotePost, noteResult] = useAddNoteMutation();
 
-  const [currentFolder, setCurrentFolder] = useState(userFolders[0].folderID);
+  const [currentFolder, setCurrentFolder] = useState(currentUIFolder.folderID);
   const [notename, setNotename] = useState("");
   const [content, setContent] = useState("");
 
@@ -35,11 +34,21 @@ export default function NewNotePage({ setModalOpen, refetch }) {
     try {
       await addNotePost(noteData);
       setModalOpen(false);
-      alert("Note added successfully");
+      dispatch(
+        setSnackbar({
+          message: "Note added successfully",
+          severity: "success",
+        })
+      );
       refetch();
     } catch (error) {
       console.error("Error adding note:", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "Failed to add note",
+          severity: "error",
+        })
+      );
     }
   };
 
