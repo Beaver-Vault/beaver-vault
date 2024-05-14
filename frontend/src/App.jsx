@@ -7,11 +7,9 @@ import PasswordGenPage from "./pages/PasswordGenPage";
 import EncryptionTestPage from "./pages/EncryptionTestPage";
 import DataExport from "./pages/DataExportPage";
 import DataImport from "./pages/DataImportPage";
-import EditPasswordPage from "./pages/EditPasswordPage";
-import EditNotePage from "./pages/EditNotePage";
-import EditCreditCardPage from "./pages/EditCreditCardPage";
 import TrashBin from "./pages/TrashBinPage";
 import SnackbarManager from "./components/SnackbarManager";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.accessToken);
@@ -25,14 +23,21 @@ function App() {
             path="/"
             element={loggedInUser ? <HomePage_new /> : <LandingPage />}
           />
-          <Route path="/passwordgen" element={<PasswordGenPage />} />
-          <Route path="/encryptiontest" element={<EncryptionTestPage />} />
-          <Route path="/dataexport" element={<DataExport />} />
-          <Route path="/dataimport" element={<DataImport />} />
-          <Route path="/editpassword/:id" element={<EditPasswordPage />} />
-          <Route path="/editnote/:id" element={<EditNotePage />} />
-          <Route path="/editcreditcard/:id" element={<EditCreditCardPage />} />
-          <Route path="/trashbin" element={<TrashBin />} />
+          <Route path="/passwordgen" element={<PrivateRoute />}>
+            <Route path="" element={<PasswordGenPage />} />
+          </Route>
+          <Route path="/encryptiontest" element={<PrivateRoute />}>
+            <Route path="" element={<EncryptionTestPage />} />
+          </Route>
+          <Route path="/dataexport" element={<PrivateRoute />}>
+            <Route path="" element={<DataExport />} />
+          </Route>
+          <Route path="/dataimport" element={<PrivateRoute />}>
+            <Route path="" element={<DataImport />} />
+          </Route>
+          <Route path="/trashbin" element={<PrivateRoute />}>
+            <Route path="" element={<TrashBin />} />
+          </Route>
         </Routes>
       </Router>
       <SnackbarManager />
