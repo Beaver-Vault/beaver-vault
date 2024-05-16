@@ -221,7 +221,7 @@ export default function EditAccountPage() {
           width: "100%",
         }}
       >
-        Change Password/Email
+        Submit
       </Button>
     </Box>
   );
