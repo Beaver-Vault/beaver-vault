@@ -8,8 +8,10 @@ import { logout } from '../slices/authSlice';
 
 export default function EditAccountPage() {
   const [oldPassword, setOldPassword] = useState("");
-  const [confirmOldPassword, setConfirmOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState(""); // Added confirm new master password state
+  const [newEmail, setNewEmail] = useState("");
+  const [confirmNewEmail, setConfirmNewEmail] = useState("");
   const [updateUser] = useUpdateUserMutation();
   const [updatePassword] = useUpdatePasswordMutation();
   const [updateNote] = useUpdateNoteMutation();
@@ -25,21 +27,40 @@ export default function EditAccountPage() {
   const { data: notes } = useGetNotesQuery(folderData ? folderData.map((folder) => folder.folderID) : [-1]);
 
   const handleSubmit = async () => {
-    if (oldPassword !== confirmOldPassword) {
-      alert("Old passwords do not match. Please try again.");
+    // compare hashes of old password to master key
+    if (pdfk(oldPassword, loggedInUser.email) !== loggedInUser.masterKey) {
+      alert("Invalid current password entered. Please try again.");
       return;
     }
 
-    const masterKey = pdfk(newPassword, loggedInUser.email);
+    if (newPassword !== confirmNewPassword) { // Check if new passwords match
+      alert("New passwords do not match. Please try again.");
+      return;
+    }
+
+    if (newEmail !== confirmNewEmail) {
+      alert("New emails do not match. Please try again.");
+      return;
+    }
+
+    // Check if email needs to change; default to current email
+    console.log("logged in user", loggedInUser.email)
+    let emailToUse = loggedInUser.email;
+
+    if (newEmail === confirmNewEmail && newEmail.trim() !== '') {
+      emailToUse = newEmail;
+    }
+    
+    const masterKey = pdfk(newPassword, emailToUse);
     const hashedMasterKey = pdfk(masterKey, newPassword);
 
     const updatedUserData = {
       hashedMasterKey: hashedMasterKey,
-      email: loggedInUser.email,
+      email: emailToUse,
       lastLoginDate: new Date(),
     };
 
-    // update passwords
+    // Update passwords
     for (let password of passwords) {
       let decryptedWebsite = decryptText(password.websiteName, loggedInUser.masterKey);
       let decryptedUsername = decryptText(password.username, loggedInUser.masterKey);
@@ -133,7 +154,7 @@ export default function EditAccountPage() {
         alignItems: "center",
         justifyContent: "space-between",
         width: "30%",
-        height: "60vh",
+        height: "50vh",
         margin: "auto",
       }}
     >
@@ -142,21 +163,11 @@ export default function EditAccountPage() {
       <TextField
         fullWidth
         variant="outlined"
-        label="Old Password"
+        label="Current Password"
         type="password"
         value={oldPassword}
         onChange={(e) => {
           setOldPassword(e.target.value);
-        }}
-      />
-      <TextField
-        fullWidth
-        variant="outlined"
-        label="Confirm Old Password"
-        type="password"
-        value={confirmOldPassword}
-        onChange={(e) => {
-          setConfirmOldPassword(e.target.value);
         }}
       />
       <TextField
@@ -169,6 +180,40 @@ export default function EditAccountPage() {
           setNewPassword(e.target.value);
         }}
       />
+      <TextField
+        fullWidth
+        variant="outlined"
+        label="Confirm New Master Password" // Added confirm new master password field
+        type="password"
+        value={confirmNewPassword}
+        onChange={(e) => {
+          setConfirmNewPassword(e.target.value);
+        }}
+      />
+
+      <Typography variant="h5">Change Email</Typography>
+
+      <TextField
+        fullWidth
+        variant="outlined"
+        label="New Email"
+        type="email"
+        value={newEmail}
+        onChange={(e) => {
+          setNewEmail(e.target.value);
+        }}
+      />
+      <TextField
+        fullWidth
+        variant="outlined"
+        label="Confirm New Email"
+        type="email"
+        value={confirmNewEmail}
+        onChange={(e) => {
+          setConfirmNewEmail(e.target.value);
+        }}
+      />
+
       <Button
         variant="contained"
         onClick={handleSubmit}
@@ -176,7 +221,7 @@ export default function EditAccountPage() {
           width: "100%",
         }}
       >
-        Change Password
+        Change Password/Email
       </Button>
     </Box>
   );

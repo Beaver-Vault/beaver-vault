@@ -106,7 +106,7 @@ export default function NavBar() {
                 minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
               }}
             >
-              Edit Account
+              Edit Account Settings
             </MenuItem>
 
             <MenuItem

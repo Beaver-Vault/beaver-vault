@@ -71,7 +71,7 @@ export default function SettingsMenu() {
             minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
           }}
         >
-          Edit Account
+          Edit Account Settings
         </MenuItem>
 
         <MenuItem
