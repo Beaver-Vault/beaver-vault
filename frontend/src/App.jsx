@@ -11,6 +11,7 @@ import EditPasswordPage from "./pages/EditPasswordPage";
 import EditNotePage from "./pages/EditNotePage";
 import EditCreditCardPage from "./pages/EditCreditCardPage";
 import TrashBin from "./pages/TrashBinPage";
+import EditAccountPage from "./pages/EditAccountPage";
 
 function App() {
   const loggedInUser = useSelector((state) => state.auth.accessToken);
@@ -28,6 +29,7 @@ function App() {
           <Route path="/encryptiontest" element={<EncryptionTestPage />} />
           <Route path="/dataexport" element={<DataExport />} />
           <Route path="/dataimport" element={<DataImport />} />
+          <Route path="/editaccount" element={<EditAccountPage />} />
           <Route path="/editpassword/:id" element={<EditPasswordPage />} />
           <Route path="/editnote/:id" element={<EditNotePage />} />
           <Route path="/editcreditcard/:id" element={<EditCreditCardPage />} />

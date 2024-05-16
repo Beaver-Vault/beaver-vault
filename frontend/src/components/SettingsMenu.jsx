@@ -64,26 +64,14 @@ export default function SettingsMenu() {
       >
         <MenuItem
           onClick={() => {
-            navigate("/");
+            navigate("/editaccount");
             handleClose();
           }}
           sx={{
             minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
           }}
         >
-          Change Email
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            navigate("/");
-            handleClose();
-          }}
-          sx={{
-            minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
-          }}
-        >
-          Change Master Password
+          Edit Account
         </MenuItem>
 
         <MenuItem
