@@ -1,21 +1,10 @@
 import React, { useState } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
-import { useUpdateUserMutation,
-        useGetPasswordsQuery,
-        useGetNotesQuery,
-        useGetCreditCardsQuery,
-        useUpdatePasswordMutation, 
-        useGetFoldersQuery,
-        useUpdateCreditCardMutation,
-        useUpdateNoteMutation
-      } from "../slices/apiSlice";
+import { useUpdateUserMutation, useGetPasswordsQuery, useGetNotesQuery, useGetCreditCardsQuery, useUpdatePasswordMutation, useGetFoldersQuery, useUpdateCreditCardMutation, useUpdateNoteMutation } from "../slices/apiSlice";
 import { pdfk, encryptText, decryptText } from "../scripts/encryption";
-import { useNavigate, useParams} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { logout } from '../slices/authSlice';
-import { clearInfo } from '../slices/userInfoSlice';
-
-
 
 export default function EditAccountPage() {
   const [oldPassword, setOldPassword] = useState("");
@@ -23,30 +12,18 @@ export default function EditAccountPage() {
   const [newPassword, setNewPassword] = useState("");
   const [updateUser] = useUpdateUserMutation();
   const [updatePassword] = useUpdatePasswordMutation();
-    //const [updateEmail] = useUpdateEmailMutation();
   const [updateNote] = useUpdateNoteMutation();
   const [updateCreditCard] = useUpdateCreditCardMutation();
   const navigate = useNavigate();
   const loggedInUser = useSelector((state) => state.auth.user);
 
-  const dispatch = useDispatch(); // Make sure you have this line to use dispatch
+  const dispatch = useDispatch();
 
-  const { data: folderData } = useGetFoldersQuery(
-    loggedInUser["userID"]
-  );
-  
-  const { data: passwords } = useGetPasswordsQuery(
-    folderData ? folderData.map((folder) => folder.folderID) : [-1]
-  );
+  const { data: folderData } = useGetFoldersQuery(loggedInUser["userID"]);
+  const { data: passwords } = useGetPasswordsQuery(folderData ? folderData.map((folder) => folder.folderID) : [-1]);
+  const { data: creditCards } = useGetCreditCardsQuery(folderData ? folderData.map((folder) => folder.folderID) : [-1]);
+  const { data: notes } = useGetNotesQuery(folderData ? folderData.map((folder) => folder.folderID) : [-1]);
 
-  const { data: creditCards } = useGetCreditCardsQuery(
-    folderData ? folderData.map((folder) => folder.folderID) : [-1]
-  );
-
-  const { data: notes } = useGetNotesQuery(
-    folderData ? folderData.map((folder) => folder.folderID) : [-1]
-  );
-  
   const handleSubmit = async () => {
     if (oldPassword !== confirmOldPassword) {
       alert("Old passwords do not match. Please try again.");
@@ -72,70 +49,68 @@ export default function EditAccountPage() {
       let encryptedUsername = encryptText(decryptedUsername, masterKey);
       let encryptedPassword = encryptText(decryptedPassword, masterKey);
 
-      // Create the updatedPasswordData object
       const updatedPasswordData = {
         folderID: password.folderID,
         websiteName: encryptedWebsite,
         username: encryptedUsername,
         encryptedPassword: encryptedPassword,
       };
-      
+
       await updatePassword({
         id: password.passwordID,
         updatedPasswordData
       });
     }
 
+    // Update credit cards
+    for (let card of creditCards) {
+      let decryptedCardName = decryptText(card.cardName, loggedInUser.masterKey);
+      let decryptedCardholderName = decryptText(card.cardholderName, loggedInUser.masterKey);
+      let decryptedNumber = decryptText(card.number, loggedInUser.masterKey);
+      let decryptedExpiration = decryptText(card.expiration, loggedInUser.masterKey);
+      let decryptedCsv = decryptText(card.csv, loggedInUser.masterKey);
 
-  // Update credit cards
-  for (let card of creditCards) {
-    let decryptedCardName = decryptText(card.cardName, loggedInUser.masterKey);
-    let decryptedCardholderName = decryptText(card.cardholderName, loggedInUser.masterKey);
-    let decryptedNumber = decryptText(card.number, loggedInUser.masterKey);
-    let decryptedExpiration = decryptText(card.expiration, loggedInUser.masterKey);
-    let decryptedCsv = decryptText(card.csv, loggedInUser.masterKey);
+      let encryptedCardName = encryptText(decryptedCardName, masterKey);
+      let encryptedCardholderName = encryptText(decryptedCardholderName, masterKey);
+      let encryptedNumber = encryptText(decryptedNumber, masterKey);
+      let encryptedExpiration = encryptText(decryptedExpiration, masterKey);
+      let encryptedCsv = encryptText(decryptedCsv, masterKey);
 
-    let encryptedCardName = encryptText(decryptedCardName, masterKey);
-    let encryptedCardholderName = encryptText(decryptedCardholderName, masterKey);
-    let encryptedNumber = encryptText(decryptedNumber, masterKey);
-    let encryptedExpiration = encryptText(decryptedExpiration, masterKey);
-    let encryptedCsv = encryptText(decryptedCsv, masterKey);
+      const updatedCreditCardData = {
+        folderID: card.folderID,
+        cardName: encryptedCardName,
+        cardholderName: encryptedCardholderName,
+        number: encryptedNumber,
+        expiration: encryptedExpiration,
+        csv: encryptedCsv,
+      };
 
-    const updatedCreditCardData = {
-      folderID: card.folderID,
-      cardName: encryptedCardName,
-      cardholderName: encryptedCardholderName,
-      number: encryptedNumber,
-      expiration: encryptedExpiration,
-      csv: encryptedCsv,
-    };
+      await updateCreditCard({
+        creditCardID: card.creditcardID,
+        updatedData: updatedCreditCardData,
+      });
+    }
 
-    await updateCreditCard({
-      creditCardID: card.creditcardID,
-      updatedData: updatedCreditCardData,
-    });
-  }
+    // Update notes
+    for (let note of notes) {
+      let decryptedNoteName = decryptText(note.noteName, loggedInUser.masterKey);
+      let decryptedNoteContent = decryptText(note.content, loggedInUser.masterKey);
 
-  // Update notes
-  for (let note of notes) {
-    let decryptedNoteName = decryptText(note.noteName, loggedInUser.masterKey);
-    let decryptedNoteContent = decryptText(note.content, loggedInUser.masterKey);
+      let encryptedNoteName = encryptText(decryptedNoteName, masterKey);
+      let encryptedNoteContent = encryptText(decryptedNoteContent, masterKey);
 
-    let encryptedNoteName = encryptText(decryptedNoteName, masterKey);
-    let encryptedNoteContent = encryptText(decryptedNoteContent, masterKey);
+      console.log(note.noteID)
+      const updatedNoteData = {
+        folderID: note.folderID,
+        noteName: encryptedNoteName,
+        content: encryptedNoteContent,
+      };
 
-    console.log(note.noteID)
-    const updatedNoteData = {
-      folderID: note.folderID,
-      noteName: encryptedNoteName,
-      content: encryptedNoteContent,
-    };
-
-    await updateNote({
-      notesID: note.noteID,
-      updatedData: updatedNoteData,
-    });
-  }
+      await updateNote({
+        notesID: note.noteID,
+        updatedData: updatedNoteData,
+      });
+    }
 
     try {
       await updateUser({
@@ -150,7 +125,7 @@ export default function EditAccountPage() {
     }
   };
 
-return (
+  return (
     <Box
       sx={{
         display: "flex",
