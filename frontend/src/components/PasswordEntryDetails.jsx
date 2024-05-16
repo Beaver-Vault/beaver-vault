@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { Box, Button } from "@mui/material";
 import { useUpdatePasswordMutation } from "../slices/apiSlice";
 import { setCurrentEntry } from "../slices/uiStatusSlice";
@@ -43,7 +44,12 @@ export default function PasswordEntryDetails({
 
     try {
       await updatePassword({ id, updatedPasswordData });
-      alert("Password updated successfully");
+      dispatch(
+        setSnackbar({
+          message: "Password updated successfully",
+          severity: "success",
+        })
+      );
       setIsEditing(false);
       passwordRefetch();
       dispatch(
@@ -56,7 +62,12 @@ export default function PasswordEntryDetails({
       );
     } catch (error) {
       console.error("Error updating password:", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "An unexpected error occurred",
+          severity: "error",
+        })
+      );
     }
   };
 

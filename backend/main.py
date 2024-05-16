@@ -130,7 +130,8 @@ def verify_mfa(
         else:
             return None
     else:
-        return verify_result
+        return {"access_token": access_token,
+                "refresh_token": refresh_token}
 
 
 # Read rows (get single row)

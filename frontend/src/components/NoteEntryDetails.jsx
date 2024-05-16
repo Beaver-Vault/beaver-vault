@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
 import { useUpdateNoteMutation } from "../slices/apiSlice";
 import { setCurrentEntry } from "../slices/uiStatusSlice";
 import { Box, Button } from "@mui/material";
@@ -37,7 +38,12 @@ export default function NoteEntryDetails({
 
     try {
       await updateNote({ notesID: id, updatedData: updatedNoteData });
-      alert("Note updated successfully");
+      dispatch(
+        setSnackbar({
+          message: "Note updated successfully",
+          severity: "success",
+        })
+      );
       setIsEditing(false);
       noteRefetch();
       dispatch(
@@ -49,7 +55,12 @@ export default function NoteEntryDetails({
       );
     } catch (error) {
       console.error("Error updating note:", error);
-      alert("An unexpected error occurred. Please try again.");
+      dispatch(
+        setSnackbar({
+          message: "An unexpected error occurred. Please try again.",
+          severity: "error",
+        })
+      );
     }
   };
   return (

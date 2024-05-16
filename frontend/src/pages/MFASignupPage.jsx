@@ -1,26 +1,34 @@
 import { Box, Typography, TextField, Button } from "@mui/material";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setSnackbar } from "../slices/snackbarSlice";
+import { setAccessToken, setRefreshToken } from "../slices/authSlice";
 import axios from "axios";
 
 export default function MFASignup({ newUser }) {
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [mfaCode, setMfaCode] = useState("");
 
   const { qr_code_url, user } = newUser;
 
   const handleSubmit = async () => {
-    const result = await axios.post(`${process.env.REACT_APP_API_URL}/mfa/signup`, {
-      mfaCode,
-      email: user.email,
-    });
-    const isvalid = result.data;
-    if (isvalid) {
-      navigate("/");
-    } else {
-      alert("Invalid MFA Code");
+    const result = await axios.post(
+      `${process.env.REACT_APP_API_URL}/mfa/signup`,
+      {
+        mfaCode,
+        email: user.email,
+      }
+    );
+    if (result.data === null) {
+      dispatch(setSnackbar({ message: "Invalid MFA Code", severity: "error" }));
+      setMfaCode("");
+      return;
     }
+    const { access_token: accessToken, refresh_token: refreshToken } =
+      result.data;
+    dispatch(setAccessToken(accessToken));
+    dispatch(setRefreshToken(refreshToken));
   };
 
   return (
