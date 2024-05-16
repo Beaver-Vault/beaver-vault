@@ -191,7 +191,7 @@ export default function EditAccountPage() {
         }}
       />
 
-      <Typography variant="h5">Change Email</Typography>
+      <Typography variant="h5">Change Email (Optional)</Typography>
 
       <TextField
         fullWidth
