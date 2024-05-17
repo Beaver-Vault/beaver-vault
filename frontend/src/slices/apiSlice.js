@@ -93,10 +93,10 @@ export const apiSlice = createApi({
       }),
     }),
     updateCreditCard: builder.mutation({
-      query: ({ creditCardID, updatedData }) => ({
-        url: `creditcards/${creditCardID}`,
+      query: ({ creditCardID: id, updatedData: data }) => ({
+        url: `creditcards/${id}`,
         method: "PUT",
-        body: updatedData,
+        body: data,
       }),
     }),
     updateNote: builder.mutation({
@@ -104,6 +104,13 @@ export const apiSlice = createApi({
         url: `notes/${notesID}`,
         method: "PUT",
         body: updatedData,
+      }),
+    }),
+    updateUser: builder.mutation({
+      query: ({ userID: id, updatedData: updatedUserData }) => ({
+        url: `users/${id}`,
+        method: "PUT",
+        body: updatedUserData,
       }),
     }),
     // ----- PATCH REQUESTS -----
@@ -138,6 +145,7 @@ export const {
   useUpdateCreditCardMutation,
   useUpdateNoteMutation,
   useUpdateTrashMutation,
+  useUpdateUserMutation,
   useDeleteUserMutation,
 } = apiSlice;
 

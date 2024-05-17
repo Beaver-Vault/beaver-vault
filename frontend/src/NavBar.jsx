@@ -99,26 +99,14 @@ export default function NavBar() {
 
             <MenuItem
               onClick={() => {
-                navigate("/");
+                navigate("/editaccount");
                 handleClose();
               }}
               sx={{
                 minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
               }}
             >
-              Change Email
-            </MenuItem>
-
-            <MenuItem
-              onClick={() => {
-                navigate("/");
-                handleClose();
-              }}
-              sx={{
-                minWidth: buttonRef.current ? buttonRef.current.offsetWidth : 0,
-              }}
-            >
-              Change Master Password
+              Edit Account Settings
             </MenuItem>
 
             <MenuItem

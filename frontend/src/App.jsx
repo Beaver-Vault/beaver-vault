@@ -8,6 +8,7 @@ import EncryptionTestPage from "./pages/EncryptionTestPage";
 import DataExport from "./pages/DataExportPage";
 import DataImport from "./pages/DataImportPage";
 import TrashBin from "./pages/TrashBinPage";
+import EditAccountPage from "./pages/EditAccountPage";
 import SnackbarManager from "./components/SnackbarManager";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -37,6 +38,9 @@ function App() {
           </Route>
           <Route path="/trashbin" element={<PrivateRoute />}>
             <Route path="" element={<TrashBin />} />
+          </Route>
+          <Route path="/editaccount" element={<PrivateRoute />}>
+            <Route path="" element={<EditAccountPage />} />
           </Route>
         </Routes>
       </Router>

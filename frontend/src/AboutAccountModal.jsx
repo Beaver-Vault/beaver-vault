@@ -48,7 +48,7 @@ const AboutAccountModelDialog = ({ open, handleClose }) => {
             Science program. Built using React, Node.js, and Python.
           </Typography>
           <Typography variant="body2" align="center">
-            Version: 0.99
+            Version: 1.0
           </Typography>
         </Box>
       </DialogContent>
