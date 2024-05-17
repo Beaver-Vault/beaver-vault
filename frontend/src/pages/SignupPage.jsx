@@ -108,8 +108,8 @@ export default function SignupPage() {
         setStrengthLabel("Fair");
         break;
       case 3:
-        setStrengthColor("orange");
-        setStrengthLabel("Good");
+        setStrengthColor("green");
+        setStrengthLabel("Great");
         break;
       case 4:
         setStrengthColor("green");

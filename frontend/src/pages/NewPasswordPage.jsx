@@ -56,8 +56,8 @@ export default function NewPasswordPage({ setModalOpen, refetch }) {
         setStrengthLabel("Fair");
         break;
       case 3:
-        setStrengthColor("orange");
-        setStrengthLabel("Good");
+        setStrengthColor("green");
+        setStrengthLabel("Great");
         break;
       case 4:
         setStrengthColor("green");
