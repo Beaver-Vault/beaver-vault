@@ -11,10 +11,10 @@ export default function SnackbarManager() {
       <Snackbar
         open={open}
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
-        // autoHideDuration={20000}
-        // onClose={() => {
-        //   dispatch(closeSnackbar());
-        // }}
+        autoHideDuration={10000}
+        onClose={() => {
+          dispatch(closeSnackbar());
+        }}
       >
         <Alert
           severity={severity}
