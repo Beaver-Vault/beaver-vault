@@ -19,7 +19,7 @@ export default function TestCreds() {
 
   useEffect(() => {
     const generateNewOtp = () => {
-      const { otp } = TOTP.generate("SKLWAHAMEVSYNGGZV6YX4YNMBGJIQMCI");
+      const { otp } = TOTP.generate("TWUS3C3MMVYNOJWVOPURN5YZOWSC5IEF");
       setOtp(otp);
     };
     generateNewOtp();
@@ -40,7 +40,9 @@ export default function TestCreds() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          padding: "2rem",
+          padding: "1rem",
+          height: "250px",
+          width: "300px",
         }}
       >
         <Button variant="outlined" onClick={handleClick}>
@@ -56,14 +58,16 @@ export default function TestCreds() {
             }}
           >
             <TextField
-              value="test@gmail.com"
+              value="testuser@oregonstate.edu"
               label="Username"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start">
                     <IconButton
                       onClick={() => {
-                        navigator.clipboard.writeText("test@gmail.com");
+                        navigator.clipboard.writeText(
+                          "testuser@oregonstate.edu"
+                        );
                       }}
                     >
                       <ContentCopyIcon />
@@ -73,14 +77,14 @@ export default function TestCreds() {
               }}
             />
             <TextField
-              value="test"
+              value="Gob3@vers!"
               label="Password"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start">
                     <IconButton
                       onClick={() => {
-                        navigator.clipboard.writeText("test");
+                        navigator.clipboard.writeText("Gob3@vers!");
                       }}
                     >
                       <ContentCopyIcon />
