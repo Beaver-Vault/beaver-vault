@@ -157,6 +157,14 @@ export default function NewCreditCardPage({ setModalOpen, refetch }) {
     }
   };
 
+  // console.log(
+  //   numberError ||
+  //     expirationError ||
+  //     csvError ||
+  //     cardNameError ||
+  //     cardHolderError
+  // );
+
   return (
     <Box
       sx={{

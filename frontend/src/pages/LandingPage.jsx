@@ -5,6 +5,7 @@ import SignupPage from "./SignupPage";
 import BeaverVaultLogo from "../imgs/BeaverVaultLogo_New.svg";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import TestCreds from "../components/TestCreds";
 
 export default function LandingPage() {
   const theme = useTheme();
@@ -80,6 +81,9 @@ export default function LandingPage() {
               Secure Your Dam Passwords!
             </Typography>
           </Box>
+          {currentView === Status.LOGIN || currentView === Status.MFA ? (
+            <TestCreds />
+          ) : null}
         </Box>
         <Box
           sx={{
