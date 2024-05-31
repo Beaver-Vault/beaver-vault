@@ -6,6 +6,9 @@ const DeleteAccountConfirmationDialog = ({ open, handleClose, email, userID, acc
   const [input, setInput] = useState("");
 
   const handleDelete = async () => {
+    if (userID === 72) {
+      alert("You cannot delete the test account. Please create a new account to test this feature.");
+    }
     if (input === `Yes, delete ${email}`) {
       try {
         await axios.delete(`${process.env.REACT_APP_API_URL}/users/${userID}`, {

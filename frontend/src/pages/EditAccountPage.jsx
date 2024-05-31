@@ -27,6 +27,11 @@ export default function EditAccountPage() {
   const { data: notes } = useGetNotesQuery(folderData ? folderData.map((folder) => folder.folderID) : [-1]);
 
   const handleSubmit = async () => {
+    if (loggedInUser.userID == 72) {
+      alert("You cannot change the master password or email of the test account. Please create a new account to test this feature.");
+      return;
+    }
+
     // compare hashes of old password to master key
     if (pdfk(oldPassword, loggedInUser.email) !== loggedInUser.masterKey) {
       alert("Invalid current password entered. Please try again.");
