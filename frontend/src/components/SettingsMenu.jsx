@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../slices/authSlice";
 import { clearInfo } from "../slices/userInfoSlice";
+import { apiSlice } from "../slices/apiSlice";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
@@ -30,6 +31,7 @@ export default function SettingsMenu() {
   };
 
   const handleSignOut = () => {
+    dispatch(apiSlice.util.resetApiState());
     dispatch(logout());
     dispatch(clearInfo());
     navigate("/");

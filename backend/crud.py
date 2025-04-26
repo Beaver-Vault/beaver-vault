@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import datetime, timedelta
+from uuid import UUID
 
 import models
 import schemas
@@ -63,6 +65,8 @@ def create_creditcard(db: Session, creditcard: schemas.CreditCard):
 def get_user(db: Session, user_id: str):
     return db.query(models.User).filter(models.User.userID == user_id).first()
 
+def get_all_users(db: Session):
+    return db.query(models.User).all()
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
@@ -76,7 +80,7 @@ def get_password(db: Session, password_id: str):
     return db.query(models.Passwords).filter(
         models.Passwords.passwordID == password_id).first()
 
-def get_passwords_by_folder_id(db: Session, folder_id: int):
+def get_passwords_by_folder_id(db: Session, folder_id: UUID):
     return db.query(models.Passwords).filter(
         models.Passwords.folderID == folder_id).all()
 
@@ -85,7 +89,7 @@ def get_note(db: Session, note_id: str):
     return db.query(models.Note).filter(models.Note.noteID == note_id).first()
 
 
-def get_notes_by_folder_id(db: Session, folder_id: int):
+def get_notes_by_folder_id(db: Session, folder_id: UUID):
     return db.query(models.Note).filter(models.Note.folderID == folder_id).all()
 
 
@@ -94,17 +98,17 @@ def get_creditcard(db: Session, creditcard_id: str):
         models.CreditCard.creditcardID == creditcard_id).first()
 
 
-def get_creditcards_by_folder_id(db: Session, folder_id: int):
+def get_creditcards_by_folder_id(db: Session, folder_id: UUID):
     return db.query(models.CreditCard).filter(
         models.CreditCard.folderID == folder_id).all()
 
 
-def get_folder(db: Session, folder_id: int):
+def get_folder(db: Session, folder_id: UUID):
     return db.query(models.Folder).filter(
         models.Folder.folderID == folder_id).first()
 
 
-def get_folders_by_user_id(db: Session, user_id: int):
+def get_folders_by_user_id(db: Session, user_id: UUID):
     return db.query(models.Folder).filter(models.Folder.userID == user_id).all()
 
 
@@ -123,7 +127,7 @@ def update_user(db: Session, user_id: int, user: schemas.User):
     return db_user
 
 
-def update_folder(db: Session, folder_id: int, folder: schemas.Folder):
+def update_folder(db: Session, folder_id: UUID, folder: schemas.Folder):
     db_folder = db.query(models.Folder).filter(models.Folder.folderID == folder_id).first()
     if db_folder is None:
         return None
@@ -235,7 +239,7 @@ def delete_user(db: Session, user_id: int):
     return user
 
 
-def delete_folder(db: Session, folder_id: int):
+def delete_folder(db: Session, folder_id: UUID):
     folder = db.query(models.Folder).filter(models.Folder.folderID == folder_id).first()
     if folder is None:
         return None

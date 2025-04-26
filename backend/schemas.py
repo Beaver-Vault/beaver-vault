@@ -1,10 +1,11 @@
 from typing import Union, Optional
 from pydantic import BaseModel
 from datetime import datetime
+from uuid import UUID
 
 
 class User(BaseModel):
-    userID: Optional[int] = None
+    userID: Optional[UUID] = None
     email: str
     hashedMasterKey: str
     accountCreationDate: Optional[datetime] = None
@@ -17,38 +18,38 @@ class MFAVerify(BaseModel):
 
 
 class Folder(BaseModel):
-    folderID: Optional[int] = None
+    folderID: Optional[UUID] = None
     folderName: str
-    userID: int
+    userID: UUID
 
 
 class Password(BaseModel):
-    passwordID: Optional[int] = None
+    passwordID: Optional[UUID] = None
     websiteName: str
     username: str
     encryptedPassword: str
-    folderID: int
+    folderID: UUID
     trashBin: Optional[bool] = False
     deletionDateTime: Optional[datetime] = None
 
 
 class CreditCard(BaseModel):
-    creditcardID: Optional[int] = None
+    creditcardID: Optional[UUID] = None
     cardName: str
     cardholderName: str
     number: str
     expiration: str
     csv: str
-    folderID: int
+    folderID: UUID
     trashBin: Optional[bool] = False
     deletionDateTime: Optional[datetime] = None
 
 
 class Note(BaseModel):
-    noteID: Optional[int] = None
+    noteID: Optional[UUID] = None
     noteName: str
     content: str
-    folderID: int
+    folderID: UUID
     trashBin: Optional[bool] = False
     deletionDateTime: Optional[datetime] = None
 
