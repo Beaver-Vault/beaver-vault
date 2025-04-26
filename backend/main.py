@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 import crud
 import mfa
@@ -137,7 +138,7 @@ def verify_mfa(
 # Read rows (get single row)
 @app.get("/users")
 def get_user(
-        user_id: int,
+        user_id: UUID,
         db: Session = Depends(get_db)):
     user = crud.get_user(db, user_id=user_id)
     is_item_found(user, "User")
@@ -154,7 +155,7 @@ def get_user_by_email(
 
 @app.get("/passwords")
 def get_password(
-        password_id: int, db:
+        password_id: UUID, db:
         Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -179,7 +180,7 @@ def get_passwords_by_folder_ids(
 
 @app.get("/notes")
 def get_note(
-        note_id: int,
+        note_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -204,7 +205,7 @@ def get_notes_by_folder(
 
 @app.get("/creditcards")
 def get_creditcard(
-        creditcard_id: int,
+        creditcard_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -229,7 +230,7 @@ def get_creditcards_by_folder(
 
 @app.get("/folders")
 def get_folder(
-        folder_id: int,
+        folder_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -240,7 +241,7 @@ def get_folder(
 
 @app.get("/folders/{user_id}")
 def get_folders_by_user(
-        user_id: int,
+        user_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -253,7 +254,7 @@ def get_folders_by_user(
 # update the name of the folder
 @app.put("/folders/{folder_id}")
 def update_folder(
-        folder_id: int,
+        folder_id: UUID,
         folder: schemas.Folder,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
@@ -266,7 +267,7 @@ def update_folder(
 # update user master password (expecting hashed password from UI)
 @app.put("/users/{user_id}")
 def update_user(
-        user_id: int,
+        user_id: UUID,
         user: schemas.User,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
@@ -278,7 +279,7 @@ def update_user(
 
 @app.put("/folders/{folder_id}")
 def update_folder(
-        folder_id: int,
+        folder_id: UUID,
         folder: schemas.Folder,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
@@ -292,7 +293,7 @@ def update_folder(
 # update the password of the saved entry
 @app.put("/passwords/{password_id}")
 def update_password(
-        password_id: int,
+        password_id: UUID,
         password: schemas.Password,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
@@ -305,7 +306,7 @@ def update_password(
 
 @app.put("/notes/{note_id}")
 def update_note(
-        note_id: int,
+        note_id: UUID,
         note: schemas.Note,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
@@ -317,7 +318,7 @@ def update_note(
 
 @app.put("/creditcards/{creditcard_id}")
 def update_creditcard(
-        creditcard_id: int,
+        creditcard_id: UUID,
         creditcard: schemas.CreditCard,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
@@ -332,7 +333,7 @@ def update_creditcard(
 
 @app.patch("/passwords/{password_id}")
 def patch_trashbin_password(
-    password_id: int,
+    password_id: UUID,
     restore: schemas.TrashBin,  
     db: Session = Depends(get_db),
     verified_token=Depends(verify_token)
@@ -345,7 +346,7 @@ def patch_trashbin_password(
 
 @app.patch("/notes/{note_id}")
 def patch_trashbin_note(
-    note_id: int,
+    note_id: UUID,
     restore: schemas.TrashBin,   
     db: Session = Depends(get_db),
     verified_token=Depends(verify_token)
@@ -358,7 +359,7 @@ def patch_trashbin_note(
 
 @app.patch("/creditcards/{creditcard_id}")
 def patch_trashbin_creditcard(
-    creditcard_id: int,
+    creditcard_id: UUID,
     restore: schemas.TrashBin,  
     db: Session = Depends(get_db),
     verified_token=Depends(verify_token)
@@ -374,7 +375,7 @@ def patch_trashbin_creditcard(
 
 @app.delete("/users/{user_id}")
 def delete_user(
-        user_id: int,
+        user_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -385,7 +386,7 @@ def delete_user(
 
 @app.delete("/passwords/{password_id}")
 def delete_password(
-        password_id: int,
+        password_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -396,7 +397,7 @@ def delete_password(
 
 @app.delete("/notes/{note_id}")
 def delete_note(
-        note_id: int,
+        note_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -407,7 +408,7 @@ def delete_note(
 
 @app.delete("/creditcards/{creditcard_id}")
 def delete_creditcard(
-        creditcard_id: int,
+        creditcard_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)
@@ -418,7 +419,7 @@ def delete_creditcard(
 
 @app.delete("/folders/{folder_id}")
 def delete_folder(
-        folder_id: int,
+        folder_id: UUID,
         db: Session = Depends(get_db),
         verified_token=Depends(verify_token)):
     validate_token(verified_token)

@@ -27,10 +27,11 @@ yarn-error.log*
 env/
 backend/__pycache__
 backend/env
-backend/venv
-backend/venv/
+backend/.venv
+backend/.venv/
 backend/beaver_venv
 backend/beaver_venv/
+.env
 
 __pycache__/
 .idea
